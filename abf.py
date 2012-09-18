@@ -31,36 +31,36 @@ password = cfg['user']['password']
 
 def parse_command_line():
     global command_line
-    parser = argparse.ArgumentParser(description='ABF Console CLient')
+    parser = argparse.ArgumentParser(description='ABF Console Client')
     parser.add_argument('-v', '--verbose', action='store_true', help='be verbose')
-    subparsers = parser.add_subparsers(help='sub-command help')
+    subparsers = parser.add_subparsers()
     
     # get
-    parser_get = subparsers.add_parser('get', help='get help')
-    parser_get.add_argument('project', action='store', help='project name. Format: "project_name" or "group/project_name"')
+    parser_get = subparsers.add_parser('get', help='clone a project from ABF')
+    parser_get.add_argument('project', action='store', help='project name. (can be "group/project")')
     parser_get.add_argument('-b', '--branch', action='store', help='branch to checkout')
     parser_get.set_defaults(func=get)
     
     # put
     parser_get = subparsers.add_parser('put', help='commit changes (with -am "message") and push')
-    parser_get.add_argument('message', action='store', help='A message to commit with')
+    parser_get.add_argument('message', action='store', help='a message to commit with')
     parser_get.set_defaults(func=put)
     
     # build
-    parser_build = subparsers.add_parser('build', help='build help')
-    parser_build.add_argument('project', action='store', nargs='?', help='project name')
-    parser_build.add_argument('-b', '--branch', action='store', help='Branch to build')
-    parser_build.add_argument('-t', '--tag', action='store', help='Tag to build')
-    parser_build.add_argument('-p', '--target-platform', action='store', help='Platform to build into')
-    parser_build.add_argument('-a', '--arches', action='append', nargs='+', help='Architectures to build, '
-                        'can be set more than onece. If not set - use all the available architectures')
-    parser_build.add_argument('-r', '--repository', action='append', nargs='+', help='Repositories to biuld with (platform/repository)')
+    parser_build = subparsers.add_parser('build', help='Initiate a build task on ABF')
+    parser_build.add_argument('project', action='store', nargs='?', help='project name (can be "group/project")')
+    parser_build.add_argument('-b', '--branch', action='store', help='branch to build, can be resolved from repository or target-platform option')
+    parser_build.add_argument('-t', '--tag', action='store', help='tag to build')
+    parser_build.add_argument('-p', '--target-platform', action='store', help='platform to build into, can be resolved from branch or target repository')
+    parser_build.add_argument('-a', '--arches', action='append', nargs='+', help='architectures to build, '
+                        'can be set more than once. If not set - use all the available architectures')
+    parser_build.add_argument('-r', '--repository', action='append', nargs='+', help='repositories to build with (platform/repository)')
     parser_build.set_defaults(func=build)
     
     # buildstatus
-    parser_build = subparsers.add_parser('buildstatus', help='Get a building task status')
-    parser_build.add_argument('ID', action='store', nargs='?', help='Build list ID')
-    parser_build.add_argument('-l', '--logs', action='store_true', help='Also download logs')
+    parser_build = subparsers.add_parser('buildstatus', help='get a building task status')
+    parser_build.add_argument('ID', action='store', nargs='?', help='build list ID')
+    parser_build.add_argument('-l', '--logs', action='store_true', help='also download logs (not implemented)')
     parser_build.set_defaults(func=buildstatus)
     
     command_line = parser.parse_args(sys.argv[1:])
