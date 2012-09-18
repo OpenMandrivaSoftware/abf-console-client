@@ -1,6 +1,6 @@
 Name:           abf-console-client
 Version:        1.0
-Release:        0
+Release:        3
 Summary:        Python API to ABF (https://abf.rosalinux.ru)
 Group:          System/Configuration/Packaging
 License:        GPLv2
@@ -9,6 +9,7 @@ Source0:        %{name}-%{version}.tar.gz
 BuildArch:      noarch
 
 Requires:       python-abf
+Requires:       python-beaker
 
 %description
 Console client for ABF (https://abf.rosalinux.ru). 
