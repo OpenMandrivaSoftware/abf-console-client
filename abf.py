@@ -101,7 +101,6 @@ def build():
             'version':None,
             'target_platform':None,
             'repositories':[],
-            'platforms': [],
         }
 
     
@@ -250,8 +249,6 @@ def build():
          
     for plat, repo in repos:
         IDs['repositories'].append(nbp.platforms[plat]['repositories'][repo]['value'])
-        IDs['platforms'].append(nbp.platforms[plat]['value'])
-        IDs['platforms'] = list(set(IDs['platforms']))
         
     nbp.build(IDs)
     
