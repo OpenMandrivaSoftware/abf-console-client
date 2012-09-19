@@ -37,6 +37,11 @@ def parse_command_line():
     parser.add_argument('-v', '--verbose', action='store_true', help='be verbose')
     subparsers = parser.add_subparsers()
     
+    # help
+    parser_get = subparsers.add_parser('help', help='show a help for command')
+    parser_get.add_argument('command', action='store', nargs='?', help='command to show help for')
+    parser_get.set_defaults(func=help)
+    
     # get
     parser_get = subparsers.add_parser('get', help='clone a project from ABF')
     parser_get.add_argument('project', action='store', help='project name. (can be "group/project")')
@@ -75,7 +80,14 @@ def parse_command_line():
     parser_build.set_defaults(func=buildstatus)
     
     command_line = parser.parse_args(sys.argv[1:])
-    
+
+def help():
+    if command_line.command:
+        sys.argv = [sys.argv[0], command_line.command, '-h']
+    else:
+        sys.argv = [sys.argv[0], '-h']
+    parse_command_line()
+
 def get():
     log.debug('GET started')
     proj = command_line.project
