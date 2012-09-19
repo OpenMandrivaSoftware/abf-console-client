@@ -4,6 +4,9 @@ import time
 import select
 import subprocess
 import fcntl
+import rpm
+from glob import glob
+import shutil
 
 def mkdirs(path):
     ''' the equivalent of mkdir -p path'''
@@ -56,6 +59,90 @@ def get_project_name():
     except ReturnCodeNotZero:
         return None
         
+def get_project_name_version(spec_path):
+    try:
+        ts = rpm.TransactionSet()
+        rpm_spec = ts.parseSpec(spec_path)
+        name = rpm.expandMacro("%{name}")
+        version = rpm.expandMacro("%{version}")
+        return (name, version)
+    except:
+        return None
+
+def get_branch_name():
+    try:
+        output = execute_command(['git', 'branch'])
+
+        for line in output.split('\n'):
+            if not line.startswith('*'):
+                continue
+            return line.split()[1]
+    except ReturnCodeNotZero:
+        return None
+        
+def get_root_git_dir(path=None):
+    ''' Get the root directory of the git project '''
+    if path:
+        p = path
+    else:
+        p = os.getcwd()
+        
+    while '.git' not in os.listdir(p) or p == '/':
+        p = os.path.dirname(p)
+    if p == '/':
+        return None
+    else:
+        return p
+        
+def pack_project(log, root_path):
+    # look for a spec file
+    specs = glob(os.path.join(root_path, '*.spec'))
+    log.debug("Spec files found: " + str(specs))
+    if len(specs) == 1:
+        spec = specs[0]
+    else:
+        log.error("Could not find single spec file")
+        return
+        
+    if spec:
+        name, version = get_project_name_version(spec)
+    else:
+        log.error("Could not resolve project name and version from the spec file")
+        return
+    log.debug("Project name is " + str(name))
+    log.debug("Project version is " + str(version))
+
+    tardir = '%s-%s' % (name, version)
+    tarball = tardir + ".tar.gz"
+    log.debug("Writing %s/%s ..." % (root_path, tarball))
+    
+    full_tarball_path = '%s/%s' % (root_path, tarball)
+    if os.path.exists(full_tarball_path):
+        os.unlink(full_tarball_path)
+    #open(full_tarball_path, 'w').close()
+    cmd = ['tar', 'czf', full_tarball_path, '--exclude-vcs', os.path.basename(root_path)] 
+    try:
+        execute_command(cmd, log=log, cwd=os.path.dirname(root_path), exit_on_error=False)
+    except ReturnCodeNotZero, ex:
+        if ex.code != 1:
+            raise
+    
+    #remove other files
+    files = os.listdir(root_path)
+    do_not_remove = ['.git', tarball, os.path.basename(spec)]
+    log.debug("Removing files except " + str(do_not_remove))
+    for f in files:
+        if f in do_not_remove:
+            continue
+        f = os.path.join(root_path, f)
+        log.debug('Removing ' + f)
+        if os.path.isfile(f):
+            os.remove(f)
+        else:
+            shutil.rmtree(f)
+           
+
+        
 def execute_command(command, log=None, shell=False, cwd=None, timeout=0, raiseExc=True, print_to_stdout=False, exit_on_error=False):
     output = ""
     start = time.time()
@@ -69,7 +156,8 @@ def execute_command(command, log=None, shell=False, cwd=None, timeout=0, raiseEx
             bufsize=0, close_fds=True,
             stdin=open("/dev/null", "r"),
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
+            cwd=cwd
             )
         # use select() to poll for output so we dont block
         output = logOutput([child.stdout, child.stderr],

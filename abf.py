@@ -4,6 +4,8 @@
 import sys
 import argparse
 import os
+import shutil
+
 
 
 from abf.console.config import Config
@@ -54,8 +56,17 @@ def parse_command_line():
     parser_build.add_argument('-p', '--target-platform', action='store', help='platform to build into, can be resolved from branch or target repository')
     parser_build.add_argument('-a', '--arches', action='append', nargs='+', help='architectures to build, '
                         'can be set more than once. If not set - use all the available architectures')
+    
     parser_build.add_argument('-r', '--repository', action='append', nargs='+', help='repositories to build with (platform/repository)')
     parser_build.set_defaults(func=build)
+    
+    # backport
+    parser_build = subparsers.add_parser('backport', help='Copy all the files from SRC_BRANCH to DST_BRANCH, or to the current brunch if not specified.')
+    parser_build.add_argument('src_branch', action='store', help='source branch')
+    parser_build.add_argument('dst_branch', action='store', nargs='?', help='destination branch')
+    parser_build.add_argument('-p', '--pack', action='store_true', help='Create a tar.gz from the src_branch and put this archive and spec file to dst_branch')
+    parser_build.set_defaults(func=backport)
+    
     
     # buildstatus
     parser_build = subparsers.add_parser('buildstatus', help='get a building task status')
@@ -93,6 +104,57 @@ def put():
     cmd = ['git', 'push']
     execute_command(cmd, log, print_to_stdout=True, exit_on_error=True)
     log.info('Pushed')
+    
+
+        
+def backport():
+    log.debug('BACKPORT started')
+    sbrn = command_line.src_branch
+    start_branch = get_branch_name()
+    if not start_branch:
+        log.error("You are not in a git directory")
+        exit(1)
+    log.debug("Current brunch is " + start_branch)
+    if command_line.dst_branch:
+        dbrn = command_line.dst_branch
+    else:
+        dbrn = start_branch
+    
+    if sbrn == dbrn:
+        log.error("Source and destination branches shold be different branches!")
+        exit(1)
+        
+    path = get_root_git_dir()
+    log.debug("Repository root folder is " + path)
+
+    stage = 0
+    try:
+        if start_branch != dbrn:
+            cmd = ['git', 'checkout', dbrn]
+            execute_command(cmd, log, print_to_stdout=True, cwd=path)
+        stage = 1
+        cmd = ['rm', '-rf', './*']
+        execute_command(cmd, log, print_to_stdout=True, cwd=path)
+        stage = 2
+        cmd = ['git', 'checkout', sbrn, '*']
+        execute_command(cmd, log, print_to_stdout=True, cwd=path)
+        stage = 3
+        if command_line.pack:
+            pack_project(log, path)
+            cmd = ['git', 'reset']
+            execute_command(cmd, log, print_to_stdout=True, cwd=path)
+    except Exception, ex:
+        if type(ex) == ReturnCodeNotZero:
+            log.error(str(ex))
+        else:
+            log.exception(ex)
+            
+        if stage == 1 or stage == 2:
+            log.info("Checking out the initial branch (%s)" % start_branch)
+            cmd = ['git', 'reset', '--hard', start_branch]
+            execute_command(cmd, log, print_to_stdout=True, cwd=path)
+
+    log.info('Done')
     
 def build():
     log.debug('BUILD started')

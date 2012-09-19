@@ -10,6 +10,7 @@ BuildArch:      noarch
 
 Requires:       python-abf
 Requires:       python-beaker
+Requires:       python-rpm
 
 %description
 Console client for ABF (https://abf.rosalinux.ru). 
