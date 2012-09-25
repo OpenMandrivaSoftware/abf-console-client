@@ -55,9 +55,9 @@ def get_project_name():
                 project_name = line.split('/')[-1][:-4]
                 owner_name = line.split('/')[-2]
                 return (owner_name, project_name)
-        return None
+        return (None, None)
     except ReturnCodeNotZero:
-        return None
+        return (None, None)
         
 def get_project_name_version(spec_path):
     try:

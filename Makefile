@@ -14,6 +14,7 @@ PKGDIR = $(PYLIBDIR)/site-packages
 BINDIR=/usr/bin
 ETCDIR=/etc
 MANDIR=/usr/share/man
+USRSHAREDIR=/usr/share
 
 
 FILES = abf/console/*.py
@@ -30,6 +31,9 @@ install:
 	mkdir -p $(DESTDIR)$(PKGDIR) $(DESTDIR)$(BINDIR) $(DESTDIR)$(MANDIR)/man1
 	cp -p --parents $(FILES) $(DESTDIR)$(PKGDIR)
 	cp -p "abf.py" $(DESTDIR)$(BINDIR)"/abf"
+	
+	cp "bash_autocomplete" $(DESTDIR)$(USRSHAREDIR)"/bash-completion/abf"
+	ln -s $(USRSHAREDIR)"/bash-completion/abf" $(ETCDIR)"/bash_completion.d/abf"
 
 	
 

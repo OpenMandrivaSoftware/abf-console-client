@@ -157,7 +157,7 @@ class Config(dict):
         self['handler_verbose']['class'] = 'StreamHandler'
         self['handler_verbose']['formatter'] = 'verbose'
         self['handler_verbose']['args'] = '()'
-        self['handler_main']['level'] = 'WARNING'
+        self['handler_main']['level'] = 'INFO'
         self['handler_main']['class'] = 'StreamHandler'
         self['handler_main']['formatter'] = 'simple'
         self['handler_main']['args'] = '()'

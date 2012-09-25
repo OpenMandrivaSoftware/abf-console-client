@@ -11,6 +11,7 @@ BuildArch:      noarch
 Requires:       python-abf
 Requires:       python-beaker
 Requires:       python-rpm
+Requires:       git
 
 %description
 Console client for ABF (https://abf.rosalinux.ru). 
@@ -29,3 +30,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %dir %{py_puresitedir}/abf/console
 %{py_puresitedir}/abf/console/*.py*
 %{_bindir}/abf
+
+#bash_completion files
+%{_datadir}/bash-completion/abf 
+%{_sysconfdir}/bash_completion.d/abf

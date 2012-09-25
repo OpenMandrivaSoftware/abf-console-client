@@ -22,6 +22,7 @@ from abf.model import Models
 domain = cfg['main']['domain']
 login = cfg['user']['login']
 password = cfg['user']['password']
+default_group = cfg['user']['default_group']
 
 #models = Models(domain, login, password)
 #res = models.platforms['15']
@@ -59,10 +60,10 @@ def parse_command_line():
     parser_build.add_argument('-b', '--branch', action='store', help='branch to build, can be resolved from repository or target-platform option')
     parser_build.add_argument('-t', '--tag', action='store', help='tag to build')
     parser_build.add_argument('-p', '--target-platform', action='store', help='platform to build into, can be resolved from branch or target repository')
-    parser_build.add_argument('-a', '--arches', action='append', nargs='+', help='architectures to build, '
+    parser_build.add_argument('-a', '--arches', action='append', help='architectures to build, '
                         'can be set more than once. If not set - use all the available architectures')
     
-    parser_build.add_argument('-r', '--repository', action='append', nargs='+', help='repositories to build with (platform/repository)')
+    parser_build.add_argument('-r', '--repository', action='append', help='repositories to build with (platform/repository)')
     parser_build.set_defaults(func=build)
     
     # backport
@@ -71,7 +72,6 @@ def parse_command_line():
     parser_build.add_argument('dst_branch', action='store', nargs='?', help='destination branch')
     parser_build.add_argument('-p', '--pack', action='store_true', help='Create a tar.gz from the src_branch and put this archive and spec file to dst_branch')
     parser_build.set_defaults(func=backport)
-    
     
     # buildstatus
     parser_build = subparsers.add_parser('buildstatus', help='get a building task status')
@@ -103,18 +103,18 @@ def get():
     if command_line.branch:
         cmd += ['-b', command_line.branch]
     #log.debug('Executing command ' + str(cmd))
-    execute_command(cmd, log, print_to_stdout=True, exit_on_error=True)
+    execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
     
     #os.execlp(*cmd)
     
 def put():
     log.debug('PUT started')
     cmd = ['git', 'commit', '-a', '-m', command_line.message]
-    execute_command(cmd, log, print_to_stdout=True, exit_on_error=True)
+    execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
     
     log.info('Commited.')
     cmd = ['git', 'push']
-    execute_command(cmd, log, print_to_stdout=True, exit_on_error=True)
+    execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
     log.info('Pushed')
     
 
@@ -146,15 +146,15 @@ def backport():
             execute_command(cmd, log, print_to_stdout=True, cwd=path)
         stage = 1
         cmd = ['rm', '-rf', './*']
-        execute_command(cmd, log, print_to_stdout=True, cwd=path)
+        execute_command(cmd, log=log, print_to_stdout=True, cwd=path)
         stage = 2
         cmd = ['git', 'checkout', sbrn, '*']
-        execute_command(cmd, log, print_to_stdout=True, cwd=path)
+        execute_command(cmd, log=log, print_to_stdout=True, cwd=path)
         stage = 3
         if command_line.pack:
             pack_project(log, path)
             cmd = ['git', 'reset']
-            execute_command(cmd, log, print_to_stdout=True, cwd=path)
+            execute_command(cmd, log=log, print_to_stdout=True, cwd=path)
     except Exception, ex:
         if type(ex) == ReturnCodeNotZero:
             log.error(str(ex))
@@ -164,7 +164,7 @@ def backport():
         if stage == 1 or stage == 2:
             log.info("Checking out the initial branch (%s)" % start_branch)
             cmd = ['git', 'reset', '--hard', start_branch]
-            execute_command(cmd, log, print_to_stdout=True, cwd=path)
+            execute_command(cmd, log=log, print_to_stdout=True, cwd=path)
 
     log.info('Done')
     
@@ -180,11 +180,16 @@ def build():
     
     if command_line.project:
         tmp = command_line.project.split('/')
-        if len(tmp) != 2:
+        if len(tmp) > 2:
             log.error('The project format is "owner_name/project_name"')
             exit(1)
-        owner_name = tmp[0]
-        project_name = tmp[1]  
+        elif len(tmp) == 1:
+            project_name = tmp[0]
+            log.info("The project group is assumed to be " + default_group)
+            owner_name = default_group
+        else: # len == 2
+            owner_name = tmp[0]
+            project_name = tmp[1]  
     else:
         owner_name, project_name = get_project_name()
         if not project_name:
@@ -192,7 +197,7 @@ def build():
             exit(1)
     
     if command_line.branch and command_line.tag:
-        log.error('Branch and tag were specified simultaneously!')
+        log.error('Branch and tag can not be specified simultaneously!')
         exit(1)
             
     log.debug('Project name: %s/%s' % (owner_name, project_name))
@@ -200,10 +205,7 @@ def build():
     models = Models(domain, login, password)
     nbp = models.newbuildpages[(owner_name, project_name)]
     if command_line.arches:
-        arches = []
-        for item in command_line.arches:
-            arches += item
-        arches = list(set(arches))
+        arches = list(set(command_line.arches))
         
         for arch in arches:
             if arch not in nbp.arches.keys():
@@ -211,6 +213,7 @@ def build():
                 exit(1)
     else:
         arches = nbp.arches.keys()
+        log.info("Arches are assumed to be " + str(arches))
         
     for arch in arches:
         IDs['arches'].append(nbp.arches[arch]['value'])
@@ -242,6 +245,7 @@ def build():
             plat = command_line.target_platform.split('/')[0]
             if ('latest_' + plat) in nbp.versions['branches']:
                 version = 'latest_' + plat
+                log.info("Version is assumed to be " + version)
             else:
                 log.error("Could not resolve version from platform name")
                 exit(1)
@@ -257,6 +261,7 @@ def build():
             tmp = tmp[7:]
         if tmp + '/main' in nbp.target_platforms:
             platform = tmp + '/main'
+            log.info("Target repository to save to is assumed to be " + platform)
             
     if command_line.target_platform:
         tmp = command_line.target_platform.split('/')
@@ -302,9 +307,7 @@ def build():
     if command_line.repository:
         repos = []
         tmp = []
-        for item in command_line.repository:
-            tmp += item
-        for repo in tmp:
+        for repo in command_line.repository:
             if len(repo.split('/')) != 2:
                 log.error('Repository format: platform/repository. "%s" is not correct' % repo)
                 exit(2)
