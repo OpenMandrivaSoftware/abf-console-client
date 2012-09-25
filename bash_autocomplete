@@ -21,7 +21,7 @@ _put()
   _opts ""
 }
 
-build()
+_build()
 {
   _opts "--branch --tag --target-platform --arches --repository"
 }
@@ -37,7 +37,7 @@ _buildstatus()
 }
 
 
-abf() 
+_abf() 
 {
     local opts modes
     modes="help get put build backport buildstatus"

@@ -1,6 +1,6 @@
 Name:           abf-console-client
 Version:        1.0
-Release:        6
+Release:        7
 Summary:        Python API to ABF (https://abf.rosalinux.ru)
 Group:          System/Configuration/Packaging
 License:        GPLv2
@@ -23,6 +23,7 @@ Console client for ABF (https://abf.rosalinux.ru).
 %install
 rm -rf %{buildroot}
 make install DESTDIR=$RPM_BUILD_ROOT
+ln -s %{_datadir}/bash-completion/abf %{buildroot}/%{_sysconfdir}/bash_completion.d/abf
 
 
 %files

@@ -30,11 +30,11 @@ clean:
 install:
 	mkdir -p $(DESTDIR)$(PKGDIR) $(DESTDIR)$(BINDIR) $(DESTDIR)$(MANDIR)/man1
 	cp -p --parents $(FILES) $(DESTDIR)$(PKGDIR)
-	cp -p "abf.py" $(DESTDIR)$(BINDIR)"/abf"
+	cp -p "abf.py" $(DESTDIR)$(BINDIR)/abf
 	
-	mkdir -p $(DESTDIR)$(USRSHAREDIR)"/bash-completion"
-	cp "bash_autocomplete" $(DESTDIR)$(USRSHAREDIR)"/bash-completion/abf"
-	ln -s $(USRSHAREDIR)"/bash-completion/abf" $(ETCDIR)"/bash_completion.d/abf"
+	mkdir -p $(DESTDIR)$(USRSHAREDIR)/bash-completion
+	mkdir -p $(DESTDIR)$(ETCDIR)/bash_completion.d
+	cp "bash_autocomplete" $(DESTDIR)$(USRSHAREDIR)/bash-completion/abf
 
 	
 
