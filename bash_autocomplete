@@ -1,0 +1,81 @@
+ 
+# bash-completion add-on for rpmlint
+# http://bash-completion.alioth.debian.org/
+
+_opts()
+{
+
+  if [[ ${cur} == -* ]] ; then
+      COMPREPLY=( $(compgen -W "${@}" -- "${cur}") )
+      return 0
+  fi
+}
+
+_get()
+{
+  _opts "--branch"
+}
+
+_put()
+{
+  _opts ""
+}
+
+build()
+{
+  _opts "--branch --tag --target-platform --arches --repository"
+}
+
+_backport()
+{
+  _opts "--pack"
+}
+
+_buildstatus()
+{
+  _opts "--logs"
+}
+
+
+abf() 
+{
+    local opts modes
+    modes="help get put build backport buildstatus"
+    COMPREPLY=()
+    mode="${COMP_WORDS[1]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    
+    if [ "$COMP_CWORD" == "1" ]; then
+        COMPREPLY=( $(compgen -W "${modes}" -- ${cur}) )
+        return 0
+    fi
+    
+    if [ "$mode" == "get" ]; then
+        _get
+        return 0
+    fi
+    if [ "$mode" == "put" ]; then
+        _put
+        return 0
+    fi
+    if [ "$mode" == "build" ]; then
+        _build
+        return 0
+    fi
+    if [ "$mode" == "backport" ]; then
+        _backport
+        return 0
+    fi
+    if [ "$mode" == "buildstatus" ]; then
+        _buildstatus
+        return 0
+    fi
+    
+   
+}
+
+
+complete -F _abf abf
+
+

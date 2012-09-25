@@ -32,6 +32,7 @@ install:
 	cp -p --parents $(FILES) $(DESTDIR)$(PKGDIR)
 	cp -p "abf.py" $(DESTDIR)$(BINDIR)"/abf"
 	
+	mkdir -p $(DESTDIR)$(USRSHAREDIR)"/bash-completion"
 	cp "bash_autocomplete" $(DESTDIR)$(USRSHAREDIR)"/bash-completion/abf"
 	ln -s $(USRSHAREDIR)"/bash-completion/abf" $(ETCDIR)"/bash_completion.d/abf"
 
