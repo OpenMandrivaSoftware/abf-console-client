@@ -5,6 +5,7 @@ import sys
 import argparse
 import os
 import shutil
+from datetime import datetime
 
 
 
@@ -15,27 +16,44 @@ log = Log('abf')
 
 
 from abf.console.misc import *
-
-from abf.model import Models
+from abf.api.exceptions import *
+from abf.model import *
 
 
 domain = cfg['main']['domain']
 login = cfg['user']['login']
 password = cfg['user']['password']
 default_group = cfg['user']['default_group']
+default_build_platform = cfg['user']['default_build_platform']
 
 #models = Models(domain, login, password)
-#res = models.platforms['15']
-#res = models.platforms['17']
-#res = models.repositories[('18', '24')]
-#print res
+
+#r = models.platforms[64]
+#r = models.repositories[1]
+#r = models.projects[('abf_core', 'abf_core')]
+#r = models.projects['akirilenko/libqb']
+#r = models.projects['akirilenko/fba']
+#r = models.buildlists['715552']
+#r = models.arches['1']
+
+#r = models.get_user_platforms_main()
+#r = models.get_user_platforms_personal()
+#r = models.get_build_platforms()
+
+#r = models.get_arches()
+
+#print r
+#print r.repositories
+
 #exit()
+
 
 
 def parse_command_line():
     global command_line
     parser = argparse.ArgumentParser(description='ABF Console Client')
     parser.add_argument('-v', '--verbose', action='store_true', help='be verbose')
+    parser.add_argument('-c', '--clear-cache', action='store_true', help='clear cached information about repositories, platforms, projects, etc.')
     subparsers = parser.add_subparsers()
     
     # help
@@ -56,14 +74,15 @@ def parse_command_line():
     
     # build
     parser_build = subparsers.add_parser('build', help='Initiate a build task on ABF')
-    parser_build.add_argument('project', action='store', nargs='?', help='project name (can be "group/project")')
+    parser_build.add_argument('-p', '--project', action='store', help='project name (can be "group/project")')
     parser_build.add_argument('-b', '--branch', action='store', help='branch to build, can be resolved from repository or target-platform option')
     parser_build.add_argument('-t', '--tag', action='store', help='tag to build')
-    parser_build.add_argument('-p', '--target-platform', action='store', help='platform to build into, can be resolved from branch or target repository')
+    parser_build.add_argument('-c', '--commit', action='store', help='Commit hash to build')
+    parser_build.add_argument('-s', '--save-to-repository', action='store', help='repository to save results to')
     parser_build.add_argument('-a', '--arches', action='append', help='architectures to build, '
                         'can be set more than once. If not set - use all the available architectures')
     
-    parser_build.add_argument('-r', '--repository', action='append', help='repositories to build with (platform/repository)')
+    parser_build.add_argument('-r', '--repository', action='append', help='repositories to build with (platform/repository). They should all have the same platform.')
     parser_build.set_defaults(func=build)
     
     # backport
@@ -105,8 +124,6 @@ def get():
     #log.debug('Executing command ' + str(cmd))
     execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
     
-    #os.execlp(*cmd)
-    
 def put():
     log.debug('PUT started')
     cmd = ['git', 'commit', '-a', '-m', command_line.message]
@@ -118,7 +135,6 @@ def put():
     log.info('Pushed')
     
 
-        
 def backport():
     log.debug('BACKPORT started')
     sbrn = command_line.src_branch
@@ -170,18 +186,21 @@ def backport():
     
 def build():
     log.debug('BUILD started')
+    
     IDs = {
             'arches':[],
             'version':None,
             'target_platform':None,
             'repositories':[],
         }
+        
+    models = Models(domain, login, password)
 
-    
+    # get project
     if command_line.project:
         tmp = command_line.project.split('/')
         if len(tmp) > 2:
-            log.error('The project format is "owner_name/project_name"')
+            log.error('The project format is "[owner_name/]project_name"')
             exit(1)
         elif len(tmp) == 1:
             project_name = tmp[0]
@@ -193,161 +212,178 @@ def build():
     else:
         owner_name, project_name = get_project_name()
         if not project_name:
-            log.error('You are not in git repository. Specify the project name!')
+            log.error('You are not in git repository directory. Specify the project name please!')
             exit(1)
-    
-    if command_line.branch and command_line.tag:
-        log.error('Branch and tag can not be specified simultaneously!')
+    try:
+        proj = models.projects['%s/%s' % (owner_name, project_name)]
+    except PageNotFoundError:
+        log.error('The project %s/%s does not exists!' % (owner_name, project_name))
         exit(1)
-            
-    log.debug('Project name: %s/%s' % (owner_name, project_name))
+    except ForbiddenError:
+        log.error('You do not have acces to the project %s/%s!' % (owner_name, project_name))
+        exit(1)
+        
+    log.debug('Project: %s' % proj)
+    if not proj.is_package:
+        log.error('The project %s is not a package and can not be built.' % proj)
+        exit(1)
+        
     
-    models = Models(domain, login, password)
-    nbp = models.newbuildpages[(owner_name, project_name)]
+    # get architectures
+    arches = []
+    all_arches = models.get_arches()
     if command_line.arches:
-        arches = list(set(command_line.arches))
-        
-        for arch in arches:
-            if arch not in nbp.arches.keys():
-                log.error("Error: can not build for arch %s" % arch)
+        for arch in command_line.arches:
+            a = models.arches.get_string_key(arch)
+            if not a:
+                log.error("Invalid architecture: %s" % arch)
                 exit(1)
+            arches.append(a)
     else:
-        arches = nbp.arches.keys()
+        arches = all_arches
         log.info("Arches are assumed to be " + str(arches))
-        
-    for arch in arches:
-        IDs['arches'].append(nbp.arches[arch]['value'])
+
     log.debug('Architectures: %s' % arches)
     
-    # try to resolve a version from branch or tag
-    version = None
-    if command_line.branch:
-        if command_line.branch in nbp.versions['branches']:
-            version = command_line.branch
-        if 'latest_' + command_line.branch in nbp.versions['branches']:
-            version = 'latest_' + command_line.branch
-    if command_line.tag:
-        if command_line.tag in nbp.versions['tags']:
-            version = command_line.tag
-    if (command_line.branch or command_line.tag) and not version:
-        if command_line.branch:
-            log.error('Selected branch (%s) is not correct' % command_line.branch)
-        if command_line.tag:
-            log.error('Selected tag (%s) is not correct' % command_line.tag)
-        exit(1)
     
-    # try to resolve a version fromplatform
-    if (not command_line.branch and not command_line.tag):
-        if not command_line.target_platform:
-            log.error('You have to specify either platform or version (tag or branch), or both of them')
-            exit(1)
+    # get git commit hash
+    tag_def = bool(command_line.tag)
+    branch_def = bool(command_line.branch)
+    commit_def = bool(command_line.commit)
+    
+    tmp = tag_def + branch_def + commit_def
+    commit_hash = None
+    if tmp == 0:
+        # here we are either in git directory or specified the project name
+        h = get_current_commit_hash()
+        if h:
+          commit_hash = h
         else:
-            plat = command_line.target_platform.split('/')[0]
-            if ('latest_' + plat) in nbp.versions['branches']:
-                version = 'latest_' + plat
-                log.info("Version is assumed to be " + version)
+          pass #TODO: get default branch hash  
+            
+    elif tmp == 1:
+        #resolve the comit hash if needed
+        if commit_def:
+            commit_hash = command_line.commit
+        else:
+            #TODO get git repo, get hash
+            pass
+    else:
+        log.error("You should specify ONLY ONE of the following options: branch, tag or commit.")
+        exit(1)
+    log.debug('Git commit hash: %s' % commit_hash)
+    
+    # get save-to repository
+    save_to_repository = None
+    build_for_platform = None
+    if command_line.save_to_repository:
+        available_repos = proj.repositories
+        
+        items = command_line.save_to_repository.split('/')
+        if len(items) == 2:
+            repo_name = items[1]
+            pl_name = items[0]
+        elif len(items) == 1:
+            repo_name = items[0]
+            pl_name = default_group + '_personal'
+            log.info("Save-to platform is assumed to be " + pl_name)
+        elif len(items) == 0:
+            pl_name = default_group + '_personal'
+            repo_name = 'main'
+            log.info("Save-to repository is assumed to be %s/%s" % (pl_name, repo_name))
+        else:
+            log.error("save-to-repository option format: [platform/]repository")
+            exit(1)
+        pls = []
+        for repo in available_repos:
+            if repo.platform.name == pl_name:
+                build_for_platform = repo.platform
+            pls.append(repo.platform.name)
+        if not build_for_platform:
+            log.error("Can not build for platform %s. Select one of the following:\n%s" % (pl_name, ', '.join(pls)))
+            exit(1)
+            
+        for repo in build_for_platform.repositories:
+            if repo.name == repo_name:
+                save_to_repository = repo
+                break
+        
+        if not save_to_repository:
+            log.error("Incorrect save-to repository %s/%s.\nSelect one of the following:\n%s" % (pl_name, repo_name, 
+                    ', '.join([str(x) for x in build_for_platform.repositories])))
+            exit(1)
+    else:
+        # repository have not been selected, try to resolve it
+        pass # TODO: 
+    log.debug('Save-to repository: ' + str(save_to_repository))
+    
+    build_platforms = models.get_build_platforms()
+    build_platform_names = [x.name for x in build_platforms]
+    build_repositories = []
+    if command_line.repository:
+        for repo in command_line.repository:
+            items = repo.split('/')
+            if len(items) == 2:
+                repo_name = items[1]
+                pl_name = items[0]
+            elif len(items) == 1:
+                repo_name = items[0]
+                pl_name = default_build_platform 
+                log.info("Platform for selected repository %s is assumed to be %s" % (repo_name, pl_name))
             else:
-                log.error("Could not resolve version from platform name")
+                log.error("'repository' option format: [platform/]repository")
                 exit(1)
             
-    log.debug('Version: %s' % version)
-    
-    # If version is selected via command line and correct, 
-    # but platform is not selected
-    platform = None
-    if version and not command_line.target_platform:
-        tmp = version
-        if tmp.startswith('latest_'):
-            tmp = tmp[7:]
-        if tmp + '/main' in nbp.target_platforms:
-            platform = tmp + '/main'
-            log.info("Target repository to save to is assumed to be " + platform)
-            
-    if command_line.target_platform:
-        tmp = command_line.target_platform.split('/')
-        if len(tmp) == 1:
-            tmp.append('main')
-        elif len(tmp) > 2:
-            log.error("Target platform format is 'platform_name' or 'platform_name/project_name'")
-            exit(1)
-        p = tmp[0] + '/' + tmp[1]
-        if p in nbp.target_platforms:
-            platform = p
-        else:
-            log.error("Target platform specified (%s) is not correct!" % (command_line.target_platform))
-            exit(1)
-    
-    log.debug('Platform: %s' % platform)
-    
-    # try to resolve platform
-    if version and not platform:
-        log.error('Could not resolve platform. Please, specify it.')
-        exit(1)
+            if pl_name not in build_platform_names:
+                log.error("Can not build for platform %s!\nSelect one of the following:\n%s" % (pl_name,
+                        ', '.join(build_platform_names)))
+                exit(1)
+            for pl in build_platforms:
+                if pl.name == pl_name:
+                    build_platform = pl
+                    break
+            build_repo = None
+            for repo in build_platform.repositories:
+                if repo.name == repo_name:
+                    build_repo = repo
+                    break
+            if not build_repo:
+                log.error("Platform %s does not have repository %s!\nSelect one of the following:\n%s" % (pl_name, repo_name,
+                        ', '.join([x.name for x in build_platform.repositories])))
+                exit(1)
+            build_repositories.append(build_repo)
         
-    if not version and platform:
-        log.error('Could not resolve version (branch or tag). Please, specify it.')
-        exit(1)
-        
-    #resolve target platform
-    IDs['target_platform'] = nbp.target_platforms[platform]['value']
+
+    log.debug("Build repositories: " + str(build_repositories))
     
-    if version in nbp.versions['branches']:
-        IDs['version'] = nbp.versions['branches'][version]['value']
-    if version in nbp.versions['tags']:
-        IDs['version'] = nbp.versions['tags'][version]['value']
+    BuildList.new_build_task(models, proj, save_to_repository, build_repositories, commit_hash, BuildList.update_types[0], False, arches)
     
-    repos = []
     
-    # try to resolve a repository
-    plat = platform.split('/')[0]
-    repo = platform.split('/')[1]
-    if plat in nbp.platforms and repo in nbp.platforms[plat]['repositories']:
-        repos = [(plat, repo)]
-    
-    if command_line.repository:
-        repos = []
-        tmp = []
-        for repo in command_line.repository:
-            if len(repo.split('/')) != 2:
-                log.error('Repository format: platform/repository. "%s" is not correct' % repo)
-                exit(2)
-            p = repo.split('/')[0]
-            r = repo.split('/')[1]
-            repos.append((p, r))
-            if not p in nbp.platforms:
-                log.error('Platform specified (%s) is not correct!' % p)
-                exit(2)
-            if not r in nbp.platforms[p]['repositories']:
-                log.error('Repository specified (%s/%s) is not correct!' % (p, r) )
-                exit(2)
-    if not repos:
-        log.error('Repository to build with could not be resolved. Please, specify it.')
-        exit(2)
-         
-    for plat, repo in repos:
-        IDs['repositories'].append(nbp.platforms[plat]['repositories'][repo]['value'])
-        
-    nbp.build(IDs)
     
 def buildstatus():
     log.debug('BUILDSTATUS started')
     if not command_line.ID:
         log.error("Enter the ID, please. It can not be resolved automatically now (not implemented).")
         exit(1)
-    models = Models(domain, login, password)
-    bl = models.buildlists[command_line.ID]
-    print '%-20s%s' %('Owner:', bl.owner_name)
-    print '%-20s%s' %('Status:', bl.status)
-    print '%-20s%s' %('User:', bl.user_name)
-    print '%-20s%s' %('Build for platform:', bl.platform)
-    print '%-20s%s' %('Repository:', bl.repository)
-    print '%-20s%s' %('Architecture:', bl.arch)
-    print '%-20s%s' %('Notified at:', bl.notified_at)
-    print '%-20s%s' %('Packages:', ', '.join(bl.packages))
+    try:
+        models = Models(domain, login, password)
+        bl = models.buildlists[command_line.ID]
+    except ApiException:
+        exit(3)
+    print '%-20s%s' %('Owner:', bl.owner['name'])
+    print '%-20s%s' %('Status:', BuildList.status_by_id[bl.status])
+    print '%-20s%s' %('Build for platform:', bl.build_for_platform)
+    print '%-20s%s' %('Save to repository:', bl.save_to_repository)
+    print '%-20s%s' %('Build repositories:', bl.include_repos)
+    print '%-20s%s' %('Architecture:', bl.arch.name)
+    print '%-20s%s' %('Created at:', datetime.fromtimestamp(float(bl.created_at)))
+    print '%-20s%s' %('Updated at:', datetime.fromtimestamp(float(bl.updated_at)))
     
 
 if __name__ == '__main__':
     parse_command_line()
     if command_line.verbose:
         Log.set_verbose()
+    if command_line.clear_cache:
+        Models.clear_cache()
     command_line.func()

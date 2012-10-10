@@ -80,6 +80,13 @@ def get_branch_name():
     except ReturnCodeNotZero:
         return None
         
+def get_current_commit_hash():
+    try:
+        output = execute_command(['git', 'rev-parse', 'HEAD'])
+        return output.strip()
+    except ReturnCodeNotZero:
+        return None
+        
 def get_root_git_dir(path=None):
     ''' Get the root directory of the git project '''
     if path:

@@ -14,6 +14,8 @@ from abf.console.misc import mkdirs, ask_user
 # print cfg.pop('aaa')
 #####################################################
 
+VERSION = 1
+
 class Section(dict):
     def __init__(self, config, conf_path, section):
         self.section = section
@@ -40,6 +42,7 @@ class Section(dict):
             return super(Section, self).__getitem__(key)
         res = self.config.get(section, opt)
         
+        
     def pop(self, key, init=None):
         if init is not None and key not in self:
             return init
@@ -58,9 +61,12 @@ class Config(dict):
         if not os.path.isfile(self.conf_path):
             mkdirs(os.path.dirname(self.conf_path))
             init = True
+            
         
         self.config = ConfigParser.RawConfigParser()
         self.config.read(self.conf_path)
+        
+        
 
         sections = self.config.sections()
         for section in sections:
@@ -68,7 +74,12 @@ class Config(dict):
             opts = self.config.options(section)
             for opt in opts:
                 self[section][opt] = self.config.get(section, opt)
-        
+                
+
+        if 'config_version' not in self['main'] or int(self['main']['config_version']) != VERSION:
+            print "Sorry, but configuration schema have been changed or config file have been corrupted, so you need to reinitialize the configuration."
+            init = True
+            
         if init:
             self.first_start()
         
@@ -93,13 +104,9 @@ class Config(dict):
         return res
           
     def first_start(self):
-        print("First start")
-        #self['main'] = []
-        #self['user'] = []
-
         done = False
         while not done:
-            domain = ask_user('ABF domain [%s]:' % Config.default_url, can_be_empty=True)
+            domain = ask_user('ABF domain [%s]: ' % Config.default_url, can_be_empty=True)
             domain = domain or Config.default_url
             if domain and domain.endswith('/'):
                 domain = domain[:-1] # remove trailing '/'
@@ -114,10 +121,10 @@ class Config(dict):
         
         self['main']['domain'] = domain
         
-        user = ask_user('User:', can_be_empty=False)
+        user = ask_user('User: ', can_be_empty=False)
         self['user']['login'] = user
         
-        password = ask_user('Password:', can_be_empty=False)
+        password = ask_user('Password: ', can_be_empty=False)
         self['user']['password'] = password
         
         git_uri = "%(protocol)s//%(user)s@%(domain)s" % \
@@ -125,8 +132,12 @@ class Config(dict):
         
         self['user']['git_uri'] = git_uri
         
-        res = ask_user('Default group [%s]:' % user, can_be_empty=True)
+        res = ask_user('Default group [%s]: ' % user, can_be_empty=True)
         self['user']['default_group'] = res or user
+        
+        def_bp = user + '_personal'
+        res = ask_user('Default build platform [%s]: ' % def_bp, can_be_empty=True)
+        self['user']['default_build_platform'] = res or def_bp
         
         #configure logging       
         self['formatters']['keys'] = 'verbose,simple'
@@ -162,6 +173,7 @@ class Config(dict):
         self['handler_main']['formatter'] = 'simple'
         self['handler_main']['args'] = '()'
         
+        self['main']['config_version'] = VERSION
         print('Initial configuration have been completed')
         exit()
 
