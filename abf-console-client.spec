@@ -8,7 +8,7 @@ URL:            http://wiki.rosalab.ru/en/index.php/ABF_Console_Client
 Source0:        %{name}-%{version}.tar.gz
 BuildArch:      noarch
 
-Requires:       python-abf
+Requires:       python-abf >= 1.1-1
 Requires:       python-beaker
 Requires:       python-rpm
 Requires:       git
