@@ -9,6 +9,13 @@ class Log:
         logging.getLogger("abf").propagate = 1
         logging.getLogger("models").propagate = 1
         
+    @staticmethod
+    def set_quiet():
+        logging.getLogger("abf").propagate = 0
+        logging.getLogger("models").propagate = 0
+        logging.getLogger("abf").handlers[0].setLevel(logging.ERROR)
+        logging.getLogger("models").handlers[0].setLevel(logging.ERROR)
+        
     def __init__(self, name=''):
         logging.config.fileConfig(os.path.expanduser('~/.abfcfg'))
         self.log = logging.getLogger(name)

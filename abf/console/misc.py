@@ -7,6 +7,8 @@ import fcntl
 import rpm
 from glob import glob
 import shutil
+import re
+import tempfile
 
 def mkdirs(path):
     ''' the equivalent of mkdir -p path'''
@@ -86,6 +88,42 @@ def get_current_commit_hash():
         return output.strip()
     except ReturnCodeNotZero:
         return None
+        
+def get_remote_branch_hash(branch, cwd=None):
+    ''' Get the hash of the remote branch top commit.
+    If not in git repository directory - exception will be reised. If hash can not be found - return None'''
+    re_ref = re.compile('^([0-9a-f]+) refs/remotes/\w+/%s$' % branch)
+    
+    output = execute_command(['git', 'show-ref'], cwd=cwd)
+    for line in output.split('\n'):
+        res = re_ref.match(line)
+        if res:
+            h = res.group(1)
+            return h
+    return None
+    
+def get_tag_hash(tag, cwd=None):
+    ''' Get the hash of the tag.
+    If not in git repository directory - exception will be reised. If hash can not be found - return None'''
+    re_ref = re.compile('^([0-9a-f]+) refs/tags/%s$' % tag)
+    
+    output = execute_command(['git', 'show-ref', '--tags'], cwd=cwd)
+    for line in output.split('\n'):
+        res = re_ref.match(line)
+        if res:
+            h = res.group(1)
+            return h
+    return None   
+
+def clone_git_repo_tmp(uri, log=None, depth=None):
+    if log:
+        log.info('Cloning git repository (temporary workaround)')
+    tmp_dir = tempfile.mkdtemp(prefix='tmp_abf_')
+    log.info("Temporary directory os " + tmp_dir)
+    cmd = ['git', 'clone', uri, tmp_dir]
+    execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
+    return tmp_dir
+    
         
 def get_root_git_dir(path=None):
     ''' Get the root directory of the git project '''
