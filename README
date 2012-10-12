@@ -1,0 +1,22 @@
+INTRO
+
+Console client lets you work with ABF without web-interface. It can manage git repositories, check build-task status, create new build-task and so on.
+
+BUILD
+
+--arch (-a), can be set more than once.
+
+Architecture to build with. If not set, 
+
+--save-to-repository (-s)
+Repository to save built packages to. Packages will be published here.
+
+
+--commit (-c), --branch (-b) and --tag (-t)
+
+API takes git commit hash to build. So client have to resolve it.
+1) If you've specified hash - it will be used "as is".
+2) If you've specified branch or tag name - it will be resolved automatically using ABF API. (the hash of top commit will be used for branch)
+3) If you've specified no git commit related options and you've specified a project name - this project's default branch will be used.
+4) If you've specified no git commit related options and you've not specified a project name (you have to be in a git repository) - the top remote commit of your current branch will be used.
+

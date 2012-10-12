@@ -7,7 +7,9 @@ class Log:
     @staticmethod
     def set_verbose():
         logging.getLogger("abf").propagate = 1
+        logging.getLogger("abf").handlers[0].setLevel(logging.CRITICAL)
         logging.getLogger("models").propagate = 1
+        logging.getLogger("models").handlers[0].setLevel(logging.CRITICAL)
         
     @staticmethod
     def set_quiet():

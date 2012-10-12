@@ -3,7 +3,7 @@
 
 import sys
 import argparse
-from argparse import RawTextHelpFormatter
+from argparse import RawDescriptionHelpFormatter
 import os
 import shutil
 from datetime import datetime
@@ -55,65 +55,75 @@ default_build_platform = cfg['user']['default_build_platform']
 def parse_command_line():
     global command_line
     parser = argparse.ArgumentParser(description='ABF Console Client')
-    parser.add_argument('-v', '--verbose', action='store_true', help='be verbose')
+    parser.add_argument('-v', '--verbose', action='store_true', help='be verbose, display even debug messages')
     parser.add_argument('-c', '--clear-cache', action='store_true', help='clear cached information about repositories, platforms, projects, etc.')
     parser.add_argument('-q', '--quiet', action='store_true', help='Do not display info messages')
     subparsers = parser.add_subparsers()
     
     # help
     parser_get = subparsers.add_parser('help', help='show a help for command')
-    parser_get.add_argument('command', action='store', nargs='?', help='command to show help for')
+    parser_get.add_argument('command', action='store', nargs='?', help='a command to show help for')
     parser_get.set_defaults(func=help)
     
     # get
     parser_get = subparsers.add_parser('get', help='clone a project from ABF')
-    parser_get.add_argument('project', action='store', help='project name. (can be "group/project")')
+    parser_get.add_argument('project', action='store', help='project name. ([group/]project). If no group specified, '
+            'it\'s assumed to be your default group.')
     parser_get.add_argument('-b', '--branch', action='store', help='branch to checkout')
     parser_get.set_defaults(func=get)
     
     # put
-    parser_get = subparsers.add_parser('put', help='commit changes (with -am "message") and push')
+    parser_get = subparsers.add_parser('put', help='run "git add --all", "git commit -m <your message>", "git push"')
     parser_get.add_argument('message', action='store', help='a message to commit with')
     parser_get.set_defaults(func=put)
     
     # build
-    parser_build = subparsers.add_parser('build', help='Initiate a build task on ABF', formatter_class=RawTextHelpFormatter,
-        epilog="NOTES:\n1) If '--project' option was not specified and you are in a git repository\n"
-        "ndirectory, the project owner and author will be resolved from it. \n"
-        "2) You can specify only one of --commit, --tag or --branch options.\n"
-        "If no one of these options specified, the default project branch will\n"
-        "be used for remote repositories and the current commit if you are using\n"
-        "the git repository directory.")
-    parser_build.add_argument('-p', '--project', action='store', help='project name (can be "group/project")')
+    parser_build = subparsers.add_parser('build', help='Initiate a build task on ABF.', formatter_class=RawDescriptionHelpFormatter,
+        epilog= 'NOTES:\n'
+        'API takes git commit hash to build. So client have to resolve it.\n'
+        '1) If you\'ve specified commit hash - it will be used "as is".\n'
+        '2) If you\'ve specified branch or tag name - it will be resolved automatically\n'
+        'using ABF API. (the hash of top commit will be used for branch)\n'
+        '3) If you\'ve specified no git commit related options and you\'ve\n'
+        ' specified a project name - this project\'s default branch will be used.\n'
+        '4) If you\'ve specified no git commit related options and you\'ve\n'
+        'not specified a project name (you have to be in a git repository) -\n'
+        'the top remote commit of your current branch will be used.\n')
+    parser_build.add_argument('-p', '--project', action='store', help='project name ([group/]project). If no group '
+        'specified, it is assumed to be your default group. If the option is not specified and you are in a git '
+        'repository directory - resolve a project name from it.')
     parser_build.add_argument('-b', '--branch', action='store', help='branch to build.')
-    parser_build.add_argument('-t', '--tag', action='store', help='tag to build')
-    parser_build.add_argument('-c', '--commit', action='store', help='Commit hash to build')
-    parser_build.add_argument('-s', '--save-to-repository', action='store', help='repository to save results to')
-    parser_build.add_argument('-a', '--arches', action='append', help='architectures to build, '
-                        'can be set more than once.\nIf not set - use all the available architectures')   
-    parser_build.add_argument('-r', '--repository', action='append', help='repositories to build with (platform/repository).\nThey should all have the same platform.')
-    parser_build.add_argument('--auto-publish', action='store_true', help='Enable automatic publishing')
+    parser_build.add_argument('-t', '--tag', action='store', help='tag to build.')
+    parser_build.add_argument('-c', '--commit', action='store', help='commit sha hash to build.')
+    parser_build.add_argument('-s', '--save-to-repository', action='store', help='repository to save results to '
+        '([platform/]repository). If no platform part specified, it is assumed to be "<default_group>_personal". '
+        'If this option is not specified at all, "<default_group>_personal/main" will be used.')
+    parser_build.add_argument('-a', '--arch', action='append', help='architectures to build, '
+                        'can be set more than once. If not set - use all the available architectures.')   
+    parser_build.add_argument('-r', '--repository', action='append', help='repositories to build with ([platform/]repository). '
+        'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build platform>".'
+        ' If no repositories were specified at all, use the "main" repository from save-to platform.')
+    parser_build.add_argument('--auto-publish', action='store_true', help='enable automatic publishing.')
     upd_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
-    parser_build.add_argument('--update-type', action='store', choices=upd_types, help='Update type. Default is "%s"' %
+    parser_build.add_argument('--update-type', action='store', choices=upd_types, help='Update type. Default is "%s".' %
                     (BuildList.update_types[0]) )
     parser_build.set_defaults(func=build)
     
     # publish
-    parser_build = subparsers.add_parser('publish', help='Publish the task already built.')
-    parser_build.add_argument('task_id', action='store', help='The ID of the task to publish')
+    parser_build = subparsers.add_parser('publish', help='Publish the task that have already been built.')
+    parser_build.add_argument('task_ids', action='store', nargs="+", help='The IDs of the tasks to publish.')
     parser_build.set_defaults(func=publish)
     
     # backport
-    parser_build = subparsers.add_parser('backport', help='Copy all the files from SRC_BRANCH to DST_BRANCH, or to the current brunch if not specified.')
+    parser_build = subparsers.add_parser('backport', help='Copy all the files from SRC_BRANCH to DST_BRANCH')
     parser_build.add_argument('src_branch', action='store', help='source branch')
-    parser_build.add_argument('dst_branch', action='store', nargs='?', help='destination branch')
+    parser_build.add_argument('dst_branch', action='store', nargs='?', help='destination branch. If not specified, it\'s assumed to be the current branch')
     parser_build.add_argument('-p', '--pack', action='store_true', help='Create a tar.gz from the src_branch and put this archive and spec file to dst_branch')
     parser_build.set_defaults(func=backport)
     
     # buildstatus
-    parser_build = subparsers.add_parser('buildstatus', help='get a building task status')
+    parser_build = subparsers.add_parser('buildstatus', help='get a build-task status')
     parser_build.add_argument('ID', action='store', nargs='?', help='build list ID')
-    parser_build.add_argument('-l', '--logs', action='store_true', help='also download logs (not implemented)')
     parser_build.set_defaults(func=buildstatus)
     
     command_line = parser.parse_args(sys.argv[1:])
@@ -139,12 +149,14 @@ def get():
     cmd = ['git', 'clone', uri]
     if command_line.branch:
         cmd += ['-b', command_line.branch]
-    #log.debug('Executing command ' + str(cmd))
     execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
     
 def put():
     log.debug('PUT started')
-    cmd = ['git', 'commit', '-a', '-m', command_line.message]
+    cmd = ['git', 'add', '--all']
+    execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
+    
+    cmd = ['git', 'commit', '-m', command_line.message]
     execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
     
     log.info('Commited.')
@@ -214,10 +226,7 @@ def build():
         
     models = Models(domain, login, password)
     
-    if not command_line.save_to_repository:
-        log.error("You have to specify the repository to save to (-s option)")
-        exit(1)
-
+    
     # get project
     if command_line.project:
         tmp = command_line.project.split('/')
@@ -254,8 +263,8 @@ def build():
     # get architectures
     arches = []
     all_arches = models.get_arches()
-    if command_line.arches:
-        for arch in command_line.arches:
+    if command_line.arch:
+        for arch in command_line.arch:
             a = models.arches.get_string_key(arch)
             if not a:
                 log.error("Invalid architecture: %s" % arch)
@@ -277,40 +286,31 @@ def build():
     commit_hash = None
     if tmp == 0:
         if command_line.project:
-            log.info('Resolving hash of remote branch "%s"' % proj.default_branch)
-            branch_def = True
-            tmp = 1
             command_line.branch = proj.default_branch
-          
         else: # we are in a git repository and it the project we are building
-            commit_hash = get_current_commit_hash()
- 
+            command_line.branch = get_branch_name()
+        log.info('The git branch is assumed to be "%s"' % command_line.branch)
+        branch_def = True
+        tmp = 1
     if tmp == 1:
         if commit_def:
             commit_hash = command_line.commit
         else:
-            if command_line.project: 
-                #TODO remove workaround
-                uri = "%s/%s.git" % (cfg['user']['git_uri'], proj.owner['url'][1:] + '/' + proj.name)
-                tmp_dir = clone_git_repo_tmp(uri, log=log)
-                if branch_def:
-                    commit_hash = get_remote_branch_hash(command_line.branch, cwd=tmp_dir)
-                else:
-                    commit_hash = get_tag_hash(command_line.tag, cwd=tmp_dir)
-                shutil.rmtree(tmp_dir)
-            else: # we are in a correct git repository
-                if branch_def:
-                    commit_hash = get_remote_branch_hash(command_line.branch)
-                else:
-                    commit_hash = get_tag_hash(command_line.tag)
-            if not commit_hash:
-                log.error("Could not resolve git hash for " + (command_line.branch or command_line.tag))
+
+            to_resolve = command_line.branch or command_line.tag
+            ref_type = (branch_def and 'commit') or (tag_def and 'tag')
+            refs = proj.get_refs_list(models)
+            for ref in refs:
+                if ref['ref'] == to_resolve and ref['object']['type'] == ref_type:
+                    commit_hash = ref['object']['sha']
+            if commit_hash == None:
+                log.error("Could not resolve hash for %s '%s'" % (ref_type, to_resolve))
                 exit(1)
     if tmp > 1:
         log.error("You should specify ONLY ONE of the following options: branch, tag or commit.")
         exit(1)
-        
     log.debug('Git commit hash: %s' % commit_hash)
+    
     
     # get save-to repository
     save_to_repository = None
@@ -318,7 +318,10 @@ def build():
 
     available_repos = proj.repositories
     
-    items = command_line.save_to_repository.split('/')
+    if command_line.save_to_repository:
+        items = command_line.save_to_repository.split('/')
+    else:
+        items = []
     if len(items) == 2:
         repo_name = items[1]
         pl_name = items[0]
@@ -413,16 +416,16 @@ def build():
     
 def publish():
     log.debug('PUBLISH started')
-    try:
-        models = Models(domain, login, password)
-        bl = models.buildlists[command_line.task_id]
-        if bl.status != 0:
-            log.error("The status of build task %s is \"%s\", can not publish it!" % (bl.id, bl.status_by_id[bl.status]))
-            exit(1)
-        res = bl.publish(models)
-    except AbfApiException, ex:
-        log.error('You are not authorized for this action.')
-        exit(3)
+    models = Models(domain, login, password)
+    for task_id in command_line.task_ids:
+        try:
+            bl = models.buildlists[task_id]
+            if bl.status != 0:
+                log.error("The status of build task %s is \"%s\", can not publish it!" % (bl.id, bl.status_by_id[bl.status]))
+                continue
+            res = bl.publish(models)
+        except AbfApiException, ex:
+            log.error('Could not publish task %s: %s' %(task_id, str(ex)))
 
         
 def buildstatus():
