@@ -1,6 +1,7 @@
 import ConfigParser
 import os
-from abf.console.misc import mkdirs, ask_user
+import sys
+import getpass
 
 #####################################################
 # USAGE:
@@ -15,6 +16,36 @@ from abf.console.misc import mkdirs, ask_user
 #####################################################
 
 VERSION = 1
+
+def mkdirs(path):
+    ''' the equivalent of mkdir -p path'''
+    if os.path.exists(path):
+        return
+    path = os.path.normpath(path)
+    items = path.split('/')
+    p = ''
+    for item in items:
+        p += '/' + item
+        if not os.path.isdir(p):
+            os.mkdir(p)
+            
+def ask_user(prompt, can_be_empty=False, variants=None):
+    while True:
+        sys.stdout.write(prompt)
+        sys.stdout.flush()
+        res = sys.stdin.readline()
+        res = res.strip()
+        if not can_be_empty and not res:
+            continue
+        
+        if variants:
+            if res in variants:
+                break
+            else:
+                continue
+        break
+        
+    return res
 
 class Section(dict):
     def __init__(self, config, conf_path, section):
@@ -55,8 +86,9 @@ class Section(dict):
 class Config(dict):
     default_url = 'https://abf.rosalinux.ru'
     default_log_path = '/var/log/abf.log'
-    def __init__(self, conf_path='~/.abfcfg'):
+    def __init__(self, conf_path='~/.abfcfg', main_conf=True):
         self.conf_path = os.path.expanduser(conf_path)
+        self.main_conf = main_conf
         init = False
         if not os.path.isfile(self.conf_path):
             mkdirs(os.path.dirname(self.conf_path))
@@ -76,11 +108,11 @@ class Config(dict):
                 self[section][opt] = self.config.get(section, opt)
                 
 
-        if 'config_version' not in self['main'] or int(self['main']['config_version']) != VERSION:
+        if main_conf and ('config_version' not in self['main'] or int(self['main']['config_version']) != VERSION):
             print "Sorry, but configuration schema have been changed or config file have been corrupted, so you need to reinitialize the configuration."
             init = True
             
-        if init:
+        if init and main_conf:
             self.first_start()
         
 
@@ -121,10 +153,12 @@ class Config(dict):
         
         self['main']['domain'] = domain
         
-        user = ask_user('User: ', can_be_empty=False)
-        self['user']['login'] = user
+        user_default = getpass.getuser()
+        user = ask_user('User [%s]: ' % user_default, can_be_empty=True)
+        self['user']['login'] = user or user_default
         
-        password = ask_user('Password: ', can_be_empty=False)
+        #password = ask_user('Password: ', can_be_empty=False)
+        password = getpass.getpass()
         self['user']['password'] = password
         
         git_uri = "%(protocol)s//%(user)s@%(domain)s" % \
@@ -175,7 +209,8 @@ class Config(dict):
         
         self['main']['config_version'] = VERSION
         print('Initial configuration have been completed')
-        exit()
+        print 'Now you can execute "abf locate update-recursive PATH", where PATH is your directory with ' + \
+        'cloned ABF projects. It will let you use "abfcd <project>" command to simply cd to project directory.\n\n'
 
         
         

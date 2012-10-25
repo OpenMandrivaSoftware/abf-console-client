@@ -6,7 +6,6 @@ import argparse
 from argparse import RawDescriptionHelpFormatter
 import os
 import shutil
-from datetime import datetime
 import pdb
 
 
@@ -14,6 +13,7 @@ import pdb
 from abf.console.config import Config
 from abf.console.log import Log
 cfg = Config()
+projects_cfg = Config(conf_path='~/.abf_projects', main_conf=False)
 log = Log('abf')
 
 
@@ -30,11 +30,13 @@ default_build_platform = cfg['user']['default_build_platform']
 
 #models = Models(domain, login, password)
 
+#r = Platform(models, init_data={'id':64, 'name': 'AAAA'})
 #r = models.platforms[64]
-#r = models.repositories[1]
-#r = models.projects[('abf_core', 'abf_core')]
-#r = models.projects['akirilenko/libqb']
-#r = models.projects['akirilenko/fba']
+#r = Platform(models, ID=64)
+#r = Repository(models, ID=71)
+
+#r = Project(models, 'akirilenko/mock-urpm')
+#r = BuildList(models, ID=750988)
 #r = models.buildlists['715552']
 #r = models.arches['1']
 
@@ -44,9 +46,22 @@ default_build_platform = cfg['user']['default_build_platform']
 
 #r = models.get_arches()
 
-#print r
+
+#print r.name
+#print r.owner
+#print r.visibility
 #print r.repositories
 
+#print r
+#print r.platform.params_dict
+
+#r = models.repositories[1]
+#print 'WELL DONE'
+#print r
+#print r.owner
+#print r.owner.email
+
+#print r.repositories[0].platform.repositories[2].platform
 
 #exit()
 
@@ -61,9 +76,9 @@ def parse_command_line():
     subparsers = parser.add_subparsers()
     
     # help
-    parser_get = subparsers.add_parser('help', help='show a help for command')
-    parser_get.add_argument('command', action='store', nargs='?', help='a command to show help for')
-    parser_get.set_defaults(func=help)
+    parser_help = subparsers.add_parser('help', help='show a help for command')
+    parser_help.add_argument('command', action='store', nargs='?', help='a command to show help for')
+    parser_help.set_defaults(func=help)
     
     # get
     parser_get = subparsers.add_parser('get', help='clone a project from ABF')
@@ -73,9 +88,27 @@ def parse_command_line():
     parser_get.set_defaults(func=get)
     
     # put
-    parser_get = subparsers.add_parser('put', help='run "git add --all", "git commit -m <your message>", "git push"')
-    parser_get.add_argument('message', action='store', help='a message to commit with')
-    parser_get.set_defaults(func=put)
+    parser_put = subparsers.add_parser('put', help='Execute "git add --all", "git commit -m <your message>", "git push"')
+    parser_put.add_argument('message', action='store', help='a message to commit with')
+    parser_put.set_defaults(func=put)
+    
+    # show
+    parser_show = subparsers.add_parser('show', help='show some general information. Bash autocomplete uses it.')
+    show_choices = ['build-repos', 'build-platforms', 'save-to-repos', 'save-to-platforms']
+    parser_show.add_argument('type', action='store', choices=show_choices,help='The type of information to show')
+    parser_show.add_argument('-p', '--project', action='store',  help='Project to show information for (if needed). Format: '
+        '"[group/]name". If no group specified, default group will be used.')
+    parser_show.set_defaults(func=show)
+    
+    # locate
+    parser_locate = subparsers.add_parser('locate', help='tool can remember the project location and use it for some reasons.')
+    locate_choices = ['update', 'update-recursive']
+    parser_locate.add_argument('action', action='store', choices=locate_choices, nargs='?', help='The type of information to show')
+    parser_locate.add_argument('-p', '--project', action='store',  help='Project to show information for (if needed). Format: '
+        '"[group/]name". If no group specified, default group will be used.')
+    parser_locate.add_argument('-d', '--directory', action='store',  help='Directory to update locations for. It should be a '
+            'git repository for "update" and any directory for "update-recursive". If not specified - the current directory will be used')
+    parser_locate.set_defaults(func=locate)
     
     # build
     parser_build = subparsers.add_parser('build', help='Initiate a build task on ABF.', formatter_class=RawDescriptionHelpFormatter,
@@ -107,24 +140,31 @@ def parse_command_line():
     upd_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
     parser_build.add_argument('--update-type', action='store', choices=upd_types, help='Update type. Default is "%s".' %
                     (BuildList.update_types[0]) )
+    parser_build.add_argument('--skip-spec-check', action='store_true', help='Do not check spec file.' )
     parser_build.set_defaults(func=build)
     
     # publish
-    parser_build = subparsers.add_parser('publish', help='Publish the task that have already been built.')
-    parser_build.add_argument('task_ids', action='store', nargs="+", help='The IDs of the tasks to publish.')
-    parser_build.set_defaults(func=publish)
+    parser_publish = subparsers.add_parser('publish', help='Publish the task that have already been built.')
+    parser_publish.add_argument('task_ids', action='store', nargs="+", help='The IDs of tasks to publish.')
+    parser_publish.set_defaults(func=publish)
     
     # backport
-    parser_build = subparsers.add_parser('backport', help='Copy all the files from SRC_BRANCH to DST_BRANCH')
-    parser_build.add_argument('src_branch', action='store', help='source branch')
-    parser_build.add_argument('dst_branch', action='store', nargs='?', help='destination branch. If not specified, it\'s assumed to be the current branch')
-    parser_build.add_argument('-p', '--pack', action='store_true', help='Create a tar.gz from the src_branch and put this archive and spec file to dst_branch')
-    parser_build.set_defaults(func=backport)
+    parser_backport = subparsers.add_parser('backport', help='Copy all the files from SRC_BRANCH to DST_BRANCH')
+    parser_backport.add_argument('src_branch', action='store', help='source branch')
+    parser_backport.add_argument('dst_branch', action='store', nargs='?', help='destination branch. If not specified, it\'s assumed to be the current branch')
+    parser_backport.add_argument('-p', '--pack', action='store_true', help='Create a tar.gz from the src_branch and put this archive and spec file to dst_branch')
+    parser_backport.set_defaults(func=backport)
     
     # buildstatus
-    parser_build = subparsers.add_parser('buildstatus', help='get a build-task status')
-    parser_build.add_argument('ID', action='store', nargs='?', help='build list ID')
-    parser_build.set_defaults(func=buildstatus)
+    parser_clean = subparsers.add_parser('buildstatus', help='get a build-task status')
+    parser_clean.add_argument('ID', action='store', nargs='?', help='build list ID')
+    parser_clean.set_defaults(func=buildstatus)
+    
+    # clean
+    parser_clean = subparsers.add_parser('clean', help='Analyze spec file and show missing and unnecessary files from '
+                                                                            'the current git repository directory.')
+    parser_clean.add_argument('--auto-remove', action='store_true', help='automatically remove all the unnecessary files')
+    parser_clean.set_defaults(func=clean)
     
     command_line = parser.parse_args(sys.argv[1:])
 
@@ -135,6 +175,42 @@ def help():
         sys.argv = [sys.argv[0], '-h']
     parse_command_line()
 
+def get_project(models, must_exist=True, name=None):
+    if name:
+        tmp = name.split('/')
+        if len(tmp) > 2:
+            log.error('The project format is "[owner_name/]project_name"')
+            exit(1)
+        elif len(tmp) == 1:
+            project_name = tmp[0]
+            log.info("The project group is assumed to be " + default_group)
+            owner_name = default_group
+        else: # len == 2
+            owner_name = tmp[0]
+            project_name = tmp[1]  
+    else:
+        owner_name, project_name = get_project_name()
+        if not project_name:
+            if must_exist:
+                log.error('You are not in a git repository directory. Specify the project name please!')
+                exit(1)
+            else:
+                return None
+        _update_location()
+
+    try:
+        proj = Project(models, '%s/%s' % (owner_name, project_name))
+    except PageNotFoundError:
+        log.error('The project %s/%s does not exist!' % (owner_name, project_name))
+        exit(1)
+    except ForbiddenError:
+        log.error('You do not have acces to the project %s/%s!' % (owner_name, project_name))
+        exit(1)
+        
+    log.debug('Project: %s' % proj)
+    return proj
+    
+    
 def get():
     log.debug('GET started')
     proj = command_line.project
@@ -142,26 +218,34 @@ def get():
     if len(tmp) > 2:
         log.error('Specify a project name as "group_name/project_name" or just "project_name"')
         exit(1)
-    if len(tmp) == 1:
+    elif len(tmp) == 1:
+        project_name = proj
         proj = '%s/%s' % (cfg['user']['default_group'], proj)
+    elif len(tmp) == 2:
+        project_name = tmp[1]
     
     uri = "%s/%s.git" % (cfg['user']['git_uri'], proj)
     cmd = ['git', 'clone', uri]
     if command_line.branch:
         cmd += ['-b', command_line.branch]
-    execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
+    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+    
+    projects_cfg[proj]['location'] = os.path.join(os.getcwd(), project_name)
     
 def put():
     log.debug('PUT started')
+    
+    _update_location()
+    
     cmd = ['git', 'add', '--all']
-    execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
+    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     
     cmd = ['git', 'commit', '-m', command_line.message]
-    execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
+    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     
     log.info('Commited.')
     cmd = ['git', 'push']
-    execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
+    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     log.info('Pushed')
     
 
@@ -184,23 +268,25 @@ def backport():
         
     path = get_root_git_dir()
     log.debug("Repository root folder is " + path)
+    
+    _update_location(path=path)
 
     stage = 0
     try:
         if start_branch != dbrn:
             cmd = ['git', 'checkout', dbrn]
-            execute_command(cmd, log, print_to_stdout=True, cwd=path)
+            execute_command(cmd, print_to_stdout=True, cwd=path)
         stage = 1
         cmd = ['rm', '-rf', './*']
-        execute_command(cmd, log=log, print_to_stdout=True, cwd=path)
+        execute_command(cmd, print_to_stdout=True, cwd=path)
         stage = 2
         cmd = ['git', 'checkout', sbrn, '*']
-        execute_command(cmd, log=log, print_to_stdout=True, cwd=path)
+        execute_command(cmd, print_to_stdout=True, cwd=path)
         stage = 3
         if command_line.pack:
-            pack_project(log, path)
+            pack_project(path)
             cmd = ['git', 'reset']
-            execute_command(cmd, log=log, print_to_stdout=True, cwd=path)
+            execute_command(cmd, print_to_stdout=True, cwd=path)
     except Exception, ex:
         if type(ex) == ReturnCodeNotZero:
             log.error(str(ex))
@@ -210,7 +296,7 @@ def backport():
         if stage == 1 or stage == 2:
             log.info("Checking out the initial branch (%s)" % start_branch)
             cmd = ['git', 'reset', '--hard', start_branch]
-            execute_command(cmd, log=log, print_to_stdout=True, cwd=path)
+            execute_command(cmd, print_to_stdout=True, cwd=path)
 
     log.info('Done')
     
@@ -228,33 +314,9 @@ def build():
     
     
     # get project
-    if command_line.project:
-        tmp = command_line.project.split('/')
-        if len(tmp) > 2:
-            log.error('The project format is "[owner_name/]project_name"')
-            exit(1)
-        elif len(tmp) == 1:
-            project_name = tmp[0]
-            log.info("The project group is assumed to be " + default_group)
-            owner_name = default_group
-        else: # len == 2
-            owner_name = tmp[0]
-            project_name = tmp[1]  
-    else:
-        owner_name, project_name = get_project_name()
-        if not project_name:
-            log.error('You are not in git repository directory. Specify the project name please!')
-            exit(1)
-    try:
-        proj = models.projects['%s/%s' % (owner_name, project_name)]
-    except PageNotFoundError:
-        log.error('The project %s/%s does not exist!' % (owner_name, project_name))
-        exit(1)
-    except ForbiddenError:
-        log.error('You do not have acces to the project %s/%s!' % (owner_name, project_name))
-        exit(1)
-        
-    log.debug('Project: %s' % proj)
+    proj = get_project(models, must_exist=True, name=command_line.project)
+    if not command_line.project and not command_line.skip_spec_check: # local git repository
+        find_spec_problems()
     if not proj.is_package:
         log.error('The project %s is not a package and can not be built.' % proj)
         exit(1)
@@ -262,7 +324,7 @@ def build():
     
     # get architectures
     arches = []
-    all_arches = models.get_arches()
+    all_arches = Arch.get_arches(models)
     if command_line.arch:
         for arch in command_line.arch:
             a = models.arches.get_string_key(arch)
@@ -301,6 +363,7 @@ def build():
             ref_type = (branch_def and 'commit') or (tag_def and 'tag')
             refs = proj.get_refs_list(models)
             for ref in refs:
+               
                 if ref['ref'] == to_resolve and ref['object']['type'] == ref_type:
                     commit_hash = ref['object']['sha']
             if commit_hash == None:
@@ -359,7 +422,7 @@ def build():
     
     
     # get the list of build repositories
-    build_platforms = models.get_build_platforms()
+    build_platforms = Platform.get_build_platforms(models)
     build_platform_names = [x.name for x in build_platforms]
     build_repositories = []
     if command_line.repository:
@@ -419,11 +482,11 @@ def publish():
     models = Models(domain, login, password)
     for task_id in command_line.task_ids:
         try:
-            bl = models.buildlists[task_id]
+            bl = BuildList(models, task_id)
             if bl.status != 0:
-                log.error("The status of build task %s is \"%s\", can not publish it!" % (bl.id, bl.status_by_id[bl.status]))
+                log.error("The status of build task %s is \"%s\", can not publish it!" % (bl.id, bl.status_string))
                 continue
-            res = bl.publish(models)
+            res = bl.publish()
         except AbfApiException, ex:
             log.error('Could not publish task %s: %s' %(task_id, str(ex)))
 
@@ -435,22 +498,121 @@ def buildstatus():
         exit(1)
     try:
         models = Models(domain, login, password)
-        bl = models.buildlists[command_line.ID]
+        bl = BuildList(models, command_line.ID)
     except AbfApiException, ex:
         log.error(str(ex))
         exit(3)
-    print '%-20s%s' %('Owner:', bl.owner['name'])
-    print '%-20s%s' %('Status:', BuildList.status_by_id[bl.status])
+    print '%-20s%s' %('Owner:', bl.owner.name)
+    print '%-20s%s' %('Status:', bl.status_string)
     print '%-20s%s' %('Build for platform:', bl.build_for_platform)
     print '%-20s%s' %('Save to repository:', bl.save_to_repository)
     print '%-20s%s' %('Build repositories:', bl.include_repos)
     print '%-20s%s' %('Architecture:', bl.arch.name)
-    print '%-20s%s' %('Created at:', datetime.fromtimestamp(float(bl.created_at)))
-    print '%-20s%s' %('Updated at:', datetime.fromtimestamp(float(bl.updated_at)))
+    print '%-20s%s' %('Created at:', bl.created_at)
+    print '%-20s%s' %('Updated at:', bl.updated_at)
+    
+def _update_location(path=None):
+    try:
+        if not path:
+            path = os.getcwd()
+        log.debug("Updating project location for %s" % path)
+        group, name = get_project_name(path)
+        if group:
+            proj = '%s/%s' % (group, name)
+            projects_cfg[proj]['location'] = path
+            log.info("Project %s has been located in %s" % (proj, path))
+    except:
+        pass
+
+def _update_location_recursive(path):
+    items = os.listdir(path)
+    if '.git' in items: # it's a git directory!
+        _update_location(path)
+        return
+    
+    for item in items:
+        item_path = os.path.join(path, item)
+        if not os.path.isdir(item_path) or os.path.islink(item_path):
+            continue
+        _update_location_recursive(item_path)
+        
+        
+def locate():
+    log.debug('LOCATE started')
+    
+    if not command_line.action: # show location
+        if not command_line.project:
+            print "To show a project location, you have to specify a project name ('-p' option)"
+            return
+        
+        tmp = command_line.project.split('/')
+        if len(tmp) > 2:
+            log.error('error: the project format is "[owner_name/]project_name"')
+            exit(1)
+        elif len(tmp) == 1:
+            proj = '%s/%s' % (default_group, tmp[0])
+        else: # len == 2
+            proj = command_line.project
+            
+        if proj not in projects_cfg or 'location' not in projects_cfg[proj] or not projects_cfg[proj]['location']:
+            print 'error: project %s can not be located' % proj
+            exit(1)
+        path = projects_cfg[proj]['location']
+        if not os.path.isdir(path):
+            print 'error: project is not located in "%s" anymore' % path
+            projects_cfg[proj]['location'] = ''
+            exit(1)
+        print path
+        return
+    else:
+        if command_line.action == 'update':
+            path = command_line.directory or os.getcwd()
+            _update_location(path)
+        elif command_line.action == 'update-recursive':
+            path = command_line.directory or os.getcwd()
+            _update_location_recursive(path)
+    
+def show():
+    log.debug('SHOW started')
+    Log.set_silent()
+    t = command_line.type
+    models = Models(domain, login, password)
+
+    if t in ['build-platforms', 'build-repos']:
+        build_platforms = Platform.get_build_platforms(models)
+        platform_names = []
+        repo_names = []
+        for plat in build_platforms:
+            if plat.repositories:
+                platform_names.append(plat.name)
+            for repo in plat.repositories:
+                repo_names.append(str(repo))
+        out = (t == 'build-platforms' and platform_names) or (t == 'build-repos' and repo_names)
+            
+    if t in ['save-to-platforms', 'save-to-repos']:
+        proj = get_project(models, must_exist=True, name=command_line.project)
+        repos = proj.repositories
+        platform_names = []
+        repo_names = []
+        for repo in repos:
+            platform_names.append(repo.platform.name)
+            repo_names.append(str(repo))
+        platform_names = list(set(platform_names))
+        out = (t == 'save-to-platforms' and platform_names) or (t == 'save-to-repos' and repo_names)
+    print ' '.join(out)
+    
+    
+
+    
+def clean():
+    log.debug("CLEAN started")
+    _update_location()
+    find_spec_problems(auto_remove=command_line.auto_remove)
     
 
 if __name__ == '__main__':
     parse_command_line()
+
     if command_line.verbose:
         Log.set_verbose()
     if command_line.quiet:

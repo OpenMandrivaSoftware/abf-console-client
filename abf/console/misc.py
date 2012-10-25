@@ -4,41 +4,17 @@ import time
 import select
 import subprocess
 import fcntl
-import rpm
+
 from glob import glob
 import shutil
 import re
+import yaml
 import tempfile
 
-def mkdirs(path):
-    ''' the equivalent of mkdir -p path'''
-    if os.path.exists(path):
-        return
-    path = os.path.normpath(path)
-    items = path.split('/')
-    p = ''
-    for item in items:
-        p += '/' + item
-        if not os.path.isdir(p):
-            os.mkdir(p)
-            
-def ask_user(prompt, can_be_empty=False, variants=None):
-    while True:
-        sys.stdout.write(prompt)
-        sys.stdout.flush()
-        res = sys.stdin.readline()
-        res = res.strip()
-        if not can_be_empty and not res:
-            continue
-        
-        if variants:
-            if res in variants:
-                break
-            else:
-                continue
-        break
-        
-    return res
+from abf.console.log import Log
+log = Log('models')
+
+
 
 class CommandTimeoutExpired(Exception):
     pass
@@ -48,9 +24,9 @@ class ReturnCodeNotZero(Exception):
         super(ReturnCodeNotZero, self).__init__(message)
         self.code = code
         
-def get_project_name():
+def get_project_name(path=None):
     try:
-        output = execute_command(['git', 'remote', 'show', 'origin', '-n'])
+        output = execute_command(['git', 'remote', 'show', 'origin', '-n'], cwd=path)
 
         for line in output.split('\n'):
             if line.startswith('  Fetch URL:'):
@@ -63,6 +39,7 @@ def get_project_name():
         
 def get_project_name_version(spec_path):
     try:
+        rpm = __import__('rpm') # it's initialization is too long to place it to the top of the file
         ts = rpm.TransactionSet()
         rpm_spec = ts.parseSpec(spec_path)
         name = rpm.expandMacro("%{name}")
@@ -70,6 +47,25 @@ def get_project_name_version(spec_path):
         return (name, version)
     except:
         return None
+        
+def get_project_data(spec_path):
+        rpm = __import__('rpm') #  it's initialization is too long to place it to the top of the file
+        ts = rpm.TransactionSet()
+        rpm_spec = ts.parseSpec(spec_path)
+        name = rpm.expandMacro("%{name}")
+        version = rpm.expandMacro("%{version}")
+        sources_all = rpm_spec.sources()
+        
+        sources = []
+        patches = []
+        for src in sources_all:
+            name, number, flag = src
+            if flag & 65536: # source file
+                sources.append((name, number))
+            elif flag & 131072:
+                patches.append((name, number))
+        return {'name': name, 'version': version, 'sources': sources, 'patches': patches}
+
 
 def get_branch_name():
     try:
@@ -115,13 +111,12 @@ def get_tag_hash(tag, cwd=None):
             return h
     return None   
 
-def clone_git_repo_tmp(uri, log=None, depth=None):
-    if log:
-        log.info('Cloning git repository (temporary workaround)')
+def clone_git_repo_tmp(uri, depth=None):
+    log.info('Cloning git repository (temporary workaround)')
     tmp_dir = tempfile.mkdtemp(prefix='tmp_abf_')
     log.info("Temporary directory os " + tmp_dir)
     cmd = ['git', 'clone', uri, tmp_dir]
-    execute_command(cmd, log=log, print_to_stdout=True, exit_on_error=True)
+    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     return tmp_dir
     
         
@@ -139,15 +134,117 @@ def get_root_git_dir(path=None):
     else:
         return p
         
-def pack_project(log, root_path):
-    # look for a spec file
+def get_spec_file(root_path):
     specs = glob(os.path.join(root_path, '*.spec'))
     log.debug("Spec files found: " + str(specs))
     if len(specs) == 1:
         spec = specs[0]
+        return spec
     else:
-        log.error("Could not find single spec file")
-        return
+        raise Excpetion("Could not find single spec file")
+    
+def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
+    path = get_root_git_dir()
+    files = os.listdir(path)
+    
+    files_present = []
+    specs_present = []
+    dirs_present = []
+    yaml_files = []
+    for fl in files:
+        if fl.startswith('.'):
+            continue
+        if os.path.isdir(fl):
+            dirs_present.append(fl)
+            continue
+        if fl.endswith('.spec'):
+            specs_present.append(fl)
+            continue
+        files_present.append(fl)
+        
+    yaml_path = os.path.join(path, '.abf.yml')
+    if os.path.isfile(yaml_path):
+        with open(yaml_path, 'r') as fd:
+            yaml_data = yaml.load(fd)
+        if not 'sources' in yaml_data:
+            log.error("Incorrect .abf.yml file: no 'sources' key")
+            exit(1)
+        for fl in yaml_data['sources']:
+            yaml_files.append(fl)
+            
+    if len(specs_present) == 0:
+        raise Exception("No spec files found!")
+    elif len(specs_present) > 1:
+        raise Exception("There are more than one found!")
+    
+    spec_path = specs_present[0]
+    
+    for d in dirs_present:
+        log.info("warning: directory '%s' was found" % d)
+        if auto_remove:
+            shutil.rmtree(os.path.join(path,d) )
+    
+    res = get_project_data(spec_path)
+    
+    errors = False
+    warnings = False
+    files_required = []
+    for fl in res['sources'] + res['patches']:
+        fname, n = fl
+        fname_base = os.path.basename(fname)
+        
+        files_required.append(fname_base)
+        
+        is_url = fname.startswith('http://')
+        presents = fname_base in files_present
+        in_yaml = fname_base in yaml_files
+        
+        if is_url  and in_yaml:
+            warnings = True
+            log.info('warning: file "%s" presents in spec (url) and in .abf.yml' % fname_base)
+        
+        if is_url and not presents:
+            warnings = True
+            log.info('warning: file "%s" is listed in spec as a URL, but does not present in the current directory or in .abf.yml file' % fname_base)
+        
+        if presents and in_yaml:
+            warnings = True
+            log.info('warning: file "%s" presents in the git directory and in .abf.yml' % fname_base)
+            
+        if not presents and not in_yaml and not is_url:
+            errors = True
+            log.info("error: missing file %s" % fname)
+    
+    remove_from_yaml = []
+    for fl in set(files_present + yaml_files):
+        if fl in files_required:
+            continue # file have already been processed
+        presents = fl in files_present
+        in_yaml = fl in yaml_files
+        if presents:
+            warnings = True
+            log.info('warning: unnecessary file "%s"' % fl)
+            if auto_remove:
+                os.remove( os.path.join(path, fl) )
+        
+        if in_yaml:
+            warnings = True
+            log.info('warning: unnecessary file "%s" in .abf.yml' % fl)
+            remove_from_yaml.append(fl)
+            
+    if auto_remove:
+        for fl in remove_from_yaml:
+            yaml_data['sources'].pop(fl)
+        with open(yaml_path, 'w') as fd:
+            yaml.dump(yaml_data, fd, default_flow_style=False)
+            log.info('.abf.yml file was rewritten')
+    
+    if exit_on_error and (errors or (strict and warnings)):
+        exit(1)
+        
+def pack_project(root_path):
+    # look for a spec file
+    spec = get_spec_file(root_path)
         
     if spec:
         name, version = get_project_name_version(spec)
@@ -167,7 +264,7 @@ def pack_project(log, root_path):
     #open(full_tarball_path, 'w').close()
     cmd = ['tar', 'czf', full_tarball_path, '--exclude-vcs', os.path.basename(root_path)] 
     try:
-        execute_command(cmd, log=log, cwd=os.path.dirname(root_path), exit_on_error=False)
+        execute_command(cmd, cwd=os.path.dirname(root_path), exit_on_error=False)
     except ReturnCodeNotZero, ex:
         if ex.code != 1:
             raise
@@ -188,13 +285,12 @@ def pack_project(log, root_path):
            
 
         
-def execute_command(command, log=None, shell=False, cwd=None, timeout=0, raiseExc=True, print_to_stdout=False, exit_on_error=False):
+def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, print_to_stdout=False, exit_on_error=False):
     output = ""
     start = time.time()
     try:
         child = None
-        if log:
-            log.debug("Executing command: %s" % command)
+        log.debug("Executing command: %s" % command)
         child = subprocess.Popen(
             command,
             shell=shell,
@@ -230,8 +326,7 @@ def execute_command(command, log=None, shell=False, cwd=None, timeout=0, raiseEx
     if not niceExit and raiseExc:
         raise CommandTimeoutExpired("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
     
-    if log:
-        log.debug("Child returncode was: %s" % str(child.returncode))
+    log.debug("Child returncode was: %s" % str(child.returncode))
     if child.returncode:
         if exit_on_error:
             exit(child.returncode)
