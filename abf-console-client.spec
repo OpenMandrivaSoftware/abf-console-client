@@ -1,6 +1,6 @@
 Name:           abf-console-client
-Version:        1.2
-Release:        2
+Version:        1.3
+Release:        0
 Summary:        Python API to ABF (https://abf.rosalinux.ru)
 Group:          System/Configuration/Packaging
 License:        GPLv2
@@ -12,6 +12,7 @@ Requires:       python-abf >= 1.2-0
 Requires:       python-beaker
 Requires:       python-rpm
 Requires:       git
+Requires:       python-yaml
 
 %description
 Console client for ABF (https://abf.rosalinux.ru). 
@@ -35,3 +36,4 @@ ln -s %{_datadir}/bash-completion/abf %{buildroot}/%{_sysconfdir}/bash_completio
 #bash_completion files
 %{_datadir}/bash-completion/abf 
 %{_sysconfdir}/bash_completion.d/abf
+%{_sysconfdir}/profile.d/abfcd.sh
