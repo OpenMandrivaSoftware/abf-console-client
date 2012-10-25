@@ -15,7 +15,7 @@ import getpass
 # print cfg.pop('aaa')
 #####################################################
 
-VERSION = 1
+VERSION = 2
 
 def mkdirs(path):
     ''' the equivalent of mkdir -p path'''
@@ -209,7 +209,7 @@ class Config(dict):
         
         self['main']['config_version'] = VERSION
         print('Initial configuration have been completed')
-        print 'Now you can execute "abf locate update-recursive PATH", where PATH is your directory with ' + \
+        print 'Now you can execute "abf locate update-recursive -d PATH", where PATH is your directory with ' + \
         'cloned ABF projects. It will let you use "abfcd <project>" command to simply cd to project directory.\n\n'
 
         

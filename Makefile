@@ -25,8 +25,6 @@ all:
 clean:
 	rm -f *~ *.pyc *.pyo
 	
-
-	
 install:
 	mkdir -p $(DESTDIR)$(PKGDIR) $(DESTDIR)$(BINDIR) $(DESTDIR)$(MANDIR)/man1
 	cp -p --parents $(FILES) $(DESTDIR)$(PKGDIR)
@@ -36,7 +34,7 @@ install:
 	mkdir -p $(DESTDIR)$(ETCDIR)/bash_completion.d
 	mkdir -p $(DESTDIR)$(ETCDIR)/profile.d
 	cp "bash_autocomplete" $(DESTDIR)$(USRSHAREDIR)/bash-completion/abf
-	cp "abfcd.sh" $(DESTDIR)$(USRSHAREDIR)/profile.d/abfcd.sh
+	cp "abfcd.sh" $(DESTDIR)$(ETCDIR)/profile.d/abfcd.sh
 
 	
 

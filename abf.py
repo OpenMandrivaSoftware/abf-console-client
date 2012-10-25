@@ -35,7 +35,7 @@ default_build_platform = cfg['user']['default_build_platform']
 #r = Platform(models, ID=64)
 #r = Repository(models, ID=71)
 
-#r = Project(models, 'akirilenko/mock-urpm')
+#r = Project.get_by_name(models, 'akirilenko/mock-urpm')
 #r = BuildList(models, ID=750988)
 #r = models.buildlists['715552']
 #r = models.arches['1']
@@ -73,7 +73,7 @@ def parse_command_line():
     parser.add_argument('-v', '--verbose', action='store_true', help='be verbose, display even debug messages')
     parser.add_argument('-c', '--clear-cache', action='store_true', help='clear cached information about repositories, platforms, projects, etc.')
     parser.add_argument('-q', '--quiet', action='store_true', help='Do not display info messages')
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(title='command')
     
     # help
     parser_help = subparsers.add_parser('help', help='show a help for command')
@@ -156,8 +156,14 @@ def parse_command_line():
     parser_backport.set_defaults(func=backport)
     
     # buildstatus
-    parser_clean = subparsers.add_parser('buildstatus', help='get a build-task status')
-    parser_clean.add_argument('ID', action='store', nargs='?', help='build list ID')
+    parser_clean = subparsers.add_parser('buildstatus', help='get a build-task status', epilog='If a project specified '
+    ' or you are in a git repository - try to get the IDs from the last build task sent for this project. If you are not'
+    ' in a git repository directory and project is not specified - try to get build IDs from the last build you\'ve done '
+    'with console client.')
+    parser_clean.add_argument('ID', action='store', nargs='*', help='build list ID')
+    parser_clean.add_argument('-p', '--project', action='store',  help='Project. If last IDs for this project can be found - use them')
+    parser_clean.add_argument('-s', '--short', action='store_true',  help='Show one-line information including id, project, '
+                                                                                                        'arch and status')
     parser_clean.set_defaults(func=buildstatus)
     
     # clean
@@ -174,8 +180,8 @@ def help():
     else:
         sys.argv = [sys.argv[0], '-h']
     parse_command_line()
-
-def get_project(models, must_exist=True, name=None):
+    
+def get_project_name_only(must_exist=True, name=None):
     if name:
         tmp = name.split('/')
         if len(tmp) > 2:
@@ -197,9 +203,13 @@ def get_project(models, must_exist=True, name=None):
             else:
                 return None
         _update_location()
+    return (owner_name, project_name)
 
+def get_project(models, must_exist=True, name=None):
+    
+    owner_name, project_name = get_project_name_only(must_exist, name)
     try:
-        proj = Project(models, '%s/%s' % (owner_name, project_name))
+        proj = Project.get_by_name(models, '%s/%s' % (owner_name, project_name))
     except PageNotFoundError:
         log.error('The project %s/%s does not exist!' % (owner_name, project_name))
         exit(1)
@@ -474,8 +484,11 @@ def build():
         exit(1)
         
     log.debug("Build repositories: " + str(build_repositories))
-    BuildList.new_build_task(models, proj, save_to_repository, build_repositories, commit_hash, 
+    build_ids = BuildList.new_build_task(models, proj, save_to_repository, build_repositories, commit_hash, 
             command_line.update_type or BuildList.update_types[0], command_line.auto_publish, arches)
+    ids = ','.join([str(i) for i in build_ids])
+    projects_cfg['main']['last_build_ids'] = ids
+    projects_cfg[str(proj)]['last_build_ids'] = ids
     
 def publish():
     log.debug('PUBLISH started')
@@ -490,26 +503,50 @@ def publish():
         except AbfApiException, ex:
             log.error('Could not publish task %s: %s' %(task_id, str(ex)))
 
-        
-def buildstatus():
-    log.debug('BUILDSTATUS started')
-    if not command_line.ID:
-        log.error("Enter the ID, please. It can not be resolved automatically now (not implemented).")
-        exit(1)
+
+def _print_build_status(models, ID):
     try:
-        models = Models(domain, login, password)
-        bl = BuildList(models, command_line.ID)
+        bl = BuildList(models, ID)
     except AbfApiException, ex:
         log.error(str(ex))
         exit(3)
-    print '%-20s%s' %('Owner:', bl.owner.name)
-    print '%-20s%s' %('Status:', bl.status_string)
-    print '%-20s%s' %('Build for platform:', bl.build_for_platform)
-    print '%-20s%s' %('Save to repository:', bl.save_to_repository)
-    print '%-20s%s' %('Build repositories:', bl.include_repos)
-    print '%-20s%s' %('Architecture:', bl.arch.name)
-    print '%-20s%s' %('Created at:', bl.created_at)
-    print '%-20s%s' %('Updated at:', bl.updated_at)
+    if command_line.short:
+        print repr(bl)
+    else:
+        print '%-20s%s' %('Buildlist ID:', bl.id) 
+        print '%-20s%s' %('Owner:', bl.owner.uname)
+        print '%-20s%s' %('Project:', bl.project.fullname)
+        print '%-20s%s' %('Status:', bl.status_string)
+        print '%-20s%s' %('Build for platform:', bl.build_for_platform)
+        print '%-20s%s' %('Save to repository:', bl.save_to_repository)
+        print '%-20s%s' %('Build repositories:', bl.include_repos)
+        print '%-20s%s' %('Architecture:', bl.arch.name)
+        print '%-20s%s' %('Created at:', bl.created_at)
+        print '%-20s%s' %('Updated at:', bl.updated_at)
+        print ''
+            
+def buildstatus():
+    log.debug('BUILDSTATUS started')
+    ids = []
+    if command_line.ID:
+        ids = command_line.ID
+        
+    res = get_project_name_only(must_exist=False, name=command_line.project)
+    if res:
+        proj = '%s/%s' % res
+        ids += projects_cfg[proj]['last_build_ids'].split(',')
+    elif not command_line.ID:
+        if 'main' not in projects_cfg or 'last_build_ids' not in projects_cfg['main']:
+            log.error("Can not find last build IDs. Specify a project name or ID")
+            exit(1)
+        ids += projects_cfg['main']['last_build_ids'].split(',')
+            
+    ids = list(set(ids))
+    models = Models(domain, login, password)
+    for i in ids:
+        _print_build_status(models, i)
+        
+    
     
 def _update_location(path=None):
     try:
@@ -600,7 +637,6 @@ def show():
         platform_names = list(set(platform_names))
         out = (t == 'save-to-platforms' and platform_names) or (t == 'save-to-repos' and repo_names)
     print ' '.join(out)
-    
     
 
     
