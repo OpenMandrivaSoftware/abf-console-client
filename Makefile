@@ -17,7 +17,7 @@ MANDIR=/usr/share/man
 USRSHAREDIR=/usr/share
 
 
-FILES = abf/console/*.py
+FILES = abf/console/*.py abf/*.py abf/api/*.py
 
 all:
 	@echo "Nothing to do. Run 'make install' or 'make clean'"
@@ -35,6 +35,4 @@ install:
 	mkdir -p $(DESTDIR)$(ETCDIR)/profile.d
 	cp "bash_autocomplete" $(DESTDIR)$(USRSHAREDIR)/bash-completion/abf
 	cp "abfcd.sh" $(DESTDIR)$(ETCDIR)/profile.d/abfcd.sh
-
-	
 

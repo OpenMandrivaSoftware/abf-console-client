@@ -29,7 +29,7 @@ def get_project_name(path=None):
         output = execute_command(['git', 'remote', 'show', 'origin', '-n'], cwd=path)
 
         for line in output.split('\n'):
-            if line.startswith('  Fetch URL:'):
+            if line.startswith('  Fetch URL:') and 'abf' in line:
                 project_name = line.split('/')[-1][:-4]
                 owner_name = line.split('/')[-2]
                 return (owner_name, project_name)
@@ -67,9 +67,9 @@ def get_project_data(spec_path):
         return {'name': name, 'version': version, 'sources': sources, 'patches': patches}
 
 
-def get_branch_name():
+def get_branch_name(path=None):
     try:
-        output = execute_command(['git', 'branch'])
+        output = execute_command(['git', 'branch'], cwd=path)
 
         for line in output.split('\n'):
             if not line.startswith('*'):
@@ -78,9 +78,9 @@ def get_branch_name():
     except ReturnCodeNotZero:
         return None
         
-def get_current_commit_hash():
+def get_current_commit_hash(path=None):
     try:
-        output = execute_command(['git', 'rev-parse', 'HEAD'])
+        output = execute_command(['git', 'rev-parse', 'HEAD'], cwd=path)
         return output.strip()
     except ReturnCodeNotZero:
         return None

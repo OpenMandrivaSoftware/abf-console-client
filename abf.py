@@ -101,7 +101,9 @@ def parse_command_line():
     parser_show.set_defaults(func=show)
     
     # locate
-    parser_locate = subparsers.add_parser('locate', help='tool can remember the project location and use it for some reasons.')
+    parser_locate = subparsers.add_parser('locate', help='tool can remember the project location and use it for some reasons (abfcd, etc.).',
+    epilog='Every interaction with git repository (build, get, put, etc.) updates the cached location of the project (overriding '
+    'an existing one if needed). For any cached project you can execute "abfcd <project>" and you will cd to the project directory.')
     locate_choices = ['update', 'update-recursive']
     parser_locate.add_argument('action', action='store', choices=locate_choices, nargs='?', help='The type of information to show')
     parser_locate.add_argument('-p', '--project', action='store',  help='Project to show information for (if needed). Format: '
@@ -508,7 +510,7 @@ def _print_build_status(models, ID):
     try:
         bl = BuildList(models, ID)
     except AbfApiException, ex:
-        log.error(str(ex))
+        log.error("Can not read buildlist %s: %s" % (ID, ex))
         exit(3)
     if command_line.short:
         print repr(bl)
@@ -548,7 +550,7 @@ def buildstatus():
         
     
     
-def _update_location(path=None):
+def _update_location(path=None, silent=True):
     try:
         if not path:
             path = os.getcwd()
@@ -557,14 +559,18 @@ def _update_location(path=None):
         if group:
             proj = '%s/%s' % (group, name)
             projects_cfg[proj]['location'] = path
-            log.info("Project %s has been located in %s" % (proj, path))
+            text = "Project %s has been located in %s" % (proj, path)
+            if silent:
+                log.debug(text)
+            else:
+                log.info(text)
     except:
         pass
 
 def _update_location_recursive(path):
     items = os.listdir(path)
     if '.git' in items: # it's a git directory!
-        _update_location(path)
+        _update_location(path, silent=False)
         return
     
     for item in items:
