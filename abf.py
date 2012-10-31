@@ -30,12 +30,14 @@ default_build_platform = cfg['user']['default_build_platform']
 
 #models = Models(domain, login, password)
 
+#r = Group(models, 2)
 #r = Platform(models, init_data={'id':64, 'name': 'AAAA'})
 #r = models.platforms[64]
 #r = Platform(models, ID=64)
 #r = Repository(models, ID=71)
 
-#r = Project.get_by_name(models, 'akirilenko/mock-urpm')
+#r = Project.get_by_name(models, 'import/mock-urpm')
+
 #r = BuildList(models, ID=750988)
 #r = models.buildlists['715552']
 #r = models.arches['1']
@@ -53,11 +55,11 @@ default_build_platform = cfg['user']['default_build_platform']
 #print r.repositories
 
 #print r
+#print r.owner_type
 #print r.platform.params_dict
 
 #r = models.repositories[1]
 #print 'WELL DONE'
-#print r
 #print r.owner
 #print r.owner.email
 

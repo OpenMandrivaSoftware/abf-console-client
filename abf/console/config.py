@@ -53,6 +53,7 @@ class Section(dict):
         self.config = config
         self.conf_path = conf_path
         if not section in self.config.sections():
+            print '!!'
             self.config.add_section(self.section)
             self.save()
             
@@ -97,15 +98,12 @@ class Config(dict):
         
         self.config = ConfigParser.RawConfigParser()
         self.config.read(self.conf_path)
-        
-        
 
         sections = self.config.sections()
         for section in sections:
-            self[section] = []
             opts = self.config.options(section)
             for opt in opts:
-                self[section][opt] = self.config.get(section, opt)
+                super(Section, self[section]).__setitem__(opt, self.config.get(section, opt))
                 
 
         if main_conf and ('config_version' not in self['main'] or int(self['main']['config_version']) != VERSION):

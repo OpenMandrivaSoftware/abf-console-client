@@ -189,4 +189,9 @@ class AbfJson(object):
         URL = "/api/v1/users/%d.json" % user_id
         return self.get_url_contents(URL)
         
+    def get_group_by_id(self, group_id):
+        group_id = int(group_id)
+        URL = "/api/v1/groups/%d.json" % group_id
+        return self.get_url_contents(URL)
+        
         

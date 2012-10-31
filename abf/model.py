@@ -214,7 +214,7 @@ class User(Model):
 
     def get_init_data(self, ID):
         ID = str(ID)
-        log.debug('Reading platform ' + ID)
+        log.debug('Reading user ' + ID)
         self.init_data = self.models.jsn.get_user_by_id(ID)
         self.init_data = self.init_data['user']
             
@@ -225,7 +225,32 @@ class User(Model):
             self.params_dict['created_at'] = datetime.fromtimestamp(float(self.init_data['created_at']))
         if 'updated_at' in self.init_data:
             self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
+        
         self.cacher = lt_cache
+                 
+    def __repr__(self):
+        return self.uname
+        
+class Group(Model):
+    required_fields = ['id', 'uname', 'own_projects_count', 'created_at', 'updated_at', 'description', 'owner',
+                                                                                'avatar_url', 'html_url']
+
+    def get_init_data(self, ID):
+        ID = str(ID)
+        log.debug('Reading group ' + ID)
+        self.init_data = self.models.jsn.get_group_by_id(ID)
+        self.init_data = self.init_data['group']
+            
+    def load(self):        
+        self.params_dict = self.init_data.copy()
+        
+        if 'created_at' in self.init_data:
+            self.params_dict['created_at'] = datetime.fromtimestamp(float(self.init_data['created_at']))
+        if 'updated_at' in self.init_data:
+            self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
+        
+        if 'owner' in self.params_dict:
+            self.params_dict['owner'] = User(self.models, init_data=self.params_dict['owner'])
         
         self.cacher = lt_cache
                  
@@ -234,7 +259,7 @@ class User(Model):
         
 class Project(Model):
     required_fields = ['id', 'name', 'created_at', 'updated_at', 'visibility', 'description', 'ancestry', 'has_issues', 
-            'has_wiki', 'default_branch', 'is_package', 'average_build_time', 'owner', 'repositories']
+            'has_wiki', 'default_branch', 'is_package', 'average_build_time', 'owner', 'repositories', 'owner_type']
 
     def get_init_data(self, proj_id):
         log.debug("Reading project " + str(proj_id))
@@ -262,7 +287,11 @@ class Project(Model):
                 r = Repository(self.models, init_data=repo)
                 self.params_dict['repositories'].append(r)
         if 'owner' in self.init_data:
-            self.params_dict['owner'] = User(self.models, init_data=self.init_data['owner'])
+            self.params_dict['owner_type'] = self.init_data['owner']['type']
+            if self.params_dict['owner_type'] == 'User':
+                self.params_dict['owner'] = User(self.models, init_data=self.init_data['owner'])
+            elif self.params_dict['owner_type'] == 'Group':
+                self.params_dict['owner'] = Group(self.models, init_data=self.init_data['owner'])
             
         if 'created_at' in self.init_data:
             self.params_dict['created_at'] = datetime.fromtimestamp(float(self.init_data['created_at']))
