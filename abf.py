@@ -267,7 +267,7 @@ def put():
         except ValueError, ex:
             log.error('Incorrect "--minimal-file-size" value: %s' % command_line.minimal_file_size)
             exit(1)
-        error_count = upload_files(models, min_size, remove_files=not command_line.do_not_remove_files, path=yaml_path)
+        error_count = upload_files(models, min_size, remove_files=not command_line.do_not_remove_files, path=path)
         if error_count:
             log.info('There were errors while uploading, stopping.')
             return
