@@ -15,7 +15,7 @@ import getpass
 # print cfg.pop('aaa')
 #####################################################
 
-VERSION = 2
+VERSION = 3
 
 def mkdirs(path):
     ''' the equivalent of mkdir -p path'''
@@ -72,8 +72,11 @@ class Section(dict):
     def __getitem__(self, key):
         if super(Section, self).__contains__(key):
             return super(Section, self).__getitem__(key)
-        res = self.config.get(section, opt)
-        
+        try:
+            res = self.config.get(self.section, key)
+        except ConfigParser.NoOptionError, ex:
+            print 'error in config "%s": %s' % (self.conf_path, str(ex))
+            exit(1)
         
     def pop(self, key, init=None):
         if init is not None and key not in self:
@@ -86,6 +89,7 @@ class Section(dict):
             
 class Config(dict):
     default_url = 'https://abf.rosalinux.ru'
+    default_filestore_url = 'http://file-store.rosalinux.ru'
     default_log_path = '/var/log/abf.log'
     def __init__(self, conf_path='~/.abfcfg', main_conf=True):
         self.conf_path = os.path.expanduser(conf_path)
@@ -133,11 +137,11 @@ class Config(dict):
         res.save()
         return res
           
-    def first_start(self):
+    def ask_user_url(self, prompt, default):
         done = False
         while not done:
-            domain = ask_user('ABF domain [%s]: ' % Config.default_url, can_be_empty=True)
-            domain = domain or Config.default_url
+            domain = ask_user(prompt, can_be_empty=True)
+            domain = domain or default
             if domain and domain.endswith('/'):
                 domain = domain[:-1] # remove trailing '/'
             parts = domain.split('//')
@@ -148,8 +152,12 @@ class Config(dict):
                 print 'Double slashe must present only once (in a ptocol part)'
                 continue
             done = True
+        return domain
+          
+    def first_start(self):
         
-        self['main']['domain'] = domain
+        domain = self.ask_user_url('ABF URL [%s]: ' % Config.default_url, Config.default_url)
+        self['main']['abf_url'] = domain
         
         user_default = getpass.getuser()
         user = ask_user('User [%s]: ' % user_default, can_be_empty=True)
@@ -159,6 +167,7 @@ class Config(dict):
         password = getpass.getpass()
         self['user']['password'] = password
         
+        parts = domain.split('//')
         git_uri = "%(protocol)s//%(user)s@%(domain)s" % \
                 dict(protocol=parts[0], user=user, domain=parts[1])
         
@@ -170,6 +179,9 @@ class Config(dict):
         def_bp = user + '_personal'
         res = ask_user('Default build platform [%s]: ' % def_bp, can_be_empty=True)
         self['user']['default_build_platform'] = res or def_bp
+        
+        filestore_domain = self.ask_user_url('File-store URL [%s]: ' % Config.default_filestore_url, Config.default_filestore_url)
+        self['main']['file_store_url'] = filestore_domain
         
         #configure logging       
         self['formatters']['keys'] = 'verbose,simple'

@@ -429,23 +429,24 @@ class BuildList(Model):
     
 class Models(object):
     _instance = {}
-    def __new__(cls, abf_url, login, password, *args, **kwargs):
-        tmp = '%s:%s:%s' % (abf_url, login, password)
+    def __new__(cls, abf_url, file_store_url, login, password, *args, **kwargs):
+        tmp = '%s:%s:%s:%s' % (abf_url, file_store_url, login, password)
         if tmp not in cls._instance:
             cls._instance[tmp] = super(Models, cls).__new__(
-                                cls, abf_url, login, password, *args, **kwargs)
+                                cls, abf_url, file_store_url, login, password, *args, **kwargs)
         return cls._instance[tmp]
         
     #properties_by_class = {Platform: 'platforms', Repository: 'repositories', Arch: 'arches',
     #        BuildList: 'buildlists', Project: 'projects'}
     #properties_by_name = dict([(properties_by_class[x], x) for x in properties_by_class])
         
-    def __init__(self, abf_url, login, password):
+    def __init__(self, abf_url, file_store_url, login, password):
         log.debug('Initializing models for ' + abf_url)
         self.abf_url = abf_url
+        self.file_store_url = file_store_url
         self.login = login
         self.password = password
-        self.jsn = AbfJson(abf_url, login, password, log)
+        self.jsn = AbfJson(abf_url, file_store_url, login, password, log)
     
         
     @staticmethod

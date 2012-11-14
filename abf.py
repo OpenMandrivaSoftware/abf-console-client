@@ -22,13 +22,17 @@ from abf.api.exceptions import *
 from abf.model import *
 
 
-domain = cfg['main']['domain']
+abf_url = cfg['main']['abf_url']
+file_store_url = cfg['main']['file_store_url']
 login = cfg['user']['login']
 password = cfg['user']['password']
 default_group = cfg['user']['default_group']
 default_build_platform = cfg['user']['default_build_platform']
+models_params = ((abf_url, file_store_url, login, password))
 
-#models = Models(domain, login, password)
+models = Models(*models_params)
+
+#r = models.jsn.upload_file('/tmp/log')
 
 #r = Group(models, 2)
 #r = Platform(models, init_data={'id':64, 'name': 'AAAA'})
@@ -39,8 +43,6 @@ default_build_platform = cfg['user']['default_build_platform']
 #r = Project.get_by_name(models, 'import/mock-urpm')
 
 #r = BuildList(models, ID=750988)
-#r = models.buildlists['715552']
-#r = models.arches['1']
 
 #r = models.get_user_platforms_main()
 #r = models.get_user_platforms_personal()
@@ -48,25 +50,10 @@ default_build_platform = cfg['user']['default_build_platform']
 
 #r = models.get_arches()
 
-
-#print r.name
-#print r.owner
-#print r.visibility
-#print r.repositories
-
-#print r
-#print r.owner_type
-#print r.platform.params_dict
-
-#r = models.repositories[1]
-#print 'WELL DONE'
-#print r.owner
-#print r.owner.email
-
 #print r.repositories[0].platform.repositories[2].platform
 
 #exit()
-
+   
 
 
 def parse_command_line():
@@ -90,9 +77,19 @@ def parse_command_line():
     parser_get.set_defaults(func=get)
     
     # put
-    parser_put = subparsers.add_parser('put', help='Execute "git add --all", "git commit -m <your message>", "git push"')
-    parser_put.add_argument('message', action='store', help='a message to commit with')
+    parser_put = subparsers.add_parser('put', help='Upload large binary files to File-Store, commit all the changes (git add --all), commit with a message specified and push')
+    parser_put.add_argument('-m', '--message', action='store', help='A message to commit with. It is ignored in case of "--do-not-upload"')
+    parser_put.add_argument('-u', '--upload-only', action='store_true', help='Upload large files to file-store and exit')
+    parser_put.add_argument('-d', '--do-not-upload', action='store', help='Do nothing with .abf.yml, just add, commit and push')
+    parser_put.add_argument('-s', '--minimal-file-size', default='2M', action='store', help='The minimal file size to upload to File-Store. '
+            'Default is 2M. You can set it to 0 to upload all the files.')
+    parser_put.add_argument('-r', '--do-not-remove-files', action='store_true', help='By default files are being removed on uploading. Override this behavior.')
     parser_put.set_defaults(func=put)
+    
+    # fetch
+    parser_fetch = subparsers.add_parser('fetch', help='Download all the files listed in .abf.yml from File-Store to local directory.')
+    parser_fetch.add_argument('-o', '--only', action='store', nargs='+', help='Limit the list of downloaded files to this file name(s). This option can be specified more than once.')
+    parser_fetch.set_defaults(func=fetch)
     
     # show
     parser_show = subparsers.add_parser('show', help='show some general information. Bash autocomplete uses it.')
@@ -245,14 +242,45 @@ def get():
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     
     projects_cfg[proj]['location'] = os.path.join(os.getcwd(), project_name)
-    
+
 def put():
     log.debug('PUT started')
     
+    if not command_line.upload_only and not command_line.message:
+        log.error("Specify a message first!")
+        exit(1)
+        
+    if command_line.upload_only and command_line.do_not_upload:
+        log.error("Conflicting options: --upload-only and --do-not-upload" )
+        exit(1)
+        
+    path = get_root_git_dir()
+    yaml_path = os.path.join(path, '.abf.yml')
+    if not path:
+        log.error("You have to be in a git repository directory")
+        exit(1)
     _update_location()
     
+    if not command_line.do_not_upload:
+        try:
+            min_size = human2bytes(command_line.minimal_file_size)
+        except ValueError, ex:
+            log.error('Incorrect "--minimal-file-size" value: %s' % command_line.minimal_file_size)
+            exit(1)
+        error_count = upload_files(models, min_size, remove_files=not command_line.do_not_remove_files, path=yaml_path)
+        if error_count:
+            log.info('There were errors while uploading, stopping.')
+            return
+    
+    if command_line.upload_only:
+        return
+
     cmd = ['git', 'add', '--all']
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+    
+    if os.path.isfile(yaml_path):
+        cmd = ['git', 'add', '-f', path]
+        execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     
     cmd = ['git', 'commit', '-m', command_line.message]
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
@@ -261,7 +289,18 @@ def put():
     cmd = ['git', 'push']
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     log.info('Pushed')
-    
+
+def fetch():
+    log.debug('FETCH started')
+    path = get_root_git_dir()
+    if not path:
+        log.error("You have to be in a git repository directory")
+        exit(1)
+    path = os.path.join(path, '.abf.yml')
+    if not os.path.isfile(path):
+        log.error('File "%s" can not be found')
+        exit(1)
+    fetch_files(models, path, command_line.only)
 
 def backport():
     log.debug('BACKPORT started')
@@ -324,9 +363,6 @@ def build():
             'repositories':[],
         }
         
-    models = Models(domain, login, password)
-    
-    
     # get project
     proj = get_project(models, must_exist=True, name=command_line.project)
     if not command_line.project and not command_line.skip_spec_check: # local git repository
@@ -334,7 +370,6 @@ def build():
     if not proj.is_package:
         log.error('The project %s is not a package and can not be built.' % proj)
         exit(1)
-        
     
     # get architectures
     arches = []
@@ -351,7 +386,6 @@ def build():
         log.info("Arches are assumed to be " + str(arches))
 
     log.debug('Architectures: %s' % arches)
-    
     
     # get git commit hash
     tag_def = bool(command_line.tag)
@@ -372,7 +406,6 @@ def build():
         if commit_def:
             commit_hash = command_line.commit
         else:
-
             to_resolve = command_line.branch or command_line.tag
             ref_type = (branch_def and 'commit') or (tag_def and 'tag')
             refs = proj.get_refs_list(models)
@@ -387,7 +420,6 @@ def build():
         log.error("You should specify ONLY ONE of the following options: branch, tag or commit.")
         exit(1)
     log.debug('Git commit hash: %s' % commit_hash)
-    
     
     # get save-to repository
     save_to_repository = None
@@ -496,7 +528,6 @@ def build():
     
 def publish():
     log.debug('PUBLISH started')
-    models = Models(domain, login, password)
     for task_id in command_line.task_ids:
         try:
             bl = BuildList(models, task_id)
@@ -546,7 +577,6 @@ def buildstatus():
         ids += projects_cfg['main']['last_build_ids'].split(',')
             
     ids = list(set(ids))
-    models = Models(domain, login, password)
     for i in ids:
         _print_build_status(models, i)
         
@@ -621,7 +651,6 @@ def show():
     log.debug('SHOW started')
     Log.set_silent()
     t = command_line.type
-    models = Models(domain, login, password)
 
     if t in ['build-platforms', 'build-repos']:
         build_platforms = Platform.get_build_platforms(models)

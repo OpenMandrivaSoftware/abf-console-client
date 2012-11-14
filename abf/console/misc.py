@@ -10,8 +10,12 @@ import shutil
 import re
 import yaml
 import tempfile
+import magic
+import sha
+import urllib2
 
 from abf.console.log import Log
+from abf.api.exceptions import *
 log = Log('models')
 
 
@@ -142,13 +146,30 @@ def get_spec_file(root_path):
         return spec
     else:
         raise Excpetion("Could not find single spec file")
+
+def find_spec(path=None):
+    path = path or get_root_git_dir()
+    if not path:
+        log.error('No path specified and you are not in a git repository')
+        exit(1)
+    files = os.listdir(path)
+    specs_present = []
+    for fl in files:
+        if fl.endswith('.spec'):
+            specs_present.append(fl)
+            
+    if len(specs_present) == 0:
+        raise Exception("No spec files found!")
+    elif len(specs_present) > 1:
+        raise Exception("There are more than one spec files found!")
     
+    return specs_present[0]
+        
 def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
     path = get_root_git_dir()
     files = os.listdir(path)
     
     files_present = []
-    specs_present = []
     dirs_present = []
     yaml_files = []
     for fl in files:
@@ -158,7 +179,6 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
             dirs_present.append(fl)
             continue
         if fl.endswith('.spec'):
-            specs_present.append(fl)
             continue
         files_present.append(fl)
         
@@ -172,12 +192,7 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
         for fl in yaml_data['sources']:
             yaml_files.append(fl)
             
-    if len(specs_present) == 0:
-        raise Exception("No spec files found!")
-    elif len(specs_present) > 1:
-        raise Exception("There are more than one found!")
-    
-    spec_path = specs_present[0]
+    spec_path = find_spec(path)
     
     for d in dirs_present:
         log.info("warning: directory '%s' was found" % d)
@@ -362,3 +377,141 @@ def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
                     print string
             output += string
     return output
+    
+def is_text_file(path):
+    m = magic.open(magic.MAGIC_MIME)
+    m.load()
+    r = m.file(path)
+    log.debug("Magic type of file %s is %s" % (path, r))
+    if r.startswith('text'):
+        return True
+    return False
+    
+def fetch_files(models, yaml_path, file_names=None):
+    with open(yaml_path, 'r') as fd:
+        yaml_data = yaml.load(fd)
+    if not 'sources' in yaml_data:
+        log.error("Incorrect .abf.yml file: no 'sources' key.")
+        exit(1)
+    yaml_files = yaml_data['sources']
+    if file_names:
+        to_fetch = dict([(x, yaml_files[x]) for x in file_names])
+    else:
+        to_fetch = yaml_files
+    
+    dest_dir = os.path.dirname(yaml_path)    
+    for file_name in to_fetch:
+        log.info('Fetching file %s' % file_name)
+        path = os.path.join(dest_dir, file_name)
+        if os.path.isfile(path):
+            sha_hash_current = to_fetch[file_name]
+            sha_hash_new = models.jsn.compute_sha1(path)
+            if sha_hash_current == sha_hash_new:
+                log.debug('The file %s already presents and has correct hash' % file_name)
+                continue
+            else:
+                log.info('The file %s already presents but its hash is not the same as in .abf.yml, so it will be rewritten.' % file_name)
+        try:
+            models.jsn.fetch_file(to_fetch[file_name], path)
+        except AbfApiException, ex:
+            print 'error: ' + str(ex)
+
+def upload_files(models, min_size, path=None, remove_files=True):
+    log.debug('Uploading files for directory ' + str(path))
+    spec_path = find_spec(path)
+    dir_path = os.path.dirname(spec_path)
+    errors_count = 0
+    
+    yaml_path = os.path.join(dir_path, '.abf.yml')
+    yaml_file_changed = False
+    yaml_files = {}
+    yaml_data = {'sources':{}}
+    if os.path.isfile(yaml_path):
+        with open(yaml_path, 'r') as fd:
+            yaml_data = yaml.load(fd)
+        if not 'sources' in yaml_data:
+            log.error("Incorrect .abf.yml file: no 'sources' key. The file will be rewritten.")
+            yaml_file_changed = True
+            yaml_data['sources'] = {}
+        yaml_files = yaml_data['sources']
+    
+    sources = get_project_data(spec_path)['sources']
+    for src, num in sources:
+        do_not_upload = False
+        source = os.path.join(dir_path, src)
+        if not os.path.exists(source):
+            if src not in yaml_files:
+                log.error("error: Source%d file %s does not exist, skipping!" % (num, source))
+                errors_count += 1;
+            else:
+                log.info('File %s not found, but it\'s listed in .abf.yml. Skipping.' % src)
+            continue
+        filesize = os.stat(source).st_size
+        if filesize == 0:
+            log.debug('Size of %s is 0, skipping' % src)
+            do_not_upload = True
+        if filesize < min_size:
+            log.debug('Size of %s less then minimal, skipping' % src)
+            do_not_upload = True
+        if is_text_file(source):
+            log.debug('File %s is textual, skipping' % src)
+            do_not_upload = True
+        if do_not_upload:
+            # remove file from .abf.yml
+            if src in yaml_files:
+                yaml_files.pop(src)
+                yaml_file_changed = True
+            continue
+        sha_hash = models.jsn.upload_file(source)
+        
+        if src not in yaml_files or sha_hash != yaml_files[src]:
+            log.debug('Hash for file %s has been updated' % src)
+            yaml_files[src] = sha_hash
+            yaml_file_changed = True
+        else:
+            log.debug('Hash for file %s is already correct' % src)
+        
+        log.info('File %s has been processed' % src)
+        if remove_files:
+            log.debug('Removing file %s' % source)
+            os.remove(source)
+            
+    if yaml_file_changed:
+        log.debug('Writing the new .abf.yml file...')
+        yaml_data['sources'] = yaml_files
+        with open(yaml_path, 'w') as fd:
+            yaml.dump(yaml_data, fd, default_flow_style=False)
+            
+    return errors_count
+
+SYMBOLS = {
+    'basic'     : ('b', 'k', 'm', 'g', 't'),
+    'basic_long' : ('byte', 'kilo', 'mega', 'giga', 'tera'),
+    'iec'           : ('bi', 'ki', 'mi', 'gi', 'ti'),
+    'iec_long'       : ('byte', 'kibi', 'mebi', 'gibi', 'tebi'),
+}
+
+
+def human2bytes(s):
+    if s.strip() == '0':
+        return 0
+    init = s
+    num = ""
+    while s and s[0:1].isdigit() or s[0:1] == '.':
+        num += s[0]
+        s = s[1:]
+    num = float(num)
+    letter = s.strip().lower()
+    ss = None
+    for name, sset in SYMBOLS.items():
+        if letter in sset:
+            ss = sset
+            break
+      
+    if not ss:
+        raise ValueError("can't interpret %r" % init)
+    prefix = {ss[0]:1}
+
+    for i, s in enumerate(sset[1:]):
+        prefix[s] = 1 << (i+1)*10
+    return int(num * prefix[letter])
