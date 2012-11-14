@@ -135,7 +135,7 @@ def parse_command_line():
     parser_build.add_argument('-a', '--arch', action='append', help='architectures to build, '
                         'can be set more than once. If not set - use all the available architectures.')   
     parser_build.add_argument('-r', '--repository', action='append', help='repositories to build with ([platform/]repository). '
-        'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build platform>".'
+        'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
         ' If no repositories were specified at all, use the "main" repository from save-to platform.')
     parser_build.add_argument('--auto-publish', action='store_true', help='enable automatic publishing.')
     upd_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
@@ -143,6 +143,27 @@ def parse_command_line():
                     (BuildList.update_types[0]) )
     parser_build.add_argument('--skip-spec-check', action='store_true', help='Do not check spec file.' )
     parser_build.set_defaults(func=build)
+    
+    ''' # localbuild-mock-urpm
+    parser_localbuild_mock_urpm = subparsers.add_parser('localbuild-mock-urpm', help='Initiate a build task on ABF.')
+    parser_localbuild_mock_urpm.add_argument('-b', '--branch', action='store', help='branch to build.')
+    parser_localbuild_mock_urpm.add_argument('-t', '--tag', action='store', help='tag to build.')
+    parser_localbuild_mock_urpm.add_argument('-c', '--commit', action='store', help='commit sha hash to build.')
+    parser_localbuild_mock_urpm.add_argument('-r', '--repository', action='append', help='repositories to build with ([platform/]repository). '
+        'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
+        ' If no repositories were specified at all, use the "main" repository from save-to platform.')
+    parser_localbuild_mock_urpm.set_defaults(func=localbuild_mock_urpm)
+    
+    # localbuild-rpmbuild
+    parser_localbuild_rpmbuild = subparsers.add_parser('localbuild-rpmbuild', help='Initiate a build task on ABF.')
+    parser_localbuild_rpmbuild.add_argument('-b', '--branch', action='store', help='branch to build.')
+    parser_localbuild_rpmbuild.add_argument('-t', '--tag', action='store', help='tag to build.')
+    parser_localbuild_rpmbuild.add_argument('-c', '--commit', action='store', help='commit sha hash to build.')
+    parser_localbuild_rpmbuild.add_argument('-r', '--repository', action='append', help='repositories to build with ([platform/]repository). '
+        'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
+        ' If no repositories were specified at all, use the "main" repository from save-to platform.')
+    parser_localbuild_rpmbuild.set_defaults(func=localbuild_rpmbuild)'''
+    
     
     # publish
     parser_publish = subparsers.add_parser('publish', help='Publish the task that have already been built.')
@@ -174,6 +195,176 @@ def parse_command_line():
     parser_clean.set_defaults(func=clean)
     
     command_line = parser.parse_args(sys.argv[1:])
+
+def localbuild_mock_urpm():
+    pass
+
+def localbuild_rpmbuild():
+    log.debug('LOCALBUILD started')
+    
+        
+    # get project
+    proj = get_project(models, must_exist=True, name=command_line.project)
+    if not command_line.project and not command_line.skip_spec_check: # local git repository
+        find_spec_problems()
+    if not proj.is_package:
+        log.error('The project %s is not a package and can not be built.' % proj)
+        exit(1)
+    
+    # get architectures
+    arches = []
+    all_arches = Arch.get_arches(models)
+    if command_line.arch:
+        for arch in command_line.arch:
+            a = models.arches.get_string_key(arch)
+            if not a:
+                log.error("Invalid architecture: %s" % arch)
+                exit(1)
+            arches.append(a)
+    else:
+        arches = all_arches
+        log.info("Arches are assumed to be " + str(arches))
+
+    log.debug('Architectures: %s' % arches)
+    
+    # get git commit hash
+    tag_def = bool(command_line.tag)
+    branch_def = bool(command_line.branch)
+    commit_def = bool(command_line.commit)
+    
+    tmp = tag_def + branch_def + commit_def
+    commit_hash = None
+    if tmp == 0:
+        if command_line.project:
+            command_line.branch = proj.default_branch
+        else: # we are in a git repository and it the project we are building
+            command_line.branch = get_branch_name()
+        log.info('The git branch is assumed to be "%s"' % command_line.branch)
+        branch_def = True
+        tmp = 1
+    if tmp == 1:
+        if commit_def:
+            commit_hash = command_line.commit
+        else:
+            to_resolve = command_line.branch or command_line.tag
+            ref_type = (branch_def and 'commit') or (tag_def and 'tag')
+            refs = proj.get_refs_list(models)
+            for ref in refs:
+               
+                if ref['ref'] == to_resolve and ref['object']['type'] == ref_type:
+                    commit_hash = ref['object']['sha']
+            if commit_hash == None:
+                log.error("Could not resolve hash for %s '%s'" % (ref_type, to_resolve))
+                exit(1)
+    if tmp > 1:
+        log.error("You should specify ONLY ONE of the following options: branch, tag or commit.")
+        exit(1)
+    log.debug('Git commit hash: %s' % commit_hash)
+    
+    # get save-to repository
+    save_to_repository = None
+    build_for_platform = None
+
+    available_repos = proj.repositories
+    
+    if command_line.save_to_repository:
+        items = command_line.save_to_repository.split('/')
+    else:
+        items = []
+    if len(items) == 2:
+        repo_name = items[1]
+        pl_name = items[0]
+    elif len(items) == 1:
+        repo_name = items[0]
+        pl_name = default_group + '_personal'
+        log.info("Save-to platform is assumed to be " + pl_name)
+    elif len(items) == 0:
+        pl_name = default_group + '_personal'
+        repo_name = 'main'
+        log.info("Save-to repository is assumed to be %s/%s" % (pl_name, repo_name))
+    else:
+        log.error("save-to-repository option format: [platform/]repository")
+        exit(1)
+    pls = []
+    for repo in available_repos:
+        if repo.platform.name == pl_name:
+            build_for_platform = repo.platform
+        pls.append(repo.platform.name)
+    if not build_for_platform:
+        log.error("Can not build for platform %s. Select one of the following:\n%s" % (pl_name, ', '.join(pls)))
+        exit(1)
+        
+    for repo in build_for_platform.repositories:
+        if repo.name == repo_name:
+            save_to_repository = repo
+            break
+    
+    if not save_to_repository:
+        log.error("Incorrect save-to repository %s/%s.\nSelect one of the following:\n%s" % (pl_name, repo_name, 
+                ', '.join([str(x) for x in build_for_platform.repositories])))
+        exit(1)
+        
+    log.debug('Save-to repository: ' + str(save_to_repository))
+    
+    
+    # get the list of build repositories
+    build_platforms = Platform.get_build_platforms(models)
+    build_platform_names = [x.name for x in build_platforms]
+    build_repositories = []
+    if command_line.repository:
+        for repo in command_line.repository:
+            items = repo.split('/')
+            if len(items) == 2:
+                repo_name = items[1]
+                pl_name = items[0]
+            elif len(items) == 1:
+                repo_name = items[0]
+                pl_name = default_build_platform 
+                log.info("Platform for selected repository %s is assumed to be %s" % (repo_name, pl_name))
+            else:
+                log.error("'repository' option format: [platform/]repository")
+                exit(1)
+            
+            if pl_name not in build_platform_names:
+                log.error("Can not connect repositories from %s!\nSelect one of the following:\n%s" % (pl_name,
+                        ', '.join(build_platform_names)))
+                exit(1)
+            for pl in build_platforms:
+                if pl.name == pl_name:
+                    build_platform = pl
+                    break
+            build_repo = None
+            for repo in build_platform.repositories:
+                if repo.name == repo_name:
+                    build_repo = repo
+                    break
+            if not build_repo:
+                log.error("Platform %s does not have repository %s!\nSelect one of the following:\n%s" % (pl_name, repo_name,
+                        ', '.join([x.name for x in build_platform.repositories])))
+                exit(1)
+            build_repositories.append(build_repo)
+    else:
+        build_platform = save_to_repository.platform
+        
+        if build_platform.name not in build_platform_names or not build_platform.repositories:
+            log.error("Could not resolve repositories to build with. Please specify it (-r option)")
+            exit(1)
+        
+        for repo in build_platform.repositories:
+            if repo.name == 'main':
+                log.info("The repository to build with is assumed to be " + str(repo))
+                build_repositories = [repo]
+
+    if not build_repositories:
+        log.error("You have to specify the repository(s) to build with (-r option)")
+        exit(1)
+        
+    log.debug("Build repositories: " + str(build_repositories))
+    build_ids = BuildList.new_build_task(models, proj, save_to_repository, build_repositories, commit_hash, 
+            command_line.update_type or BuildList.update_types[0], command_line.auto_publish, arches)
+    ids = ','.join([str(i) for i in build_ids])
+    projects_cfg['main']['last_build_ids'] = ids
+    projects_cfg[str(proj)]['last_build_ids'] = ids
 
 def help():
     if command_line.command:

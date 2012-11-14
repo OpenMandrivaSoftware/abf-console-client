@@ -279,8 +279,6 @@ class AbfJson(object):
                 raise PageNotFoundError('File with hash %s can not be downloaded from File-Store.' % sha_hash)
             else:
                 raise AbfApiException('Error while downloading file by hash %s: %s' % (sha_hash, str(ex)))
-        import pdb 
-        pdb.set_trace()
         fd = open(path, 'wb')
         shutil.copyfileobj(response, fd)
         fd.close()
