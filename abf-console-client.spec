@@ -1,6 +1,6 @@
 Name:           abf-console-client
 Version:        1.5
-Release:        0
+Release:        1
 Summary:        Console client for ABF (https://abf.rosalinux.ru)
 Group:          System/Configuration/Packaging
 License:        GPLv2
@@ -13,6 +13,7 @@ Requires:       python-beaker
 Requires:       python-rpm
 Requires:       git
 Requires:       python-yaml
+Requires:       python-magic
 
 %description
 Console client for ABF (https://abf.rosalinux.ru). 

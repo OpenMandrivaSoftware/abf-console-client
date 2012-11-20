@@ -81,8 +81,8 @@ def parse_command_line():
     parser_put.add_argument('-m', '--message', action='store', help='A message to commit with. It is ignored in case of "--do-not-upload"')
     parser_put.add_argument('-u', '--upload-only', action='store_true', help='Upload large files to file-store and exit')
     parser_put.add_argument('-d', '--do-not-upload', action='store', help='Do nothing with .abf.yml, just add, commit and push')
-    parser_put.add_argument('-s', '--minimal-file-size', default='2M', action='store', help='The minimal file size to upload to File-Store. '
-            'Default is 2M. You can set it to 0 to upload all the files.')
+    parser_put.add_argument('-s', '--minimal-file-size', default='0', action='store', help='The minimal file size to upload to File-Store. '
+            'Default is 0B.')
     parser_put.add_argument('-r', '--do-not-remove-files', action='store_true', help='By default files are being removed on uploading. Override this behavior.')
     parser_put.set_defaults(func=put)
     
