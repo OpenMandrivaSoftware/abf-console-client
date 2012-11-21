@@ -461,7 +461,7 @@ def put():
         error_count = upload_files(models, min_size, remove_files=not command_line.do_not_remove_files, path=path)
         if error_count:
             log.info('There were errors while uploading, stopping.')
-            return
+            exit(1)
     
     if command_line.upload_only:
         return
@@ -769,6 +769,11 @@ def buildstatus():
             
     ids = list(set(ids))
     for i in ids:
+        try:
+            i = int(i)
+        except:
+            log.error('"%s" is not a number' % i)
+            continue
         _print_build_status(models, i)
         
     

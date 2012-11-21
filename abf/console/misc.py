@@ -30,7 +30,7 @@ class ReturnCodeNotZero(Exception):
         
 def get_project_name(path=None):
     try:
-        output = execute_command(['git', 'remote', 'show', 'origin', '-n'], cwd=path)
+        output, ret_code = execute_command(['git', 'remote', 'show', 'origin', '-n'], cwd=path)
 
         for line in output.split('\n'):
             if line.startswith('  Fetch URL:') and 'abf' in line:
@@ -73,7 +73,7 @@ def get_project_data(spec_path):
 
 def get_branch_name(path=None):
     try:
-        output = execute_command(['git', 'branch'], cwd=path)
+        output, ret_code = execute_command(['git', 'branch'], cwd=path)
 
         for line in output.split('\n'):
             if not line.startswith('*'):
@@ -81,10 +81,10 @@ def get_branch_name(path=None):
             return line.split()[1]
     except ReturnCodeNotZero:
         return None
-        
+    
 def get_current_commit_hash(path=None):
     try:
-        output = execute_command(['git', 'rev-parse', 'HEAD'], cwd=path)
+        output, ret_code = execute_command(['git', 'rev-parse', 'HEAD'], cwd=path)
         return output.strip()
     except ReturnCodeNotZero:
         return None
@@ -94,7 +94,7 @@ def get_remote_branch_hash(branch, cwd=None):
     If not in git repository directory - exception will be reised. If hash can not be found - return None'''
     re_ref = re.compile('^([0-9a-f]+) refs/remotes/\w+/%s$' % branch)
     
-    output = execute_command(['git', 'show-ref'], cwd=cwd)
+    output, ret_code = execute_command(['git', 'show-ref'], cwd=cwd)
     for line in output.split('\n'):
         res = re_ref.match(line)
         if res:
@@ -107,7 +107,7 @@ def get_tag_hash(tag, cwd=None):
     If not in git repository directory - exception will be reised. If hash can not be found - return None'''
     re_ref = re.compile('^([0-9a-f]+) refs/tags/%s$' % tag)
     
-    output = execute_command(['git', 'show-ref', '--tags'], cwd=cwd)
+    output, ret_code = execute_command(['git', 'show-ref', '--tags'], cwd=cwd)
     for line in output.split('\n'):
         res = re_ref.match(line)
         if res:
@@ -348,7 +348,7 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
         if raiseExc:
             raise ReturnCodeNotZero("Command failed.\nReturn code: %s\nOutput: %s" % (child.returncode, output), child.returncode)
         
-    return output
+    return (output, child.returncode)
     
 def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
     done = 0
@@ -437,9 +437,18 @@ def upload_files(models, min_size, path=None, remove_files=True):
     
     sources = get_project_data(spec_path)['sources']
     for src, num in sources:
+        is_url = False
+        if '://' in src:
+            src = os.path.basename(src)
+            is_url = True
+        
         do_not_upload = False
         source = os.path.join(dir_path, src)
+        
         if not os.path.exists(source):
+            if is_url:
+                log.info('File %s not found, URL will be used instead. Skipping.' % src)
+                continue
             if src not in yaml_files:
                 log.error("error: Source%d file %s does not exist, skipping!" % (num, source))
                 errors_count += 1;

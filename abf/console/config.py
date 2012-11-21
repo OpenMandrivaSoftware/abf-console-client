@@ -53,7 +53,6 @@ class Section(dict):
         self.config = config
         self.conf_path = conf_path
         if not section in self.config.sections():
-            print '!!'
             self.config.add_section(self.section)
             self.save()
             

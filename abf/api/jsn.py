@@ -226,7 +226,6 @@ class AbfJson(object):
         hex_sha = s.hexdigest()
         return hex_sha
         
-        
     def upload_file(self, file_name):
         self.log.debug('Looking for "%s" in file-store...' % file_name)
         sha_hash = self.compute_sha1(file_name)
@@ -256,7 +255,7 @@ class AbfJson(object):
         conn = httplib.HTTPConnection(self.file_store_domain, 80)
         content_type = 'multipart/form-data; boundary=%s' % boundary
         headers = {'Content-Type' : content_type, 'Content-Length' : length, "Authorization": "Basic %s" % self.base64_auth_string}
-        conn.request('POST', '/api/v1/file_stores.json', body, headers)
+        conn.request('POST', '/api/v1/upload', body, headers)
         body.close()
         
         resp = conn.getresponse()
