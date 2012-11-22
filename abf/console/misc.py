@@ -40,12 +40,22 @@ def get_project_name(path=None):
         return (None, None)
     except ReturnCodeNotZero:
         return (None, None)
+
+def parse_spec_silently(ts, spec_path):
+    #'ts.parseSpec' writes error: cannot create %_sourcedir /root/rpmbuild/SOURCES
+    stderr = 1
+    os.dup2(sys.stderr.fileno(), stderr)
+    se = file('/dev/null', 'w')
+    os.dup2(se.fileno(), sys.stderr.fileno())
+    rpm_spec = ts.parseSpec(spec_path)
+    os.dup2(stderr, sys.stderr.fileno())
+    return rpm_spec
         
 def get_project_name_version(spec_path):
     try:
         rpm = __import__('rpm') # it's initialization is too long to place it to the top of the file
         ts = rpm.TransactionSet()
-        rpm_spec = ts.parseSpec(spec_path)
+        rpm_spec = parse_spec_silently(ts, spec_path)
         name = rpm.expandMacro("%{name}")
         version = rpm.expandMacro("%{version}")
         return (name, version)
@@ -55,7 +65,7 @@ def get_project_name_version(spec_path):
 def get_project_data(spec_path):
         rpm = __import__('rpm') #  it's initialization is too long to place it to the top of the file
         ts = rpm.TransactionSet()
-        rpm_spec = ts.parseSpec(spec_path)
+        rpm_spec = parse_spec_silently(ts, spec_path)
         name = rpm.expandMacro("%{name}")
         version = rpm.expandMacro("%{version}")
         sources_all = rpm_spec.sources()
@@ -218,7 +228,7 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
             warnings = True
             log.info('warning: file "%s" presents in spec (url) and in .abf.yml' % fname_base)
         
-        if is_url and not presents:
+        if is_url and not presents and not in_yaml:
             warnings = True
             log.info('warning: file "%s" is listed in spec as a URL, but does not present in the current directory or in .abf.yml file' % fname_base)
         
@@ -229,7 +239,7 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
         if not presents and not in_yaml and not is_url:
             errors = True
             log.info("error: missing file %s" % fname)
-    
+            
     remove_from_yaml = []
     for fl in set(files_present + yaml_files):
         if fl in files_required:
@@ -344,10 +354,9 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
     log.debug("Child returncode was: %s" % str(child.returncode))
     if child.returncode:
         if exit_on_error:
-            exit(child.returncode)
+            exit(1)
         if raiseExc:
             raise ReturnCodeNotZero("Command failed.\nReturn code: %s\nOutput: %s" % (child.returncode, output), child.returncode)
-        
     return (output, child.returncode)
     
 def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
@@ -428,7 +437,11 @@ def upload_files(models, min_size, path=None, remove_files=True):
     yaml_data = {'sources':{}}
     if os.path.isfile(yaml_path):
         with open(yaml_path, 'r') as fd:
-            yaml_data = yaml.load(fd)
+            try:
+                yaml_data = yaml.load(fd)
+            except yaml.composer.ComposerError:
+                log.error('Could not parse .abf.yml file. It seems to be corrupted and will be rewritten.')
+                
         if not 'sources' in yaml_data:
             log.error("Incorrect .abf.yml file: no 'sources' key. The file will be rewritten.")
             yaml_file_changed = True
@@ -475,7 +488,15 @@ def upload_files(models, min_size, path=None, remove_files=True):
         
         if src not in yaml_files or sha_hash != yaml_files[src]:
             log.debug('Hash for file %s has been updated' % src)
-            yaml_files[src] = sha_hash
+            # try to remove previous versions
+            re_src = re.compile('^([\w\d\-\.]+)-([\d\.]+)\.(tar\.gz|tar.xz|tgz|zip|tar\.bz2)$')
+            to_remove = []
+            for item in yaml_files:
+                if re_src.match(item):
+                    to_remove.append(item)
+            for item in to_remove:
+                log.info('Removing %s:%s from .abf.yml' % (item,  yaml_files.pop(item)))
+            yaml_files[src] = sha_hash.encode()
             yaml_file_changed = True
         else:
             log.debug('Hash for file %s is already correct' % src)

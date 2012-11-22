@@ -205,6 +205,16 @@ class Arch(Model):
             output.append(a)
         return output
         
+    @staticmethod
+    def get_arch_by_name(models, name):
+        cache_key = '%s__all' % (Arch.__name__)
+        arches = get_cached(st_cache, cache_key, models.jsn.get_architectures)['architectures']
+        for arch in arches:
+            if arch['name'] == name:
+                a = Arch(models, init_data=arch)
+                return a
+        return None
+        
     def __repr__(self):
         return self.name
         

@@ -52,7 +52,7 @@ __abf_build()
   __abf_opts "--branch --tag --commit --target-platform --arch --repository --save-to-repository --auto-publish --update-type --skip-spec-check"
   update_types="security bugfix enhancement recommended newpackage"
   if [ ${prev} == -r ] || [ ${prev} == --repository ] ; then
-      COMPREPLY=( $(compgen -W "`abf-local show build-repos`" -- "${cur}") )
+      COMPREPLY=( $(compgen -W "`abf show build-repos`" -- "${cur}") )
       return 0
   fi
   if [ ${prev} == -s ] || [ ${prev} == --save-to-repository ] ; then
@@ -72,7 +72,7 @@ __abf_build()
       done
 
       if [ -n "${proj}" ] ; then
-        COMPREPLY=( $(compgen -W "`abf-local show save-to-repos -p ${proj}`" -- "${cur}") )
+        COMPREPLY=( $(compgen -W "`abf show save-to-repos -p ${proj}`" -- "${cur}") )
       fi
       return 0
   fi
