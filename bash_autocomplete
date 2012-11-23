@@ -112,12 +112,34 @@ __abf_help()
   __abf_opts ""
 }
 
+__abf_search()
+{
+  __abf_opts ""
+  types="users groups platforms projects"
+  if [ "$COMP_CWORD" == "2" ] ; then
+      COMPREPLY=( $(compgen -W "${types}" -- "${cur}") )
+      return 0
+  fi
+}
+
+
+__abf_test()
+{
+  __abf_opts ""
+}
+
+
+__abf_fetch()
+{
+  __abf_opts "--only"
+  
+}
 
 
 __abf() 
 {
     local opts modes
-    modes="help get put show build publish backport buildstatus locate"
+    modes="help get put show build publish backport buildstatus locate search test fetch"
     COMPREPLY=()
     mode="${COMP_WORDS[1]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"

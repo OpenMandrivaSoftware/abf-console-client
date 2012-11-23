@@ -88,7 +88,12 @@ class Model(object):
             if key in self.params_dict:
                 return self.params_dict[key]
         raise KeyError("Key '%s' can not be found!" % key)
-       
+    
+    def __eq__(self, other):
+        return self.id == other.id
+        
+    def __ne__(self, other):
+        return self.id != other.id   
         
         
 class Platform(Model):
@@ -137,7 +142,7 @@ class Platform(Model):
         return Platform._get_platforms_filtered(models, 'main')
         
     @staticmethod
-    def get_user_platforms_personal():
+    def get_user_platforms_personal(models):
         return Platform._get_platforms_filtered(models, 'personal')
         
     @staticmethod
@@ -149,6 +154,16 @@ class Platform(Model):
             p = Platform(models, init_data=pl)
             output.append(p)
         return output
+        
+    @staticmethod
+    def search(models, query):
+        res = models.jsn.get_search_results('platforms', query)
+        platforms = res['results']['platforms']
+        platforms_out = []
+        for platform in platforms:
+            p = Platform(models, init_data=platform)
+            platforms_out.append(p)
+        return platforms_out
         
         
 class Repository(Model):
@@ -237,7 +252,17 @@ class User(Model):
             self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
         
         self.cacher = lt_cache
-                 
+    
+    @staticmethod
+    def search(models, query):
+        res = models.jsn.get_search_results('users', query)
+        users = res['results']['users']
+        users_out = []
+        for user in users:
+            u = User(models, init_data=user)
+            users_out.append(u)
+        return users_out
+    
     def __repr__(self):
         return self.uname
         
@@ -263,7 +288,18 @@ class Group(Model):
             self.params_dict['owner'] = User(self.models, init_data=self.params_dict['owner'])
         
         self.cacher = lt_cache
-                 
+        
+    @staticmethod
+    def search(models, query):
+        res = models.jsn.get_search_results('groups', query)
+        groups = res['results']['groups']
+        groups_out = []
+        for group in groups:
+            g = Group(models, init_data=group)
+            groups_out.append(g)
+        return groups_out
+    
+        
     def __repr__(self):
         return self.uname
         
@@ -307,12 +343,24 @@ class Project(Model):
             self.params_dict['created_at'] = datetime.fromtimestamp(float(self.init_data['created_at']))
         if 'updated_at' in self.init_data:
             self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
-        self.cacher = lt_cache
             
         self.cacher = st_cache
+        
+    @staticmethod
+    def search(models, query):
+        res = models.jsn.get_search_results('projects', query)
+        projs = res['results']['projects']
+        projects_out = []
+        for proj in projs:
+            pr = Project(models, init_data=proj)
+            projects_out.append(pr)
+        return projects_out
                 
     def __repr__(self):
-        return '%s/%s' % (self.owner.uname, self.name) 
+        if 'owner' in self.params_dict:
+            return '%s/%s' % (self.owner.uname, self.name) 
+        else:
+            return self.fullname
         
     def get_refs_list(self, models):
         return self.models.jsn.get_git_refs_list(self.id)['refs_list']

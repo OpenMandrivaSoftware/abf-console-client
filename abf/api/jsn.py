@@ -351,3 +351,8 @@ class AbfJson(object):
         group_id = int(group_id)
         URL = "/api/v1/groups/%d.json" % group_id
         return self.get_url_contents(URL)
+        
+    def get_search_results(self, search_type, query):
+        URL = "/api/v1/search.json"
+        GET = {'type': search_type, 'query': query, 'per_page': 100}
+        return self.get_url_contents(URL, GET=GET)

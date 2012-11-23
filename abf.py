@@ -6,8 +6,6 @@ import argparse
 from argparse import RawDescriptionHelpFormatter
 import os
 import shutil
-import pdb
-
 
 
 from abf.console.config import Config
@@ -32,28 +30,47 @@ models_params = ((abf_url, file_store_url, login, password))
 
 models = Models(*models_params)
 
-#r = models.jsn.upload_file('/tmp/log')
 
-#r = Group(models, 2)
-#r = Platform(models, init_data={'id':64, 'name': 'AAAA'})
-#r = models.platforms[64]
-#r = Platform(models, ID=64)
-#r = Repository(models, ID=71)
+def test():
+    log.debug('TEST started')
+    pls_import_personal = Platform.search(models, 'import_personal')
+    grs_import = Group.search(models, 'import')
+    prs_abfcc = Project.search(models, 'abf-console-client')
+    uss_akirilenko = User.search(models, 'akirilenko')
+    
+    assert pls_import_personal
+    assert grs_import
+    assert prs_abfcc
+    assert uss_akirilenko
+    
+    assert pls_import_personal[0].repositories[0].platform == pls_import_personal[0]
+    
+    # check last items
+    assert Platform(models, ID=pls_import_personal[0].id).name == pls_import_personal[0].name
+    assert Group(models, ID=grs_import[0].id).uname == grs_import[0].uname
+    assert Project(models, ID=prs_abfcc[0].id).name == prs_abfcc[0].name
+    assert User(models, ID=uss_akirilenko[0].id).uname == uss_akirilenko[0].uname
+    
+    # make models load the whole object
+    pls_import_personal[0].description
+    grs_import[0].description
+    prs_abfcc[0].description
+    uss_akirilenko[0].professional_experience
+    
+    pr_abfcc = Project.get_by_name(models, 'akirilenko/abf-console-client')
+    assert pr_abfcc in prs_abfcc
+    
+    #bl = BuildList(models, ID=750988)
+    Platform.get_user_platforms_main(models)
+    Platform.get_user_platforms_personal(models)
+    Platform.get_build_platforms(models)
+    
+    arches = Arch.get_arches(models)
+    arch_x86_64 = Arch.get_arch_by_name(models, 'x86_64')
+    assert arch_x86_64 in arches
+    
+    log.info('Datamodel seems to work fine')
 
-#r = Project.get_by_name(models, 'import/mock-urpm')
-
-#r = BuildList(models, ID=750988)
-
-#r = models.get_user_platforms_main()
-#r = models.get_user_platforms_personal()
-#r = models.get_build_platforms()
-
-#r = models.get_arches()
-
-#print r.repositories[0].platform.repositories[2].platform
-
-#exit()
-   
 
 
 def parse_command_line():
@@ -88,7 +105,7 @@ def parse_command_line():
     
     # fetch
     parser_fetch = subparsers.add_parser('fetch', help='Download all the files listed in .abf.yml from File-Store to local directory.')
-    parser_fetch.add_argument('-o', '--only', action='store', nargs='+', help='Limit the list of downloaded files to this file name(s). This option can be specified more than once.')
+    parser_fetch.add_argument('-o', '--only', action='append', help='Limit the list of downloaded files to this file name(s). This option can be specified more than once.')
     parser_fetch.set_defaults(func=fetch)
     
     # show
@@ -194,6 +211,20 @@ def parse_command_line():
     parser_clean.add_argument('--auto-remove', action='store_true', help='automatically remove all the unnecessary files')
     parser_clean.set_defaults(func=clean)
     
+    # search
+    parser_search = subparsers.add_parser('search', help='Search for something on ABF.', epilog='NOTE: only first 100 results of any request will be shown')
+    search_choices = ['users', 'groups', 'platforms', 'projects']
+    parser_search.add_argument('type', action='store', choices=search_choices, help='what to search for')
+    parser_search.add_argument('query', action='store', help='a string to search for')
+    parser_search.set_defaults(func=search)
+    
+    # test
+    parser_test = subparsers.add_parser('test', help='Execute a set of internal datamodel tests')
+    parser_test.set_defaults(func=test)
+    
+    for s in subparsers._name_parser_map:
+        subparsers._name_parser_map[s].add_argument('-v', '--verbose', action='store_true', help='be verbose, display even debug messages')
+    
     command_line = parser.parse_args(sys.argv[1:])
 
 def localbuild_mock_urpm():
@@ -209,6 +240,15 @@ def help():
     else:
         sys.argv = [sys.argv[0], '-h']
     parse_command_line()
+    
+def search():
+    log.debug('SEARCH started')
+    st = command_line.type
+    sq = command_line.query
+    cl = {'groups': Group, 'users': User, 'platforms': Platform, 'projects': Project}
+    items = cl[st].search(models, sq)
+    for item in items:
+        print item
     
 def get_project_name_only(must_exist=True, name=None):
     if name:
