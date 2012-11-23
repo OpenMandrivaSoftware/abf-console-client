@@ -366,7 +366,7 @@ def fetch():
         exit(1)
     path = os.path.join(path, '.abf.yml')
     if not os.path.isfile(path):
-        log.error('File "%s" can not be found')
+        log.error('File "%s" can not be found' % path)
         exit(1)
     fetch_files(models, path, command_line.only)
 

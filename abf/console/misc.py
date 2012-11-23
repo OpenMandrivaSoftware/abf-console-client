@@ -490,12 +490,22 @@ def upload_files(models, min_size, path=None, remove_files=True):
             log.debug('Hash for file %s has been updated' % src)
             # try to remove previous versions
             re_src = re.compile('^([\w\d\-\.]+)-([\d\.]+)\.(tar\.gz|tar.xz|tgz|zip|tar\.bz2)$')
-            to_remove = []
-            for item in yaml_files:
-                if re_src.match(item):
-                    to_remove.append(item)
-            for item in to_remove:
-                log.info('Removing %s:%s from .abf.yml' % (item,  yaml_files.pop(item)))
+            res = re_src.match(src)
+            if res:
+                src_gr = res.groups()
+                to_remove = []
+                for item in yaml_files:
+                    res = re_src.match(item)
+                    if res:
+                        gr = res.groups()
+                        if gr[0] == src_gr[0]:
+                            to_remove.append(item)
+                for item in to_remove:
+                    h = yaml_files.pop(item)
+                    if 'removed_sources' not in yaml_data:
+                        yaml_data['removed_sources'] = {}
+                    yaml_data['removed_sources'][item] = h
+                    log.info('Removing %s:%s from .abf.yml' % (item, h ))
             yaml_files[src] = sha_hash.encode()
             yaml_file_changed = True
         else:
@@ -505,6 +515,7 @@ def upload_files(models, min_size, path=None, remove_files=True):
         if remove_files:
             log.debug('Removing file %s' % source)
             os.remove(source)
+            
             
     if yaml_file_changed:
         log.debug('Writing the new .abf.yml file...')
