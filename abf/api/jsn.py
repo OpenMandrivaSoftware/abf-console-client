@@ -133,10 +133,11 @@ class AbfJson(object):
         else:
             request = urllib2.Request(url)
             
-            if cache_etags.has_key(url) :
+            if cache_etags.has_key(url):
                 etag = cache_etags.get(url)
-                self.log.debug("It was cached! ETag: " + etag)
-                request.add_header("If-None-Match", etag) 
+                if cache_data.has_key(etag):
+                    self.log.debug("It was cached! ETag: " + etag)
+                    request.add_header("If-None-Match", etag) 
                 
         
         request.add_header("Authorization", "Basic %s" % self.base64_auth_string)  

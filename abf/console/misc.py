@@ -328,16 +328,19 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
         # use select() to poll for output so we dont block
         output = logOutput([child.stdout, child.stderr],
                 start, timeout, print_to_stdout=print_to_stdout)
-    except:
+    except Exception, ex:
         # kill children if they arent done
-        if child is not None and child.returncode is None:
-            os.killpg(child.pid, 9)
+        if type(ex) == IOError and ex.errno==4:
+            print 'Process execution has been terminated'
+            exit()
         try:
+            if child is not None and child.returncode is None:
+                os.killpg(child.pid, 9)
             if child is not None:
                 os.waitpid(child.pid, 0)
         except:
             pass
-        raise
+        raise ex
     
     # wait until child is done, kill it if it passes timeout
     niceExit=1
@@ -362,29 +365,40 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
 def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
     done = 0
     output = ''
+    #print 'NEW CALL epoll', fds[0].fileno(), fds[1].fileno()
     
     # set all fds to nonblocking
     for fd in fds:
         flags = fcntl.fcntl(fd, fcntl.F_GETFL)
         if not fd.closed:
             fcntl.fcntl(fd, fcntl.F_SETFL, flags| os.O_NONBLOCK)
-       
-    while not done:
-        if (time.time() - start)>timeout and timeout!=0:
-            done = 1
-            break
-
-        i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1)
-        for s in i_rdy:
-            # slurp as much input as is ready
-            string = s.read()
-            if string == '':
-                done = 1
-                continue
-            else:
-                if print_to_stdout:
-                    print string
-            output += string
+            
+    epoll = select.epoll()
+    epoll.register(fds[0].fileno(), select.EPOLLIN)
+    epoll.register(fds[1].fileno(), select.EPOLLIN)
+    reg_num = 2
+    try:
+        done = False
+        while not done:
+            events = epoll.poll(1)
+            for fileno, event in events:
+                if event & select.EPOLLIN:
+                    #print (fileno, event)
+                    if fileno == fds[0].fileno():
+                        r =  fds[0].read()
+                        #print r
+                        output += r
+                    else:
+                        r = fds[1].read()
+                        #print r
+                        output += r
+                elif event & select.EPOLLHUP:
+                    epoll.unregister(fileno)
+                    reg_num -= 1
+                    if not reg_num:
+                        done = True
+    finally:
+        epoll.close()    
     return output
     
 def is_text_file(path):
