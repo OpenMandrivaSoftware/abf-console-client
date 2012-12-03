@@ -31,7 +31,7 @@ SYMBOLS = {
 def bytes2human(n, format='%(value).1f%(symbol)s', symbols='basic'):
     n = int(n)
     if n < 0:
-        raise ValueError("n < 0")
+        raise ValueError("n < 0 (%s)" % str(n))
     title = not symbols.endswith('_long')
     symbols = SYMBOLS[symbols]
     prefix = {}

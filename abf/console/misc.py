@@ -44,11 +44,13 @@ def get_project_name(path=None):
 def parse_spec_silently(ts, spec_path):
     #'ts.parseSpec' writes error: cannot create %_sourcedir /root/rpmbuild/SOURCES
     stderr = 1
-    os.dup2(sys.stderr.fileno(), stderr)
-    se = file('/dev/null', 'w')
-    os.dup2(se.fileno(), sys.stderr.fileno())
-    rpm_spec = ts.parseSpec(spec_path)
-    os.dup2(stderr, sys.stderr.fileno())
+    try:
+        os.dup2(sys.stderr.fileno(), stderr)
+        se = file('/dev/null', 'w')
+        os.dup2(se.fileno(), sys.stderr.fileno())
+        rpm_spec = ts.parseSpec(spec_path)
+    finally:
+        os.dup2(stderr, sys.stderr.fileno())
     return rpm_spec
         
 def get_project_name_version(spec_path):
@@ -461,8 +463,11 @@ def upload_files(models, min_size, path=None, remove_files=True):
             yaml_file_changed = True
             yaml_data['sources'] = {}
         yaml_files = yaml_data['sources']
-    
-    sources = get_project_data(spec_path)['sources']
+    try:
+        sources = get_project_data(spec_path)['sources']
+    except Exception, ex:
+        log.error(ex)
+        return 1
     for src, num in sources:
         is_url = False
         if '://' in src:
