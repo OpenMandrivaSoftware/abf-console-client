@@ -14,6 +14,7 @@ Requires:       python-rpm
 Requires:       git
 Requires:       python-yaml
 Requires:       python-magic
+Requires:       tar >= 1.26
 Suggests:       mock-urpm
 
 %description
@@ -51,7 +52,13 @@ ln -s %{_datadir}/bash-completion/abf %{buildroot}/%{_sysconfdir}/bash_completio
 %{_datadir}/bash-completion/abf 
 %{_sysconfdir}/bash_completion.d/abf
 %{_sysconfdir}/profile.d/abfcd.sh
+%dir %{_sysconfdir}/abf/mock-urpm/configs/
 %{_sysconfdir}/abf/mock-urpm/configs/*
+%dir /var/cache/abf/
+%dir /var/cache/abf/mock-urpm/
+%dir /var/cache/abf/mock-urpm/src
+%dir /var/lib/abf/
+%dir /var/lib/abf/mock-urpm
 
 %files -n python-abf
 %defattr(-,root,root,-)

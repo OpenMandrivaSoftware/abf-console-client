@@ -180,12 +180,12 @@ def parse_command_line():
     parser_publish.add_argument('task_ids', action='store', nargs="+", help='The IDs of tasks to publish.')
     parser_publish.set_defaults(func=publish)
     
-    # backport
-    parser_backport = subparsers.add_parser('backport', help='Copy all the files from SRC_BRANCH to DST_BRANCH')
-    parser_backport.add_argument('src_branch', action='store', help='source branch')
-    parser_backport.add_argument('dst_branch', action='store', nargs='?', help='destination branch. If not specified, it\'s assumed to be the current branch')
-    parser_backport.add_argument('-p', '--pack', action='store_true', help='Create a tar.gz from the src_branch and put this archive and spec file to dst_branch')
-    parser_backport.set_defaults(func=backport)
+    # copy
+    parser_copy = subparsers.add_parser('copy', help='Copy all the files from SRC_BRANCH to DST_BRANCH')
+    parser_copy.add_argument('src_branch', action='store', help='source branch')
+    parser_copy.add_argument('dst_branch', action='store', nargs='?', help='destination branch. If not specified, it\'s assumed to be the current branch')
+    parser_copy.add_argument('-p', '--pack', action='store_true', help='Create a tar.gz from the src_branch and put this archive and spec file to dst_branch')
+    parser_copy.set_defaults(func=copy)
     
     # buildstatus
     parser_clean = subparsers.add_parser('buildstatus', help='get a build-task status', epilog='If a project specified '
@@ -228,7 +228,9 @@ def run_mock_urpm(binary=True):
         command_line.config = command_line.config[:-4]
     config_path = os.path.join(configs_dir, command_line.config + '.cfg')
     if not os.path.exists(config_path):
-        log.error("Config template %s can not be found." % config_path)
+        log.error("Config file %s can not be found." % config_path)
+        if os.path.basename(config_path) == 'default.cfg':
+            log.error("You should create this file or a symbolic link to another config in order to execute 'abf mock-urpm' withow --config")
         exit(1)
     config_opts = {'plugins': [], 'scm_opts': {}}  
     config_opts['plugin_conf'] = {'ccache_opts': {}, 'root_cache_opts': {}, 'bind_mount_opts': {'dirs': []}, 'tmpfs_opts': {}, 'selinux_opts': {}}
@@ -276,7 +278,7 @@ def run_mock_urpm(binary=True):
     
     log.info('\nSRPM: %s\n' % srpm_path_new)
     if binary:
-        cmd = ['mock-urpm', '-r', command_line.config, '--configdir', configs_dir,  srpm_path_new]
+        cmd = ['mock-urpma', '-r', command_line.config, '--configdir', configs_dir,  srpm_path_new]
         if command_line.verbose:
             cmd.append('-v')
         log.info('Executing mock-urpm...')
@@ -442,8 +444,8 @@ def fetch():
         exit(1)
     fetch_files(models, path, command_line.only)
 
-def backport():
-    log.debug('BACKPORT started')
+def copy():
+    log.debug('COPY started')
     sbrn = command_line.src_branch
     start_branch = get_branch_name()
     if not start_branch:

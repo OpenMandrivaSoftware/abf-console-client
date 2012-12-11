@@ -39,7 +39,7 @@ install:
 	mkdir -p $(DESTDIR)$(ETCDIR)/abf/mock-urpm/configs/
 	cp configs/* $(DESTDIR)$(ETCDIR)/abf/mock-urpm/configs/
 	mkdir -p $(DESTDIR)/var/cache/abf/mock-urpm/src
-	mkdir -p $(DESTDIR)/var/lib/abf
+	mkdir -p $(DESTDIR)/var/lib/abf/mock-urpm
 	chmod 0777 $(DESTDIR)/var/cache/abf/mock-urpm/src
 	
 	
