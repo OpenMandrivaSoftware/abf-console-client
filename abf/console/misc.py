@@ -43,14 +43,19 @@ def get_project_name(path=None):
 
 def parse_spec_silently(ts, spec_path):
     #'ts.parseSpec' writes error: cannot create %_sourcedir /root/rpmbuild/SOURCES
-    stderr = 1
+    stderr = 1001
+    stdout = 1000
     try:
         os.dup2(sys.stderr.fileno(), stderr)
+        os.dup2(sys.stdout.fileno(), stdout)
         se = file('/dev/null', 'w')
         os.dup2(se.fileno(), sys.stderr.fileno())
+        os.dup2(se.fileno(), sys.stdout.fileno())
         rpm_spec = ts.parseSpec(spec_path)
     finally:
         os.dup2(stderr, sys.stderr.fileno())
+        os.dup2(stdout, sys.stdout.fileno())
+        #se.close()
     return rpm_spec
         
 def get_project_name_version(spec_path):
@@ -90,6 +95,8 @@ def get_branch_name(path=None):
         for line in output.split('\n'):
             if not line.startswith('*'):
                 continue
+            if line == '* (no branch)':
+                return '(no branch)'
             return line.split()[1]
     except ReturnCodeNotZero:
         return None
@@ -143,7 +150,7 @@ def get_root_git_dir(path=None):
     else:
         p = os.getcwd()
         
-    while '.git' not in os.listdir(p) or p == '/':
+    while '.git' not in os.listdir(p) and p != '/':
         p = os.path.dirname(p)
     if p == '/':
         return None
@@ -390,10 +397,14 @@ def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
                         r =  fds[0].read()
                         #print r
                         output += r
+                        if print_to_stdout:
+                            sys.stdout.write(r)
                     else:
                         r = fds[1].read()
                         #print r
                         output += r
+                        if print_to_stdout:
+                            sys.stdout.write(r)
                 elif event & select.EPOLLHUP:
                     epoll.unregister(fileno)
                     reg_num -= 1

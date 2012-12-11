@@ -35,4 +35,12 @@ install:
 	mkdir -p $(DESTDIR)$(ETCDIR)/profile.d
 	cp "bash_autocomplete" $(DESTDIR)$(USRSHAREDIR)/bash-completion/abf
 	cp "abfcd.sh" $(DESTDIR)$(ETCDIR)/profile.d/abfcd.sh
+	
+	mkdir -p $(DESTDIR)$(ETCDIR)/abf/mock-urpm/configs/
+	cp configs/* $(DESTDIR)$(ETCDIR)/abf/mock-urpm/configs/
+	mkdir -p $(DESTDIR)/var/cache/abf/mock-urpm/src
+	mkdir -p $(DESTDIR)/var/lib/abf
+	chmod 0777 $(DESTDIR)/var/cache/abf/mock-urpm/src
+	
+	
 

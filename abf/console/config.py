@@ -172,11 +172,11 @@ class Config(dict):
         
         self['user']['git_uri'] = git_uri
         
-        res = ask_user('Default group [%s]: ' % user, can_be_empty=True)
+        res = ask_user('Default project owner [%s]: ' % user, can_be_empty=True)
         self['user']['default_group'] = res or user
         
-        def_bp = user + '_personal'
-        res = ask_user('Default build platform [%s]: ' % def_bp, can_be_empty=True)
+        def_bp = 'rosa2012.1'
+        res = ask_user('Default platform [%s]: ' % def_bp, can_be_empty=True)
         self['user']['default_build_platform'] = res or def_bp
         
         filestore_domain = self.ask_user_url('File-store URL [%s]: ' % Config.default_filestore_url, Config.default_filestore_url)
