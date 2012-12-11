@@ -51,7 +51,7 @@ ln -s %{_datadir}/bash-completion/abf %{buildroot}/%{_sysconfdir}/bash_completio
 %{_datadir}/bash-completion/abf 
 %{_sysconfdir}/bash_completion.d/abf
 %{_sysconfdir}/profile.d/abfcd.sh
-
+%{_sysconfdir}/abf/mock-urpm/configs/*
 
 %files -n python-abf
 %defattr(-,root,root,-)
