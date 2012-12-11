@@ -1,6 +1,6 @@
 Name:           abf-console-client
-Version:        1.6
-Release:        3
+Version:        1.7
+Release:        1
 Summary:        Console client for ABF (https://abf.rosalinux.ru)
 Group:          System/Configuration/Packaging
 License:        GPLv2
@@ -14,6 +14,7 @@ Requires:       python-rpm
 Requires:       git
 Requires:       python-yaml
 Requires:       python-magic
+Suggests:       mock-urpm
 
 %description
 Console client for ABF (https://abf.rosalinux.ru). 
@@ -50,7 +51,7 @@ ln -s %{_datadir}/bash-completion/abf %{buildroot}/%{_sysconfdir}/bash_completio
 %{_datadir}/bash-completion/abf 
 %{_sysconfdir}/bash_completion.d/abf
 %{_sysconfdir}/profile.d/abfcd.sh
-
+%{_sysconfdir}/abf/mock-urpm/configs/*
 
 %files -n python-abf
 %defattr(-,root,root,-)
