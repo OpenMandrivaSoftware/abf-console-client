@@ -56,7 +56,7 @@ ln -s %{_datadir}/bash-completion/abf %{buildroot}/%{_sysconfdir}/bash_completio
 %{_sysconfdir}/abf/mock-urpm/configs/*
 %dir /var/cache/abf/
 %dir /var/cache/abf/mock-urpm/
-%dir /var/cache/abf/mock-urpm/src
+%dir /var/lib/abf/mock-urpm/src
 %dir /var/lib/abf/
 %dir /var/lib/abf/mock-urpm
 
