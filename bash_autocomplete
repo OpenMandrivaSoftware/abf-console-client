@@ -158,7 +158,7 @@ __abf_clean()
 __abf() 
 {
     local opts modes
-    modes="help get put show build publish status locate search test fetch mock-urpm rpmbuild clean"
+    modes="help get put show build publish status locate search test fetch mock-urpm rpmbuild clean copy"
     COMPREPLY=()
     mode="${COMP_WORDS[1]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
