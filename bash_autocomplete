@@ -13,17 +13,17 @@ __abf_opts()
 
 __abf_get()
 {
-  __abf_opts "--branch"
+  __abf_opts "--branch --verbode --help"
 }
 
 __abf_put()
 {
-  __abf_opts ""
+  __abf_opts "--verbode --help"
 }
 
 __abf_show()
 {
-  __abf_opts "--project"
+  __abf_opts "--project --verbode --help"
   shows="build-repos build-platforms save-to-repos save-to-platforms"
   if [[ ${cur} != -* ]] ; then
       if [[ ${prev} == -* ]] ; then
@@ -36,7 +36,7 @@ __abf_show()
 
 __abf_locate()
 {
-  __abf_opts "--project --directory"
+  __abf_opts "--project --directory --verbode --help"
   actions="update update-recursive"
   if [[ ${cur} != -* ]] ; then
       if [[ ${prev} == -* ]] ; then
@@ -45,6 +45,20 @@ __abf_locate()
       COMPREPLY=( $(compgen -W "${actions}" -- "${cur}") )
       return 0
   fi
+}
+
+__abf_mock_urpm()
+{
+  __abf_opts "--config --verbode --help"
+  configs_dir='/etc/abf/mock-urpm/configs'
+  if [ ${prev} == -c ] || [ ${prev} == --config ] ; then
+    COMPREPLY=( $(compgen -W "` ls -1 ${configs_dir}/*.cfg | xargs -l basename  | sed s/[.]cfg//g`" -- "${cur}") )
+  fi
+}
+
+__abf_rpmbuild()
+{
+  __abf_opts "--verbode --help --build"
 }
 
 __abf_build()
@@ -87,12 +101,12 @@ __abf_build()
 
 __abf_publish()
 {
-  __abf_opts "--pack"
+  __abf_opts "--pack --verbode --help"
 }
 
-__abf_backport()
+__abf_copy()
 {
-  __abf_opts "--pack"
+  __abf_opts "--pack --verbode --help"
   
   
   if [[ ${cur} != -* ]] ; then
@@ -102,19 +116,19 @@ __abf_backport()
   fi
 }
 
-__abf_buildstatus()
+__abf_status()
 {
-  __abf_opts ""
+  __abf_opts "--verbode --help"
 }
 
 __abf_help()
 {
-  __abf_opts ""
+  __abf_opts "--verbode --help"
 }
 
 __abf_search()
 {
-  __abf_opts ""
+  __abf_opts "--verbode --help"
   types="users groups platforms projects"
   if [ "$COMP_CWORD" == "2" ] ; then
       COMPREPLY=( $(compgen -W "${types}" -- "${cur}") )
@@ -125,21 +139,26 @@ __abf_search()
 
 __abf_test()
 {
-  __abf_opts ""
+  __abf_opts "--verbode --help"
 }
 
 
 __abf_fetch()
 {
-  __abf_opts "--only"
+  __abf_opts "--only --verbode --help"
   
+}
+
+__abf_clean()
+{
+  __abf_opts "--auto-remove --verbode --help"
 }
 
 
 __abf() 
 {
     local opts modes
-    modes="help get put show build publish backport buildstatus locate search test fetch"
+    modes="help get put show build publish status locate search test fetch mock-urpm rpmbuild clean"
     COMPREPLY=()
     mode="${COMP_WORDS[1]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
@@ -153,7 +172,8 @@ __abf()
     for i in ${modes}
     do
         if [[ $i == $mode ]] ; then
-            eval __abf_${i};
+            j=`echo ${mode}| sed s/-/_/`
+            eval __abf_${j};
         fi
     done
    

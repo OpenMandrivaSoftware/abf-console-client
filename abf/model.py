@@ -369,7 +369,7 @@ class Project(Model):
 class BuildList(Model):
     required_fields = ['id', 'name', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
     'build_for_platform', 'save_to_repository', 'arch', 'is_circle', 'update_type', 'build_requires', 'auto_publish', 
-    'commit_hash', 'duration', 'owner', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
+    'commit_hash', 'duration', 'owner', 'owner_type', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
     
     status_by_id = {
         0: 'build complete',
@@ -412,8 +412,13 @@ class BuildList(Model):
             r = Repository(self.models, init_data=rep)
             self.params_dict['include_repos'].append(r)
         
-        
-        self.params_dict['owner'] = User(self.models, init_data=self.init_data['owner'])
+        self.params_dict['owner_type'] = self.init_data['owner']['type']
+        if self.params_dict['owner_type'] == 'User':
+            self.params_dict['owner'] = User(self.models, init_data=self.init_data['owner'])
+        elif self.params_dict['owner_type'] == 'Group':
+            self.params_dict['owner'] = Group(self.models, init_data=self.init_data['owner'])
+                
+        #self.params_dict['owner'] = User(self.models, init_data=self.init_data['owner'])
         if 'created_at' in self.init_data:
             self.params_dict['created_at'] = datetime.fromtimestamp(float(self.init_data['created_at']))
         if 'updated_at' in self.init_data:

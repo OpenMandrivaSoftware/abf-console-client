@@ -164,14 +164,16 @@ def parse_command_line():
     parser_build.set_defaults(func=build)
     
     # mock-urpm
-    parser_mock_urpm = subparsers.add_parser('mock-urpm', help='Build a project locally using mock-urpm.')
+    parser_mock_urpm = subparsers.add_parser('mock-urpm', help='Build a project locally using mock-urpm.', epilog='No checkouts will be made,'
+                                                                    'the current git repository state will be used')
     parser_mock_urpm.add_argument('-c', '--config', action='store', help='A config template to use. Specify owne of the config names ' 
         'from %s. Directory path should be omitted. If no config specified, "default.cfg" will be used' % configs_dir)
     parser_mock_urpm.set_defaults(func=localbuild_mock_urpm)
     
     # rpmbuild
-    parser_rpmbuild = subparsers.add_parser('rpmbuild', help='Build a project locally using rpmbuild. No checkouts will be made,'
+    parser_rpmbuild = subparsers.add_parser('rpmbuild', help='Build a project locally using rpmbuild.', epilog='No checkouts will be made,'
                                                                     'the current git repository state will be used')
+    parser_rpmbuild.add_argument('-b', '--build', action='store', choices=['b', 's', 'a'], default='a', help='Build src.rpm (s), rpm (b) or both (a)')                                                                
     parser_rpmbuild.set_defaults(func=localbuild_rpmbuild)
     
     
@@ -187,16 +189,16 @@ def parse_command_line():
     parser_copy.add_argument('-p', '--pack', action='store_true', help='Create a tar.gz from the src_branch and put this archive and spec file to dst_branch')
     parser_copy.set_defaults(func=copy)
     
-    # buildstatus
-    parser_clean = subparsers.add_parser('buildstatus', help='get a build-task status', epilog='If a project specified '
+    # status
+    parser_status = subparsers.add_parser('status', help='get a build-task status', epilog='If a project specified '
     ' or you are in a git repository - try to get the IDs from the last build task sent for this project. If you are not'
     ' in a git repository directory and project is not specified - try to get build IDs from the last build you\'ve done '
     'with console client.')
-    parser_clean.add_argument('ID', action='store', nargs='*', help='build list ID')
-    parser_clean.add_argument('-p', '--project', action='store',  help='Project. If last IDs for this project can be found - use them')
-    parser_clean.add_argument('-s', '--short', action='store_true',  help='Show one-line information including id, project, '
+    parser_status.add_argument('ID', action='store', nargs='*', help='build list ID')
+    parser_status.add_argument('-p', '--project', action='store',  help='Project. If last IDs for this project can be found - use them')
+    parser_status.add_argument('-s', '--short', action='store_true',  help='Show one-line information including id, project, '
                                                                                                         'arch and status')
-    parser_clean.set_defaults(func=buildstatus)
+    parser_status.set_defaults(func=status)
     
     # clean
     parser_clean = subparsers.add_parser('clean', help='Analyze spec file and show missing and unnecessary files from '
@@ -219,9 +221,34 @@ def parse_command_line():
         subparsers._name_parser_map[s].add_argument('-v', '--verbose', action='store_true', help='be verbose, display even debug messages')
     
     command_line = parser.parse_args(sys.argv[1:])   
-    
+
+def fix_default_config():
+    if not os.path.exists('/etc/abf/mock-urpm/configs/default.cfg'):
+        if os.getuid() != 0:
+            print "To set up a default configuration file, symbolic link in " +\
+                    "/etc/abf/mock-urpm/configs have to be created. I need sudo rights to do it."
+            exit(1)
+        
+        files = os.listdir('/etc/abf/mock-urpm/configs')
+        print 'Avaliable configurations: '
+        out = []
+        for f in files:
+            if not f.endswith('.cfg'):
+                continue
+            if f == 'site-defaults.cfg':
+                continue
+            out.append(f[:-4])
+        
+        print ', '.join(out)
+        res = None
+        while res not in out:
+            if res is not None:
+                print '"%s" is not a valid configuration.' % res
+            res = raw_input('Select one (it will be remembered): ')
+        os.symlink('/etc/abf/mock-urpm/configs/%s.cfg' % res, '/etc/abf/mock-urpm/configs/default.cfg')
     
 def run_mock_urpm(binary=True):
+    fix_default_config()
     if not command_line.config:
         command_line.config = 'default.cfg'
     if command_line.config.endswith('.cfg'):
@@ -248,11 +275,10 @@ def run_mock_urpm(binary=True):
     if os.path.exists(src_dir):
         shutil.rmtree(src_dir)
     src = get_root_git_dir()
-    log.info('Fetching files...')
     cmd = ['abf', 'fetch']
     if command_line.verbose:
         cmd.append('-v')
-    execute_command(cmd, print_to_stdout=False, exit_on_error=True)
+    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     shutil.copytree(src, src_dir, symlinks=True)
 
     spec_path = find_spec(src_dir)
@@ -264,7 +290,13 @@ def run_mock_urpm(binary=True):
     if command_line.verbose:
         cmd.append('-v')
     log.info('Executing mock-urpm...')
-    res = execute_command(cmd, print_to_stdout=True, exit_on_error=False, shell=False)
+    try:
+        res = execute_command(cmd, print_to_stdout=True, exit_on_error=False, shell=False)
+    except OSError, ex:
+        log.error("Can not execute mock-urpm (%s). Maybe it is not installed?" % str(ex))
+        exit(1)
+    finally:
+        shutil.rmtree(src_dir)
     
     srpm_path = glob(os.path.join(resultsdir, '*.src.rpm'))
     if len (srpm_path) != 1:
@@ -278,7 +310,7 @@ def run_mock_urpm(binary=True):
     
     log.info('\nSRPM: %s\n' % srpm_path_new)
     if binary:
-        cmd = ['mock-urpma', '-r', command_line.config, '--configdir', configs_dir,  srpm_path_new]
+        cmd = ['mock-urpm', '-r', command_line.config, '--configdir', configs_dir,  srpm_path_new]
         if command_line.verbose:
             cmd.append('-v')
         log.info('Executing mock-urpm...')
@@ -305,8 +337,50 @@ def localbuild_mock_urpm():
         exit(1)
 
 def localbuild_rpmbuild():
-    log.debug('LOCALBUILD started')
-    log.error('Not implemented')
+    log.debug('RPMBUILD started')
+    src_dir = '/tmp/abf/rpmbuild'
+    mkdirs('/tmp/abf')
+    if os.path.exists(src_dir):
+        shutil.rmtree(src_dir)
+    src = get_root_git_dir()
+    cmd = ['abf', 'fetch']
+    if command_line.verbose:
+        cmd.append('-v')
+    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+    shutil.copytree(src, src_dir, symlinks=True)
+    
+    spec_path = find_spec(src_dir)
+    if not spec_path:
+        log.error('Can not locate a spec file in %s' % src_dir)
+        exit(1)
+    spec_path = os.path.join(src_dir, spec_path)
+    cmd = ['rpmbuild', '-b'+command_line.build, '--define', '_topdir '+src_dir, '--define', '_sourcedir '+src_dir, spec_path]
+    if command_line.verbose:
+        cmd.append('-v')
+    log.info('Executing rpmbuild...')
+    try:
+        res = execute_command(cmd, print_to_stdout=True, exit_on_error=False, shell=False)
+    except OSError, ex:
+        log.error("Can not execute rpmbuild (%s). Maybe it is not installed?" % str(ex))
+        exit(1)
+    log.info('Moving files to current directory...')
+    items = [x for x in os.walk(src_dir+'/SRPMS')] + [x for x in os.walk(src_dir+'/RPMS')]
+    for item in items:
+        path, dirs, files = item
+        for f in files:
+            if not f.endswith('.rpm'):
+                continue
+            ff = os.path.join(path, f)
+            new_ff = os.path.join(os.getcwd(), f)
+            if os.path.exists(new_ff):
+                os.remove(new_ff)
+            shutil.move(ff, os.getcwd())
+            if new_ff.endswith('.src.rpm'):
+                log.info('SRPM: ' + new_ff)
+            else:
+                log.info('RPM: ' + new_ff)
+    
+    shutil.rmtree(src_dir)
 
 def help():
     if command_line.command:
@@ -756,22 +830,21 @@ def _print_build_status(models, ID):
         print '%-20s%s' %('Updated at:', bl.updated_at)
         print ''
             
-def buildstatus():
-    log.debug('BUILDSTATUS started')
+def status():
+    log.debug('STATUS started')
     ids = []
     if command_line.ID:
         ids = command_line.ID
-        
-    res = get_project_name_only(must_exist=False, name=command_line.project)
-    if res:
-        proj = '%s/%s' % res
-        ids += projects_cfg[proj]['last_build_ids'].split(',')
-    elif not command_line.ID:
-        if 'main' not in projects_cfg or 'last_build_ids' not in projects_cfg['main']:
-            log.error("Can not find last build IDs. Specify a project name or ID")
-            exit(1)
-        ids += projects_cfg['main']['last_build_ids'].split(',')
-            
+    else:
+        res = get_project_name_only(must_exist=False, name=command_line.project)
+        if res:
+            proj = '%s/%s' % res
+            ids += projects_cfg[proj]['last_build_ids'].split(',')
+        elif not command_line.ID:
+            if 'main' not in projects_cfg or 'last_build_ids' not in projects_cfg['main']:
+                log.error("Can not find last build IDs. Specify a project name or ID")
+                exit(1)
+            ids += projects_cfg['main']['last_build_ids'].split(',')
     ids = list(set(ids))
     for i in ids:
         try:
