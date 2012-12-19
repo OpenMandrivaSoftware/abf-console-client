@@ -9,21 +9,22 @@ __abf_opts()
       COMPREPLY=( $(compgen -W "${@}" -- "${cur}") )
       return 0
   fi
+  return 1
 }
 
 __abf_get()
 {
-  __abf_opts "--branch --verbode --help"
+  __abf_opts "--branch --verbose --help"
 }
 
 __abf_put()
 {
-  __abf_opts "--verbode --help"
+  __abf_opts "--verbose --help --message --minimal-file-size --do-not-remove-files"
 }
 
 __abf_show()
 {
-  __abf_opts "--project --verbode --help"
+  __abf_opts "--project --verbose --help"
   shows="build-repos build-platforms save-to-repos save-to-platforms"
   if [[ ${cur} != -* ]] ; then
       if [[ ${prev} == -* ]] ; then
@@ -36,7 +37,7 @@ __abf_show()
 
 __abf_locate()
 {
-  __abf_opts "--project --directory --verbode --help"
+  __abf_opts "--project --directory --verbose --help"
   actions="update update-recursive"
   if [[ ${cur} != -* ]] ; then
       if [[ ${prev} == -* ]] ; then
@@ -49,7 +50,7 @@ __abf_locate()
 
 __abf_mock_urpm()
 {
-  __abf_opts "--config --verbode --help"
+  __abf_opts "--config --verbose --help"
   configs_dir='/etc/abf/mock-urpm/configs'
   if [ ${prev} == -c ] || [ ${prev} == --config ] ; then
     COMPREPLY=( $(compgen -W "` ls -1 ${configs_dir}/*.cfg | xargs -l basename  | sed s/[.]cfg//g`" -- "${cur}") )
@@ -58,7 +59,7 @@ __abf_mock_urpm()
 
 __abf_rpmbuild()
 {
-  __abf_opts "--verbode --help --build"
+  __abf_opts "--verbose --help --build"
 }
 
 __abf_build()
@@ -101,12 +102,12 @@ __abf_build()
 
 __abf_publish()
 {
-  __abf_opts "--pack --verbode --help"
+  __abf_opts "--verbose --help"
 }
 
 __abf_copy()
 {
-  __abf_opts "--pack --verbode --help"
+  __abf_opts "--pack --verbose --help"
   
   
   if [[ ${cur} != -* ]] ; then
@@ -118,17 +119,17 @@ __abf_copy()
 
 __abf_status()
 {
-  __abf_opts "--verbode --help"
+  __abf_opts "--verbose --help"
 }
 
 __abf_help()
 {
-  __abf_opts "--verbode --help"
+  __abf_opts "--verbose --help"
 }
 
 __abf_search()
 {
-  __abf_opts "--verbode --help"
+  __abf_opts "--verbose --help"
   types="users groups platforms projects"
   if [ "$COMP_CWORD" == "2" ] ; then
       COMPREPLY=( $(compgen -W "${types}" -- "${cur}") )
@@ -139,26 +140,48 @@ __abf_search()
 
 __abf_test()
 {
-  __abf_opts "--verbode --help"
+  __abf_opts "--verbose --help"
 }
 
 
 __abf_fetch()
 {
-  __abf_opts "--only --verbode --help"
+  __abf_opts "--only --verbose --help"
+}
+
+__abf_store()
+{
+  __abf_opts "--verbose --help"
+  if [ $? == 0 ]
+  then 
+    return 0;
+  fi
+  _filedir
+  return 0
   
 }
 
 __abf_clean()
 {
-  __abf_opts "--auto-remove --verbode --help"
+  __abf_opts "--auto-remove --verbose --help"
+}
+
+__abf_alias()
+{
+  __abf_opts "--verbose --help"
+  types="add remove list"
+  if [ "$COMP_CWORD" == "2" ] ; then
+      COMPREPLY=( $(compgen -W "${types}" -- "${cur}") )
+      return 0
+  fi
+  
 }
 
 
 __abf() 
 {
     local opts modes
-    modes="help get put show build publish status locate search test fetch mock-urpm rpmbuild clean copy"
+    modes="help get put show build publish status locate search test fetch mock-urpm rpmbuild clean copy store alias"
     COMPREPLY=()
     mode="${COMP_WORDS[1]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"

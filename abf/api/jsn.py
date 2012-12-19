@@ -227,7 +227,7 @@ class AbfJson(object):
         hex_sha = s.hexdigest()
         return hex_sha
         
-    def upload_file(self, file_name):
+    def upload_file(self, file_name, silent=False):
         self.log.debug('Looking for "%s" in file-store...' % file_name)
         sha_hash = self.compute_sha1(file_name)
         self.log.debug('File hash is %s' % sha_hash)
@@ -240,7 +240,7 @@ class AbfJson(object):
                 self.log.critical('File-Store returned file for sha1 %s instead of %s!' % (sha_hash_new, sha_hash))
                 exit(1)
             new_fn = os.path.basename(file_name)
-            if fn != new_fn:
+            if fn != new_fn and not silent:
                 self.log.warning('The name of the file in file-store is %s, but you are trying to upload file %s' % (fn, new_fn))
             return sha_hash
         
@@ -252,7 +252,8 @@ class AbfJson(object):
         self.__encode_multipart_formdata(body, boundary,[], [('file_store[file]', file_name)])
         length = body.tell()
         body.seek(0)
-        self.log.info('Uploading %s (%s)' % (file_name, bytes2human(os.stat(file_name).st_size)))
+        if not silent:
+            self.log.info('Uploading %s (%s)' % (file_name, bytes2human(os.stat(file_name).st_size)))
         conn = httplib.HTTPConnection(self.file_store_domain, 80)
         content_type = 'multipart/form-data; boundary=%s' % boundary
         headers = {'Content-Type' : content_type, 'Content-Length' : length, "Authorization": "Basic %s" % self.base64_auth_string}

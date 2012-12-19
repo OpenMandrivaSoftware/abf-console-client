@@ -110,7 +110,7 @@ class Config(dict):
                 
 
         if main_conf and ('config_version' not in self['main'] or int(self['main']['config_version']) != VERSION):
-            print "Sorry, but configuration schema have been changed or config file have been corrupted, so you need to reinitialize the configuration."
+            print "Configuration schema have been changed or config file have been corrupted, rebuilding config..."
             init = True
             
         if init and main_conf:
@@ -155,32 +155,36 @@ class Config(dict):
           
     def first_start(self):
         
-        domain = self.ask_user_url('ABF URL [%s]: ' % Config.default_url, Config.default_url)
-        self['main']['abf_url'] = domain
+        if 'abf_url' not in self['main']:
+            domain = self.ask_user_url('ABF URL [%s]: ' % Config.default_url, Config.default_url)
+            self['main']['abf_url'] = domain
         
-        user_default = getpass.getuser()
-        user = ask_user('User [%s]: ' % user_default, can_be_empty=True)
-        self['user']['login'] = user or user_default
+        if 'login' not in self['user'] or 'password' not in self['user']:
+            user_default = getpass.getuser()
+            user = ask_user('User [%s]: ' % user_default, can_be_empty=True)
+            self['user']['login'] = user or user_default
+            
+            password = getpass.getpass()
+            self['user']['password'] = password
         
-        #password = ask_user('Password: ', can_be_empty=False)
-        password = getpass.getpass()
-        self['user']['password'] = password
-        
-        parts = domain.split('//')
+        parts = self['main']['abf_url'].split('//')
         git_uri = "%(protocol)s//%(user)s@%(domain)s" % \
-                dict(protocol=parts[0], user=user, domain=parts[1])
+                dict(protocol=parts[0], user=self['user']['login'], domain=parts[1])
         
         self['user']['git_uri'] = git_uri
         
-        res = ask_user('Default project owner [%s]: ' % user, can_be_empty=True)
-        self['user']['default_group'] = res or user
+        if 'default_group' not in self['user']:
+            res = ask_user('Default project owner [%s]: ' % self['user']['login'], can_be_empty=True)
+            self['user']['default_group'] = res or self['user']['login']
         
-        def_bp = 'rosa2012.1'
-        res = ask_user('Default platform [%s]: ' % def_bp, can_be_empty=True)
-        self['user']['default_build_platform'] = res or def_bp
+        if 'default_build_platform' not in self['user']:
+            def_bp = 'rosa2012.1'
+            res = ask_user('Default platform [%s]: ' % def_bp, can_be_empty=True)
+            self['user']['default_build_platform'] = res or def_bp
         
-        filestore_domain = self.ask_user_url('File-store URL [%s]: ' % Config.default_filestore_url, Config.default_filestore_url)
-        self['main']['file_store_url'] = filestore_domain
+        if 'file_store_url' not in self['main']:
+            filestore_domain = self.ask_user_url('File-store URL [%s]: ' % Config.default_filestore_url, Config.default_filestore_url)
+            self['main']['file_store_url'] = filestore_domain
         
         #configure logging       
         self['formatters']['keys'] = 'verbose,simple'
@@ -216,8 +220,15 @@ class Config(dict):
         self['handler_main']['formatter'] = 'simple'
         self['handler_main']['args'] = '()'
         
+        self['alias']['st'] = 'status'
+        self['alias']['b'] = 'build'
+        self['alias']['su'] = 'search users'
+        self['alias']['sg'] = 'search groups'
+        self['alias']['spl'] = 'search platforms'
+        self['alias']['sp'] = 'search projects'        
+        
         self['main']['config_version'] = VERSION
-        print('Initial configuration have been completed')
+        print('Configuration have been completed')
         print 'Now you can execute "abf locate update-recursive -d PATH", where PATH is your directory with ' + \
         'cloned ABF projects. It will let you use "abfcd <project>" command to simply cd to project directory.\n\n'
 
