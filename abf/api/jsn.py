@@ -9,7 +9,7 @@ import tempfile
 import httplib
 import mimetypes
 import base64
-import sha
+import hashlib
 import shutil
 
 from abf.api.exceptions import *
@@ -219,7 +219,7 @@ class AbfJson(object):
     def compute_sha1(self, file_name):
         fd = open(file_name, 'rb')
         datablock = 1
-        s = sha.new()
+        s = hashlib.sha1()
         while datablock:
             datablock = fd.read(AbfJson.BLOCK_SIZE)
             if datablock:

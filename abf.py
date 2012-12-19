@@ -128,6 +128,7 @@ def parse_command_line():
     parser_put.add_argument('-s', '--minimal-file-size', default='0', action='store', help='The minimal file size to upload to File-Store. '
             'Default is 0B.')
     parser_put.add_argument('-n', '--do-not-remove-files', action='store_true', help='By default files are being removed on uploading. Override this behavior.')
+    parser_put.add_argument('-u', '--upload-only', action='store_true', help='Deprecated! Affects nothing. Saved for compatibility reasons and will be removed later.')
     parser_put.set_defaults(func=put)
     
     # store
