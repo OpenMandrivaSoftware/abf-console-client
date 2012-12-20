@@ -75,15 +75,22 @@ def get_project_data(spec_path):
         rpm_spec = parse_spec_silently(ts, spec_path)
         name = rpm.expandMacro("%{name}")
         version = rpm.expandMacro("%{version}")
-        sources_all = rpm_spec.sources()
+        if type(rpm_spec.sources) is list: # rpm4
+            sources_all = rpm_spec.sources
+            src_flag = 1
+            patch_fkag = 2
+        else:
+            sources_all = rpm_spec.sources() # rpm5
+            src_flag = 65536
+            patch_fkag = 131072
         
         sources = []
         patches = []
         for src in sources_all:
             name, number, flag = src
-            if flag & 65536: # source file
+            if flag & src_flag: # source file
                 sources.append((name, number))
-            elif flag & 131072:
+            elif flag & patch_fkag:
                 patches.append((name, number))
         return {'name': name, 'version': version, 'sources': sources, 'patches': patches}
 

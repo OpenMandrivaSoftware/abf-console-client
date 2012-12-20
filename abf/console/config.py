@@ -15,7 +15,7 @@ import getpass
 # print cfg.pop('aaa')
 #####################################################
 
-VERSION = 3
+VERSION = 4
 
 def mkdirs(path):
     ''' the equivalent of mkdir -p path'''
@@ -220,12 +220,13 @@ class Config(dict):
         self['handler_main']['formatter'] = 'simple'
         self['handler_main']['args'] = '()'
         
-        self['alias']['st'] = 'status'
-        self['alias']['b'] = 'build'
-        self['alias']['su'] = 'search users'
-        self['alias']['sg'] = 'search groups'
-        self['alias']['spl'] = 'search platforms'
-        self['alias']['sp'] = 'search projects'        
+        if not self['alias']:
+            self['alias']['st'] = 'status'
+            self['alias']['b'] = 'build'
+            self['alias']['su'] = 'search users'
+            self['alias']['sg'] = 'search groups'
+            self['alias']['spl'] = 'search platforms'
+            self['alias']['sp'] = 'search projects'        
         
         self['main']['config_version'] = VERSION
         print('Configuration have been completed')
