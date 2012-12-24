@@ -18,7 +18,17 @@ from abf.console.log import Log
 from abf.api.exceptions import *
 log = Log('models')
 
-
+def mkdirs(path):
+    ''' the equivalent of mkdir -p path'''
+    if os.path.exists(path):
+        return
+    path = os.path.normpath(path)
+    items = path.split('/')
+    p = ''
+    for item in items:
+        p += '/' + item
+        if not os.path.isdir(p):
+            os.mkdir(p)
 
 class CommandTimeoutExpired(Exception):
     pass

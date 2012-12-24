@@ -67,7 +67,7 @@ class Model(object):
             for field in self.__class__.required_fields:
                 if field not in self.params_dict:
                     raise Exception("One of the fields required for %s model was not specified: %s" % 
-                                (self.__class__.__name__field))
+                                (self.__class__.__name__, field))
         else:
             log.debug('Creating a stub for %s %s' % (self.__class__.__name__, self.init_data['id']))
             self.load()
@@ -368,7 +368,7 @@ class Project(Model):
         
 class BuildList(Model):
     required_fields = ['id', 'name', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
-    'build_for_platform', 'save_to_repository', 'arch', 'is_circle', 'update_type', 'build_requires', 'auto_publish', 
+    'build_for_platform', 'save_to_repository', 'arch', 'is_circle', 'update_type', 'auto_publish', 
     'commit_hash', 'duration', 'owner', 'owner_type', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
     
     status_by_id = {
@@ -444,7 +444,6 @@ class BuildList(Model):
             'save_to_repository_id': save_to_repository.id,
             'build_for_platform_id': None,
             'auto_publish': auto_publish,
-            'build_requires': False,
             'arch_id': None,
             'include_repos': [],
             }
