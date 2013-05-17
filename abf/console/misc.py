@@ -18,7 +18,17 @@ from abf.console.log import Log
 from abf.api.exceptions import *
 log = Log('models')
 
-
+def mkdirs(path):
+    ''' the equivalent of mkdir -p path'''
+    if os.path.exists(path):
+        return
+    path = os.path.normpath(path)
+    items = path.split('/')
+    p = ''
+    for item in items:
+        p += '/' + item
+        if not os.path.isdir(p):
+            os.mkdir(p)
 
 class CommandTimeoutExpired(Exception):
     pass
@@ -75,15 +85,22 @@ def get_project_data(spec_path):
         rpm_spec = parse_spec_silently(ts, spec_path)
         name = rpm.expandMacro("%{name}")
         version = rpm.expandMacro("%{version}")
-        sources_all = rpm_spec.sources()
+        if type(rpm_spec.sources) is list: # rpm4
+            sources_all = rpm_spec.sources
+            src_flag = 1
+            patch_fkag = 2
+        else:
+            sources_all = rpm_spec.sources() # rpm5
+            src_flag = 65536
+            patch_fkag = 131072
         
         sources = []
         patches = []
         for src in sources_all:
             name, number, flag = src
-            if flag & 65536: # source file
+            if flag & src_flag: # source file
                 sources.append((name, number))
-            elif flag & 131072:
+            elif flag & patch_fkag:
                 patches.append((name, number))
         return {'name': name, 'version': version, 'sources': sources, 'patches': patches}
 
@@ -202,9 +219,16 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
         files_present.append(fl)
         
     yaml_path = os.path.join(path, '.abf.yml')
+    yaml_data = {'sources': {}}
     if os.path.isfile(yaml_path):
         with open(yaml_path, 'r') as fd:
-            yaml_data = yaml.load(fd)
+            try:
+                yaml_data = yaml.load(fd)
+            except yaml.scanner.ScannerError, ex:
+                log.error('Invalid yml file %s!\nProblem in line %d column %d: %s' % (yaml_path, ex.problem_mark.line, ex.problem_mark.column, ex.problem))
+            except yaml.composer.ComposerError, ex:
+                log.error('Invalid yml file %s!\n%s' % (yaml_path, ex))
+        
         if not 'sources' in yaml_data:
             log.error("Incorrect .abf.yml file: no 'sources' key")
             exit(1)
@@ -443,7 +467,7 @@ def fetch_files(models, yaml_path, file_names=None):
             sha_hash_current = to_fetch[file_name]
             sha_hash_new = models.jsn.compute_sha1(path)
             if sha_hash_current == sha_hash_new:
-                log.debug('The file %s already presents and has correct hash' % file_name)
+                log.debug('The file %s already presents and has a correct hash' % file_name)
                 continue
             else:
                 log.info('The file %s already presents but its hash is not the same as in .abf.yml, so it will be rewritten.' % file_name)
@@ -466,9 +490,10 @@ def upload_files(models, min_size, path=None, remove_files=True):
         with open(yaml_path, 'r') as fd:
             try:
                 yaml_data = yaml.load(fd)
-            except yaml.composer.ComposerError:
+            except (yaml.composer.ComposerError, yaml.scanner.ScannerError) :
                 log.error('Could not parse .abf.yml file. It seems to be corrupted and will be rewritten.')
-                
+                yaml_file_changed = True
+                yaml_data['sources'] = {}
         if not 'sources' in yaml_data:
             log.error("Incorrect .abf.yml file: no 'sources' key. The file will be rewritten.")
             yaml_file_changed = True

@@ -1,6 +1,6 @@
 Name:           abf-console-client
-Version:        1.8
-Release:        1
+Version:        1.9
+Release:        3
 Summary:        Console client for ABF (https://abf.rosalinux.ru)
 Group:          System/Configuration/Packaging
 License:        GPLv2
@@ -56,7 +56,7 @@ ln -s %{_datadir}/bash-completion/abf %{buildroot}/%{_sysconfdir}/bash_completio
 %{_sysconfdir}/abf/mock-urpm/configs/*
 %dir /var/cache/abf/
 %dir /var/cache/abf/mock-urpm/
-%dir /var/cache/abf/mock-urpm/src
+%dir /var/lib/abf/mock-urpm/src
 %dir /var/lib/abf/
 %dir /var/lib/abf/mock-urpm
 

@@ -8,6 +8,7 @@ import os
 import shutil
 import platform
 from glob import glob
+import shlex
 
 from abf.console.config import Config, mkdirs
 from abf.console.log import Log
@@ -74,6 +75,25 @@ def test():
     log.info('Datamodel seems to work fine')
 
 
+def apply_aliases():
+    # check if the current command is 'alias'
+    if 'alias' in sys.argv:
+        ind = sys.argv.index('alias')
+        found = False
+        for i in range(1, ind):
+            if sys.argv[i] not in ['-h', '-v', '--help', '--verbose', 'help']:
+                found = True
+        if not found:
+            return 
+    for alias_name in cfg['alias']:
+        alias = shlex.split(cfg['alias'][alias_name])
+        if alias_name in sys.argv:
+            ind = sys.argv.index(alias_name)
+            del sys.argv[ind]
+            for item in alias:
+                sys.argv.insert(ind, item)
+                ind += 1
+            
 
 def parse_command_line():
     global command_line
@@ -88,6 +108,13 @@ def parse_command_line():
     parser_help.add_argument('command', action='store', nargs='?', help='a command to show help for')
     parser_help.set_defaults(func=help)
     
+    # alias
+    parser_alias = subparsers.add_parser('alias', help='Manage aliases')
+    alias_commands = ['list', 'add', 'remove']
+    parser_alias.add_argument('command', action='store', choices=alias_commands)
+    parser_alias.add_argument('options', action='store', nargs='*', help='name and alias (not quoted, e. g. "abf alias add sg search groups") for adding, only name for removing.')
+    parser_alias.set_defaults(func=alias)
+    
     # get
     parser_get = subparsers.add_parser('get', help='clone a project from ABF')
     parser_get.add_argument('project', action='store', help='project name. ([group/]project). If no group specified, '
@@ -96,14 +123,18 @@ def parse_command_line():
     parser_get.set_defaults(func=get)
     
     # put
-    parser_put = subparsers.add_parser('put', help='Upload large binary files to File-Store, commit all the changes (git add --all), commit with a message specified and push')
-    parser_put.add_argument('-m', '--message', action='store', help='A message to commit with. It is ignored in case of "--do-not-upload"')
-    parser_put.add_argument('-u', '--upload-only', action='store_true', help='Upload large files to file-store and exit')
-    parser_put.add_argument('-d', '--do-not-upload', action='store', help='Do nothing with .abf.yml, just add, commit and push')
+    parser_put = subparsers.add_parser('put', help='Upload large binary files to File-Store and update (or create) .abf.yml file. Can also commit and push changes.')
+    parser_put.add_argument('-m', '--message', action='store', help='With this option specified, "git add --all", "git commit -m MSG" and "git push" will be executed.')
     parser_put.add_argument('-s', '--minimal-file-size', default='0', action='store', help='The minimal file size to upload to File-Store. '
             'Default is 0B.')
-    parser_put.add_argument('-r', '--do-not-remove-files', action='store_true', help='By default files are being removed on uploading. Override this behavior.')
+    parser_put.add_argument('-n', '--do-not-remove-files', action='store_true', help='By default files are being removed on uploading. Override this behavior.')
+    parser_put.add_argument('-u', '--upload-only', action='store_true', help='Deprecated! Affects nothing. Saved for compatibility reasons and will be removed later.')
     parser_put.set_defaults(func=put)
+    
+    # store
+    parser_store = subparsers.add_parser('store', help='Upload a given file to File-Store. Prints a sha1 hash or error message (with non-zero return code).')
+    parser_store.add_argument('path', action='store', help='Path to file')
+    parser_store.set_defaults(func=store)
     
     # fetch
     parser_fetch = subparsers.add_parser('fetch', help='Download all the files listed in .abf.yml from File-Store to local directory.')
@@ -275,10 +306,11 @@ def run_mock_urpm(binary=True):
     if os.path.exists(src_dir):
         shutil.rmtree(src_dir)
     src = get_root_git_dir()
-    cmd = ['abf', 'fetch']
-    if command_line.verbose:
-        cmd.append('-v')
-    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+    if os.path.exists(os.path.join(src, '.abf.yml')):
+        cmd = ['abf', 'fetch']
+        if command_line.verbose:
+            cmd.append('-v')
+        execute_command(cmd, print_to_stdout=True, exit_on_error=True, cwd=src)
     shutil.copytree(src, src_dir, symlinks=True)
 
     spec_path = find_spec(src_dir)
@@ -335,7 +367,46 @@ def localbuild_mock_urpm():
     except OSError, ex:
         log.error(str(ex))
         exit(1)
-
+        
+def alias():
+    log.debug('ALIAS started')
+    if command_line.command == 'list':
+        if not cfg['alias']:
+            log.info('No aliases found')
+            return
+        for al_name in cfg['alias']:
+            print '%10s: %s' % (al_name, cfg['alias'][al_name])
+    elif command_line.command == 'add':
+        if len(command_line.options) < 2:
+            log.error('Not enough options. Use it like "abf alias add <alias_name> opt1 [opt2 ...]"')
+            exit(1)
+        al_name = command_line.options[0]
+        if ' ' in al_name or '=' in al_name:
+            log.error('Do not use " " or "=" for alias name!')
+            exit(1)
+        alias = ''
+        for al in command_line.options[1:]:
+            if ' ' in al:
+                alias += '"%s" ' % al
+            else:
+                alias += al + ' '
+        if al_name in cfg['alias']:
+            log.warning('Alias "%s" already exists and will be overwritten.' % al_name)
+        cfg['alias'][al_name] = alias
+        log.info('Done')
+    elif command_line.command == 'remove':
+        if not command_line.options:
+            log.error("Enter the alias name!")
+            exit(1)
+        al_name = command_line.options[0]
+        if al_name not in cfg['alias']:
+            log.error('Alias "%s" not found' % al_name)
+            exit(1)
+        cfg['alias'].pop(al_name)
+        log.info('Done')
+    
+    
+    
 def localbuild_rpmbuild():
     log.debug('RPMBUILD started')
     src_dir = '/tmp/abf/rpmbuild'
@@ -461,14 +532,6 @@ def get():
 
 def put():
     log.debug('PUT started')
-    
-    if not command_line.upload_only and not command_line.message:
-        log.error("Specify a message first!")
-        exit(1)
-        
-    if command_line.upload_only and command_line.do_not_upload:
-        log.error("Conflicting options: --upload-only and --do-not-upload" )
-        exit(1)
         
     path = get_root_git_dir()
     yaml_path = os.path.join(path, '.abf.yml')
@@ -477,25 +540,25 @@ def put():
         exit(1)
     _update_location()
     
-    if not command_line.do_not_upload:
-        try:
-            min_size = human2bytes(command_line.minimal_file_size)
-        except ValueError, ex:
-            log.error('Incorrect "--minimal-file-size" value: %s' % command_line.minimal_file_size)
-            exit(1)
-        error_count = upload_files(models, min_size, remove_files=not command_line.do_not_remove_files, path=path)
-        if error_count:
-            log.info('There were errors while uploading, stopping.')
-            exit(1)
     
-    if command_line.upload_only:
+    try:
+        min_size = human2bytes(command_line.minimal_file_size)
+    except ValueError, ex:
+        log.error('Incorrect "--minimal-file-size" value: %s' % command_line.minimal_file_size)
+        exit(1)
+    error_count = upload_files(models, min_size, remove_files=not command_line.do_not_remove_files, path=path)
+    if error_count:
+        log.info('There were errors while uploading, stopping.')
+        exit(1)
+    
+    if not command_line.message:
         return
 
     cmd = ['git', 'add', '--all']
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     
     if os.path.isfile(yaml_path):
-        cmd = ['git', 'add', '-f', path]
+        cmd = ['git', 'add', '-f', yaml_path]
         execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     
     cmd = ['git', 'commit', '-m', command_line.message]
@@ -516,8 +579,26 @@ def fetch():
     if not os.path.isfile(path):
         log.error('File "%s" can not be found' % path)
         exit(1)
-    fetch_files(models, path, command_line.only)
+    try:
+        fetch_files(models, path, command_line.only)
+    except yaml.scanner.ScannerError, ex:
+        log.error('Invalid yml file %s!\nProblem in line %d column %d: %s' % (path, ex.problem_mark.line, ex.problem_mark.column, ex.problem))
+    except yaml.composer.ComposerError, ex:
+        log.error('Invalid yml file %s!\n%s' % (path, ex))
 
+def store():
+    log.debug('STORE started')
+    p = os.path.expanduser(command_line.path)
+    if not os.path.exists(p):
+        log.error('File "%s" does not exist!' % p)
+        exit(1)
+    if not os.path.isfile(p):
+        log.error('"%s" is not a regular file!' % p)
+        exit(1)
+    
+    res = models.jsn.upload_file(p, silent=True)
+    print res
+        
 def copy():
     log.debug('COPY started')
     sbrn = command_line.src_branch
@@ -612,9 +693,10 @@ def build():
             arches.append(a)
     else:
 #        arches = all_arches
-        for arch in ['i586','x86_64']:
+        for arch in ['i586','i686','x86_64']:
             a = Arch.get_arch_by_name(models, arch)
-            arches.append(a)
+            if a:
+                arches.append(a)
         log.info("Arches are assumed to be " + str(arches))
 
     log.debug('Architectures: %s' % arches)
@@ -636,7 +718,7 @@ def build():
         if not as_branch:
             log.info('You\'ve specified a project without a branch.')
             return (None, None, None)
-                
+
         for ref in proj.get_refs_list(models):
             if ref['ref'] == as_branch and ref['object']['type'] == 'commit':
                 as_commit = ref['object']['sha']
@@ -644,20 +726,20 @@ def build():
         if not as_commit:
             log.error("Could not resolve hash for branch '%s'" % (as_branch))
             return (None, None, None)
-        
+
         for repo in proj.repositories:
             if repo.platform.name == as_branch or (as_branch == 'master' and repo.platform.name == 'cooker'):
                 as_saveto = repo
         if not as_saveto:
             log.info('Could not resolve a platform to save to from the branch name "%s".' % as_branch)
             return (as_branch, as_commit, None)
-        
+
         return (as_branch, as_commit, as_saveto)
-        
+
     as_branch, as_commit, as_saveto  = auto_resolve()
     opts = 'Branch: %s, commit: %s, save-to-repo: %s' % (as_branch, as_commit, as_saveto)
     log.debug('A list of options which could be resolved automatically: %s' % opts)
-    
+
     # get git commit hash
 
     commit_hash = None
@@ -961,6 +1043,7 @@ def clean():
     
 
 if __name__ == '__main__':
+    apply_aliases()
     parse_command_line()
 
     if command_line.verbose:
