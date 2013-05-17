@@ -611,7 +611,10 @@ def build():
                 exit(1)
             arches.append(a)
     else:
-        arches = all_arches
+#        arches = all_arches
+        for arch in ['i586','x86_64']:
+            a = Arch.get_arch_by_name(models, arch)
+            arches.append(a)
         log.info("Arches are assumed to be " + str(arches))
 
     log.debug('Architectures: %s' % arches)
