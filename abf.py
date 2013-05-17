@@ -646,7 +646,7 @@ def build():
             return (None, None, None)
         
         for repo in proj.repositories:
-            if repo.platform.name == as_branch:
+            if repo.platform.name == as_branch or (as_branch == 'master' and repo.platform.name == 'cooker'):
                 as_saveto = repo
         if not as_saveto:
             log.info('Could not resolve a platform to save to from the branch name "%s".' % as_branch)
