@@ -3,6 +3,7 @@ from beaker.cache import Cache
 from beaker.util import parse_cache_config_options
 import logging
 import urllib2, urllib
+import string
 from datetime import datetime
 
 from abf.api.exceptions import *
@@ -368,7 +369,7 @@ class Project(Model):
         
 class BuildList(Model):
     required_fields = ['id', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
-    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'auto_publish', 
+    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'auto_publish', 'extra_repos',
     'commit_hash', 'duration', 'owner', 'owner_type', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
     
     status_by_id = {
@@ -411,6 +412,12 @@ class BuildList(Model):
         for rep in include_repos:
             r = Repository(self.models, init_data=rep)
             self.params_dict['include_repos'].append(r)
+
+        extra_repos = self.params_dict['extra_repos']
+        self.params_dict['extra_repos'] = []
+        for rep in extra_repos:
+            r = Repository(self.models, init_data=rep)
+            self.params_dict['extra_repos'].append(r)
         
         self.params_dict['owner_type'] = self.init_data['owner']['type']
         if self.params_dict['owner_type'] == 'User':
@@ -436,7 +443,7 @@ class BuildList(Model):
                 
     update_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
     @staticmethod
-    def new_build_task(models, project, save_to_repository, repositories, commit_hash, update_type, auto_publish, arches):
+    def new_build_task(models, project, save_to_repository, repositories, commit_hash, update_type, auto_publish, arches, skip_personal):
         DATA = {
             'project_id': project.id,
             'commit_hash': commit_hash,
@@ -446,8 +453,13 @@ class BuildList(Model):
             'auto_publish': auto_publish,
             'arch_id': None,
             'include_repos': [],
+            'extra_repos': [],
             }
         build_platforms = {}
+
+        if not skip_personal and string.find(save_to_repository.platform.name,"_personal") > 0:
+            DATA['extra_repos'].append(save_to_repository.id)
+
         for repo in repositories:
             if repo.platform.name not in build_platforms:
                 build_platforms[repo.platform.name] = {}
@@ -458,6 +470,7 @@ class BuildList(Model):
         for bpl in build_platforms:
             DATA['build_for_platform_id'] = build_platforms[bpl]['id']
             DATA['include_repos'] = build_platforms[bpl]['repositories']
+
             for arch in arches:
                 DATA['arch_id'] = arch.id
                 log.debug('Sending the build task: ' + str(DATA))

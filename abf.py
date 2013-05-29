@@ -188,6 +188,7 @@ def parse_command_line():
         'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
         ' If no repositories were specified at all, use the "main" repository from save-to platform.')
     parser_build.add_argument('--auto-publish', action='store_true', help='enable automatic publishing.')
+    parser_build.add_argument('--skip-personal', action='store_true', help='do not use personal repository to resolve dependencies.')
     upd_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
     parser_build.add_argument('--update-type', action='store', choices=upd_types, help='Update type. Default is "%s".' %
                     (BuildList.update_types[0]) )
@@ -876,7 +877,7 @@ def build():
     log.debug("Build repositories: " + str(build_repositories))
     #exit()
     build_ids = BuildList.new_build_task(models, proj, save_to_repository, build_repositories, commit_hash, 
-            command_line.update_type or BuildList.update_types[0], command_line.auto_publish, arches)
+            command_line.update_type or BuildList.update_types[0], command_line.auto_publish, arches, command_line.skip_personal)
     ids = ','.join([str(i) for i in build_ids])
     projects_cfg['main']['last_build_ids'] = ids
     projects_cfg[str(proj)]['last_build_ids'] = ids
@@ -910,6 +911,7 @@ def _print_build_status(models, ID):
         print '%-20s%s' %('Build for platform:', bl.build_for_platform)
         print '%-20s%s' %('Save to repository:', bl.save_to_repository)
         print '%-20s%s' %('Build repositories:', bl.include_repos)
+        print '%-20s%s' %('Extra repositories:', bl.extra_repos)
         print '%-20s%s' %('Architecture:', bl.arch.name)
         print '%-20s%s' %('Created at:', bl.created_at)
         print '%-20s%s' %('Updated at:', bl.updated_at)
