@@ -911,7 +911,7 @@ def _print_build_status(models, ID):
         print '%-20s%s' %('Build for platform:', bl.build_for_platform)
         print '%-20s%s' %('Save to repository:', bl.save_to_repository)
         print '%-20s%s' %('Build repositories:', bl.include_repos)
-        print '%-20s%s' %('Extra repositories:', bl.extra_repos)
+        print '%-20s%s' %('Extra repositories:', bl.extra_repositories)
         print '%-20s%s' %('Architecture:', bl.arch.name)
         print '%-20s%s' %('Created at:', bl.created_at)
         print '%-20s%s' %('Updated at:', bl.updated_at)

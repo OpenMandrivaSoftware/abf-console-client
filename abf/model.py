@@ -369,7 +369,7 @@ class Project(Model):
         
 class BuildList(Model):
     required_fields = ['id', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
-    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'auto_publish', 'extra_repos',
+    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'auto_publish', 'extra_repositories',
     'commit_hash', 'duration', 'owner', 'owner_type', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
     
     status_by_id = {
@@ -413,11 +413,11 @@ class BuildList(Model):
             r = Repository(self.models, init_data=rep)
             self.params_dict['include_repos'].append(r)
 
-        extra_repos = self.params_dict['extra_repos']
-        self.params_dict['extra_repos'] = []
-        for rep in extra_repos:
+        extra_repositories = self.params_dict['extra_repositories']
+        self.params_dict['extra_repositories'] = []
+        for rep in extra_repositories:
             r = Repository(self.models, init_data=rep)
-            self.params_dict['extra_repos'].append(r)
+            self.params_dict['extra_repositories'].append(r)
         
         self.params_dict['owner_type'] = self.init_data['owner']['type']
         if self.params_dict['owner_type'] == 'User':
@@ -453,12 +453,12 @@ class BuildList(Model):
             'auto_publish': auto_publish,
             'arch_id': None,
             'include_repos': [],
-            'extra_repos': [],
+            'extra_repositories': [],
             }
         build_platforms = {}
 
         if not skip_personal and string.find(save_to_repository.platform.name,"_personal") > 0:
-            DATA['extra_repos'].append(save_to_repository.id)
+            DATA['extra_repositories'].append(save_to_repository.id)
 
         for repo in repositories:
             if repo.platform.name not in build_platforms:
