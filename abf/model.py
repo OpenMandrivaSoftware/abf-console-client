@@ -387,6 +387,7 @@ class BuildList(Model):
         7000: 'build is being published',
         8000: 'publishing error',
         9000: 'publishing rejected',
+        11000: 'tests failed',
     }
     status_by_name = dict([(status_by_id[x], x) for x in status_by_id])
     final_statuses = [1, 2, 3, 4, 666, 5000, 6000, 8000, 9000]
