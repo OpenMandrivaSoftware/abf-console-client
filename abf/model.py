@@ -306,7 +306,8 @@ class Group(Model):
         
 class Project(Model):
     required_fields = ['id', 'name', 'created_at', 'updated_at', 'visibility', 'description', 'ancestry', 'has_issues', 
-            'has_wiki', 'default_branch', 'is_package', 'average_build_time', 'owner', 'repositories', 'owner_type']
+            'has_wiki', 'default_branch', 'is_package', 'owner', 'repositories', 'owner_type']
+#            'has_wiki', 'default_branch', 'is_package', 'average_build_time', 'owner', 'repositories', 'owner_type']
 
     def get_init_data(self, proj_id):
         log.debug("Reading project " + str(proj_id))
@@ -453,6 +454,7 @@ class BuildList(Model):
             'save_to_repository_id': save_to_repository.id,
             'build_for_platform_id': None,
             'auto_publish': auto_publish,
+            'auto_create_container': True,
             'arch_id': None,
             'include_repos': [],
             'extra_repositories': [],
