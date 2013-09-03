@@ -338,7 +338,11 @@ class AbfJson(object):
         task_id = int(task_id)
         URL = "/api/v1/build_lists/%d/publish.json" % task_id
         return self.get_url_contents(URL)
-        
+
+    def new_pull_request(self, data, p_id):
+        URL = "/api/v1/projects/%d/pull_requests.json" % p_id
+        return self.get_url_contents(URL, GET=None, POST=data)
+
     def get_git_refs_list(self, proj_id):
         proj_id = int(proj_id)
         URL = "/api/v1/projects/%d/refs_list.json"  % proj_id

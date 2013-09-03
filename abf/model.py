@@ -371,7 +371,8 @@ class Project(Model):
 class BuildList(Model):
     required_fields = ['id', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
     'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'auto_publish', 'extra_repositories',
-    'commit_hash', 'duration', 'owner', 'owner_type', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
+    'commit_hash', 'duration', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build', 'log_url']
+#    'commit_hash', 'duration', 'owner', 'owner_type', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
     
     status_by_id = {
         0: 'build complete',
@@ -408,7 +409,7 @@ class BuildList(Model):
         self.params_dict['arch'] = Arch(self.models, init_data=self.params_dict['arch'])
         self.params_dict['save_to_repository'] = Repository(self.models, init_data=self.params_dict['save_to_repository'])
         self.params_dict['build_for_platform'] = Platform(self.models, init_data=self.params_dict['build_for_platform'])
-        
+
 
         include_repos = self.params_dict['include_repos']
         self.params_dict['include_repos'] = []
@@ -421,29 +422,28 @@ class BuildList(Model):
         for rep in extra_repositories:
             r = Repository(self.models, init_data=rep)
             self.params_dict['extra_repositories'].append(r)
-        
-        self.params_dict['owner_type'] = self.init_data['owner']['type']
-        if self.params_dict['owner_type'] == 'User':
-            self.params_dict['owner'] = User(self.models, init_data=self.init_data['owner'])
-        elif self.params_dict['owner_type'] == 'Group':
-            self.params_dict['owner'] = Group(self.models, init_data=self.init_data['owner'])
-                
-        #self.params_dict['owner'] = User(self.models, init_data=self.init_data['owner'])
+
+
+        self.params_dict['owner_type'] = 'Group'
         if 'created_at' in self.init_data:
             self.params_dict['created_at'] = datetime.fromtimestamp(float(self.init_data['created_at']))
         if 'updated_at' in self.init_data:
             self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
 
-        
+        if self.init_data['logs']:
+    	    self.params_dict['log_url'] = self.init_data['logs'][0]['url']
+        else:
+    	    self.params_dict['log_url'] = ''
+
         self.params_dict['status_string'] = BuildList.status_by_id[self.params_dict['status']]
         if self.params_dict['status'] in BuildList.final_statuses:
-            self.cacher = lt_cache        
-        
-        
+            self.cacher = lt_cache
+
+
     def __repr__(self):
-        return '%s (%s/%s:%s - %s)' % (self.id, self.owner.uname, self.project.name, 
+        return '%s (%s/%s:%s - %s)' % (self.id, self.owner.uname, self.project.name,
                 self.arch.name, self.status_string)
-                
+
     update_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
     @staticmethod
     def new_build_task(models, project, save_to_repository, repositories, commit_hash, update_type, auto_publish, arches, skip_personal):
@@ -485,7 +485,7 @@ class BuildList(Model):
                     log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                         'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
                     exit(1)
-                log.info("Task %s|%s|%s|%s have been sent. Build task id is %s" % 
+                log.info("Task %s|%s|%s|%s has been sent. Build task id is %s" % 
                     (project, bpl, save_to_repository, arch, result['build_list']['id']))
                 build_ids.append(result['build_list']['id'])
         return build_ids
@@ -506,6 +506,46 @@ class BuildList(Model):
             exit(1)
         
     
+
+class PullRequest(Model):
+    required_fields = ['title', 'body', 'to_ref', 'from_ref']
+    
+#    def get_init_data(self, ID):
+#        ID = str(ID)
+#        log.debug('Reading pull request ' + str(ID))
+#        self.init_data = self.models.jsn.get_buildlist_by_id(ID)
+#        self.init_data = self.init_data['build_list']
+        
+        
+    def load(self):  
+        self.params_dict = self.init_data.copy()
+        self.params_dict['project'] = Project(self.models, init_data=self.params_dict['project'])
+
+    def __repr__(self):
+        return '%s: %s - %s' % (self.title, self.to_ref,
+                self.from_ref)
+
+    @staticmethod
+    def new_pull_request(models, project, title, body, to_ref, from_ref):
+        DATA = {
+            'from_project_id': project.id,
+            'title': title,
+            'body': body,
+            'to_ref': to_ref,
+            'from_ref': from_ref,
+            }
+
+        log.debug('Sending pull request: ' + str(DATA))
+        try:
+            #continue
+            result = models.jsn.new_pull_request({'pull_request': DATA}, project.id)
+        except BadRequestError, ex:
+            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            exit(1)
+        log.info("Pull request for %s from %s to %s has been sent." % (project, from_ref, to_ref))
+
+
 class Models(object):
     _instance = {}
     def __new__(cls, abf_url, file_store_url, login, password, *args, **kwargs):

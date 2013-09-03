@@ -220,6 +220,15 @@ def parse_command_line():
     parser_copy.add_argument('dst_branch', action='store', nargs='?', help='destination branch. If not specified, it\'s assumed to be the current branch')
     parser_copy.add_argument('-p', '--pack', action='store_true', help='Create a tar.gz from the src_branch and put this archive and spec file to dst_branch')
     parser_copy.set_defaults(func=copy)
+
+    # pull request
+    parser_pull = subparsers.add_parser('pullrequest', help='Send a pull request from SRC_BRANCH to DST_BRANCH')
+    parser_pull.add_argument('from_ref', action='store', help='source ref or branch')
+    parser_pull.add_argument('to_ref', action='store', help='destination ref or branch')
+    parser_pull.add_argument('title', action='store', help='Request title')
+    parser_pull.add_argument('body', action='store', help='Request body')
+    parser_pull.add_argument('-p', '--project', action='store', help='project name (group/project).')
+    parser_pull.set_defaults(func=pull_request)
     
     # status
     parser_status = subparsers.add_parser('status', help='get a build-task status', epilog='If a project specified '
@@ -650,6 +659,13 @@ def copy():
             execute_command(cmd, print_to_stdout=True, cwd=path)
 
     log.info('Done')
+
+def pull_request():
+    log.debug('PULL REQUEST started')
+
+    proj = get_project(models, must_exist=True, name=command_line.project)
+
+    PullRequest.new_pull_request(models, proj, command_line.title, command_line.body, command_line.to_ref, command_line.from_ref)
     
 def build():
     log.debug('BUILD started')
@@ -905,7 +921,7 @@ def _print_build_status(models, ID):
         print repr(bl)
     else:
         print '%-20s%s' %('Buildlist ID:', bl.id) 
-        print '%-20s%s' %('Owner:', bl.owner.uname)
+#        print '%-20s%s' %('Owner:', bl.owner.uname)
         print '%-20s%s' %('Project:', bl.project.fullname)
         print '%-20s%s' %('Status:', bl.status_string)
         print '%-20s%s' %('Build for platform:', bl.build_for_platform)
@@ -915,6 +931,7 @@ def _print_build_status(models, ID):
         print '%-20s%s' %('Architecture:', bl.arch.name)
         print '%-20s%s' %('Created at:', bl.created_at)
         print '%-20s%s' %('Updated at:', bl.updated_at)
+        print '%-20s%s' %('LOG Url:', bl.log_url)
         print ''
             
 def status():
