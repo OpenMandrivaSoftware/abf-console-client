@@ -446,7 +446,7 @@ class BuildList(Model):
 
     update_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
     @staticmethod
-    def new_build_task(models, project, save_to_repository, repositories, commit_hash, update_type, auto_publish, arches, skip_personal):
+    def new_build_task(models, project, save_to_repository, repositories, commit_hash, update_type, auto_publish, arches, skip_personal, auto_create_container):
         DATA = {
             'project_id': project.id,
             'commit_hash': commit_hash,
@@ -454,7 +454,7 @@ class BuildList(Model):
             'save_to_repository_id': save_to_repository.id,
             'build_for_platform_id': None,
             'auto_publish': auto_publish,
-            'auto_create_container': True,
+            'auto_create_container': auto_create_container,
             'arch_id': None,
             'include_repos': [],
             'extra_repositories': [],

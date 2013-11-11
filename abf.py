@@ -893,7 +893,7 @@ def build():
     log.debug("Build repositories: " + str(build_repositories))
     #exit()
     build_ids = BuildList.new_build_task(models, proj, save_to_repository, build_repositories, commit_hash, 
-            command_line.update_type or BuildList.update_types[0], command_line.auto_publish, arches, command_line.skip_personal)
+            command_line.update_type or BuildList.update_types[0], command_line.auto_publish, arches, command_line.skip_personal, not command_line.auto_publish)
     ids = ','.join([str(i) for i in build_ids])
     projects_cfg['main']['last_build_ids'] = ids
     projects_cfg[str(proj)]['last_build_ids'] = ids
