@@ -370,7 +370,8 @@ class Project(Model):
         
 class BuildList(Model):
     required_fields = ['id', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
-    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'auto_publish', 'extra_repositories',
+    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'extra_repositories',
+#    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'auto_publish', 'extra_repositories',
     'commit_hash', 'duration', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build', 'log_url']
 #    'commit_hash', 'duration', 'owner', 'owner_type', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
     
