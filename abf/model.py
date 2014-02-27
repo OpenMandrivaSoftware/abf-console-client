@@ -307,7 +307,6 @@ class Group(Model):
 class Project(Model):
     required_fields = ['id', 'name', 'created_at', 'updated_at', 'visibility', 'description', 'ancestry', 'has_issues', 
             'has_wiki', 'default_branch', 'is_package', 'owner', 'repositories', 'owner_type']
-#            'has_wiki', 'default_branch', 'is_package', 'average_build_time', 'owner', 'repositories', 'owner_type']
 
     def get_init_data(self, proj_id):
         log.debug("Reading project " + str(proj_id))
@@ -370,9 +369,9 @@ class Project(Model):
         
 class BuildList(Model):
     required_fields = ['id', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
-    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'extra_repositories',
 #    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'auto_publish', 'extra_repositories',
-    'commit_hash', 'duration', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build', 'log_url']
+    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'extra_repositories',
+    'commit_hash', 'duration', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build', 'log_url', 'chroot_tree']
 #    'commit_hash', 'duration', 'owner', 'owner_type', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
     
     status_by_id = {
@@ -431,8 +430,13 @@ class BuildList(Model):
         if 'updated_at' in self.init_data:
             self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
 
+
+        self.params_dict['chroot_tree'] = ''
         if self.init_data['logs']:
-    	    self.params_dict['log_url'] = self.init_data['logs'][0]['url']
+    	    self.params_dict['log_url'] = self.init_data['logs'][0]['url'] + '.log?show=True'
+    	    for log in self.init_data['logs']:
+    	        if log["file_name"] == "chroot-tree.log":
+    	            self.params_dict["chroot_tree"] = log["url"] + '.log?show=True'
         else:
     	    self.params_dict['log_url'] = ''
 
@@ -499,26 +503,18 @@ class BuildList(Model):
                 log.info(result['message'])
             else:
                 log.error(result['message'])
-               
+
             return result
         except BadRequestError, ex:
             log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
             exit(1)
-        
-    
+
 
 class PullRequest(Model):
     required_fields = ['title', 'body', 'to_ref', 'from_ref']
-    
-#    def get_init_data(self, ID):
-#        ID = str(ID)
-#        log.debug('Reading pull request ' + str(ID))
-#        self.init_data = self.models.jsn.get_buildlist_by_id(ID)
-#        self.init_data = self.init_data['build_list']
-        
-        
-    def load(self):  
+
+    def load(self):
         self.params_dict = self.init_data.copy()
         self.params_dict['project'] = Project(self.models, init_data=self.params_dict['project'])
 
@@ -546,6 +542,94 @@ class PullRequest(Model):
             exit(1)
         log.info("Pull request for %s from %s to %s has been sent." % (project, from_ref, to_ref))
 
+class ProjectCreator(Model):
+    required_fields = ['name', 'description', 'owner']
+
+    def load(self):
+        self.params_dict = self.init_data.copy()
+        self.params_dict['project'] = Project(self.models, init_data=self.params_dict['project'])
+
+    def __repr__(self):
+        return '%s (%s)' % (self.name, self.owner)
+
+    @staticmethod
+    def new_project(models, name, description, owner_id, owner_type):
+        DATA = {
+            'name': name,
+            'owner_id': owner_id,
+            'owner_type': owner_type,
+            'visibility': 'open',
+            'description': description,
+            'is_package': 'true',
+            'default_branch': 'master',
+            'has_issues': 'true',
+            'has_wiki': 'false',
+            }
+
+        log.debug('Creating project: ' + str(DATA))
+        log.info("The project %s for owner %d has been created." % (name, owner_id) + str (DATA))
+        try:
+            result = models.jsn.new_project({'project': DATA})
+        except BadRequestError, ex:
+            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            exit(1)
+        log.info("The project %s for owner %d has been created." % (name, owner_id))
+
+    @staticmethod
+    def add_project_to_repo(models, repo_id, project_id):
+        DATA = {
+            'project_id': project_id,
+            }
+
+        log.debug('Adding project to repository: ' + str(DATA))
+        try:
+            #continue
+            result = models.jsn.add_project_to_repo({'project': DATA}, repo_id)
+        except BadRequestError, ex:
+            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            exit(1)
+        log.info("The project has been added to repository.")
+
+    @staticmethod
+    def remove_project_from_repo(models, repo_id, project_id):
+        DATA = {
+            'project_id': project_id,
+            }
+
+        log.debug('Removing project from repository: ' + str(DATA))
+        try:
+            #continue
+            result = models.jsn.remove_project_from_repo({'project': DATA}, repo_id)
+        except BadRequestError, ex:
+            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            exit(1)
+        log.info("The project has been removed from repository.")
+
+    @staticmethod
+    def fork_project(models, proj_id, owner_id, target_name):
+        if owner_id > 0:
+            DATA = {
+                'fork_name': target_name,
+                'group_id': owner_id,
+                }
+        else:
+            DATA = {
+                'fork_name': target_name,
+                }
+
+        log.debug('Forking project: ' + str(DATA))
+        try:
+            #continue
+            result = models.jsn.fork_project(DATA, proj_id)
+#            result = models.jsn.fork_project({'project:': DATA}, proj_id)
+        except BadRequestError, ex:
+            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            exit(1)
+        log.info("The project has been forked.")
 
 class Models(object):
     _instance = {}

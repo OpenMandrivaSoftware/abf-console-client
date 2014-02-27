@@ -27,6 +27,19 @@ SYMBOLS = {
     'iec_long'       : ('byte', 'kibi', 'mebi', 'gibi', 'tebi'),
 }
 
+class RequestWithMethod(urllib2.Request):
+    """Workaround for using DELETE and PUT with urllib2"""
+    def __init__(self, url, method, data=None, headers={},\
+        origin_req_host=None, unverifiable=False):
+        self._method = method
+        urllib2.Request.__init__(self, url, data, headers,\
+                 origin_req_host, unverifiable)
+
+    def get_method(self):
+        if self._method:
+            return self._method
+        else:
+            return urllib2.Request.get_method(self) 
 
 def bytes2human(n, format='%(value).1f%(symbol)s', symbols='basic'):
     n = int(n)
@@ -91,6 +104,7 @@ class AbfJson(object):
             res = json.loads(response_sting)
         except ValueError, ex:
             self.log.error("Internal server error: it has returned non-json data. ")
+            print response_sting
             exit(1)
         m = None
         if 'message' in res and res['message'] not in AbfJson.good_messages:
@@ -116,7 +130,7 @@ class AbfJson(object):
             raise exception(m)
         return res
     
-    def get_url_contents(self, path, GET=None, POST=None, file_store=False):
+    def get_url_contents(self, path, GET=None, POST=None, file_store=False, PUT=None, DELETE=None):
         url = ((file_store and self.file_store_url) or self.abf_url) + path
         if GET:
             get_string = urllib.urlencode(GET)
@@ -130,6 +144,14 @@ class AbfJson(object):
         if POST:
             post_json = json.dumps(POST).encode('utf-8')
             request = urllib2.Request(url, post_json, {'Content-Type': 'application/json'})
+        elif PUT:
+            put_json = json.dumps(PUT).encode('utf-8')
+            request = RequestWithMethod(url, 'PUT', data=put_json)
+            request.add_header("Content-Length", len(put_json))
+        elif DELETE:
+            data_json = json.dumps(DELETE).encode('utf-8')
+            request = RequestWithMethod(url, 'DELETE', data=data_json)
+            request.add_header("Content-Length", len(data_json))
         else:
             request = urllib2.Request(url)
             
@@ -342,6 +364,22 @@ class AbfJson(object):
     def new_pull_request(self, data, p_id):
         URL = "/api/v1/projects/%d/pull_requests.json" % p_id
         return self.get_url_contents(URL, GET=None, POST=data)
+
+    def remove_project_from_repo(self, data, repo_id):
+        URL = "/api/v1/repositories/%d/remove_project.json" % repo_id
+        return self.get_url_contents(URL, GET=None, DELETE=data)
+
+    def fork_project(self, data, proj_id):
+        URL = "/api/v1/projects/%d/fork.json" % proj_id
+        return self.get_url_contents(URL, GET=None, POST=data)
+
+    def add_project_to_repo(self, data, repo_id):
+        URL = "/api/v1/repositories/%d/add_project.json" % repo_id
+        return self.get_url_contents(URL, GET=None, POST=None, PUT=data)
+
+    def new_project(self, data):
+        URL = "/api/v1/projects.json"
+        return self.get_url_contents(URL, POST=data)
 
     def get_git_refs_list(self, proj_id):
         proj_id = int(proj_id)

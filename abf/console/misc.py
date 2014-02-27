@@ -257,9 +257,9 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
         presents = fname_base in files_present
         in_yaml = fname_base in yaml_files
         
-        if is_url  and in_yaml:
-            warnings = True
-            log.info('warning: file "%s" presents in spec (url) and in .abf.yml' % fname_base)
+#        if is_url  and in_yaml:
+#            warnings = True
+#            log.info('warning: file "%s" presents in spec (url) and in .abf.yml' % fname_base)
         
         if is_url and not presents and not in_yaml:
             warnings = True

@@ -9,6 +9,9 @@ import shutil
 import platform
 from glob import glob
 import shlex
+from subprocess import Popen, PIPE
+
+import tempfile
 
 from abf.console.config import Config, mkdirs
 from abf.console.log import Log
@@ -208,7 +211,6 @@ def parse_command_line():
     parser_rpmbuild.add_argument('-b', '--build', action='store', choices=['b', 's', 'a'], default='a', help='Build src.rpm (s), rpm (b) or both (a)')                                                                
     parser_rpmbuild.set_defaults(func=localbuild_rpmbuild)
     
-    
     # publish
     parser_publish = subparsers.add_parser('publish', help='Publish the task that have already been built.')
     parser_publish.add_argument('task_ids', action='store', nargs="+", help='The IDs of tasks to publish.')
@@ -229,7 +231,31 @@ def parse_command_line():
     parser_pull.add_argument('body', action='store', help='Request body')
     parser_pull.add_argument('-p', '--project', action='store', help='project name (group/project).')
     parser_pull.set_defaults(func=pull_request)
-    
+
+    # fork project
+    parser_pull = subparsers.add_parser('fork', help='Fork existing project')
+    parser_pull.add_argument('source_project', action='store', help='project to fork (group/project)')
+    parser_pull.add_argument('target_project', action='store', nargs='?', help='target project group and name (group/project)')
+    parser_pull.set_defaults(func=fork_project)
+
+    # create project from SRPM
+    parser_pull = subparsers.add_parser('create', help='Create project from SRPM')
+    parser_pull.add_argument('srpm', action='store', help='srpm file')
+    parser_pull.add_argument('owner', action='store', help='who will own the project')
+    parser_pull.set_defaults(func=create)
+
+    # add project to repository
+#    parser_pull = subparsers.add_parser('add', help='Add project to specified repository')
+#    parser_pull.add_argument('repository', action='store', help='target repository ([platform/]repository)')
+#    parser_pull.add_argument('-p', '--project', action='store', help='project name (group/project).')
+#    parser_pull.set_defaults(func=add_project_to_repository)
+
+    # remove project from repository
+#    parser_pull = subparsers.add_parser('remove', help='Remove project from specified repository')
+#    parser_pull.add_argument('repository', action='store', help='target repository ([platform/]repository)')
+#    parser_pull.add_argument('-p', '--project', action='store', help='project name (group/project).')
+#    parser_pull.set_defaults(func=remove_project_from_repository)
+
     # status
     parser_status = subparsers.add_parser('status', help='get a build-task status', epilog='If a project specified '
     ' or you are in a git repository - try to get the IDs from the last build task sent for this project. If you are not'
@@ -666,12 +692,148 @@ def pull_request():
     proj = get_project(models, must_exist=True, name=command_line.project)
 
     PullRequest.new_pull_request(models, proj, command_line.title, command_line.body, command_line.to_ref, command_line.from_ref)
-    
+
+def fork_project():
+    log.debug('FORK PROJECT started')
+
+    source_proj = get_project(models, must_exist=True, name=command_line.source_project)
+
+    if command_line.target_project:
+        tmp = command_line.target_project.split('/')
+        if len(tmp) > 2:
+            log.error('Specify a project name as "group_name/project_name" or just "project_name"')
+            exit(1)
+        elif len(tmp) == 1:
+            target_name = tmp[0]
+            target_group = default_group
+        elif len(tmp) == 2:
+            target_group = tmp[0]
+            target_name = tmp[1]
+    else:
+        target_group = default_group
+        target_name = source_proj.name
+
+    owner_group = Group.search(models, target_group)
+    owner_user = User.search(models, target_group)
+
+    if owner_group:
+        owner_id = owner_group[0].id
+    elif owner_user:
+        # ABF doesn't seem to accept forks to platforms of other users
+        print "No group named '" + target_group +"', will fork to you personal platform"
+#        owner_id = owner_user[0].id
+        owner_id = 0
+    else:
+        print "Incorrect target group"
+        return 1
+
+    ProjectCreator.fork_project(models, source_proj.id, owner_id, target_name)
+
+
+def create():
+    log.debug('CREATE PROJECT started')
+
+    owner_group = Group.search(models, command_line.owner)
+    owner_user = User.search(models, command_line.owner)
+
+    if owner_group:
+        owner_id = owner_group[0].id
+        owner_type = "Group"
+    elif owner_user:
+        owner_id = owner_user[0].id
+        owner_type = "User"
+    else:
+        print "Incorrect owner data"
+        return 1
+
+    name = Popen('rpm -qp --qf="%{NAME}" ' + command_line.srpm, stdout=PIPE, shell=True).stdout.read()
+    if name > '':
+        description = Popen('rpm -qp --qf="%{SUMMARY}" ' + command_line.srpm, stdout=PIPE, shell=True).stdout.read()
+        ProjectCreator.new_project(models, name, description, owner_id, owner_type)
+
+        # Save cwd, create temp folder and go to it
+        curdir = os.getcwd()
+        tempdir = tempfile.mkdtemp()
+        os.system("cp " + command_line.srpm + " " + tempdir)
+        os.chdir(tempdir)
+
+        # Get the newly created project and populate it with data from srpm
+        os.system("abf get " + command_line.owner + "/" + name)
+        os.chdir(tempdir + "/" + name)
+        os.system("rpm2cpio ../" + os.path.basename(command_line.srpm) + " | cpio -id")
+        os.system("abf put -m 'Imported from SRPM'")
+        os.system("git push -u origin master")
+
+        # Go back to initial dir and delete temp folder
+        os.chdir(curdir)
+        shutil.rmtree(tempdir)
+    else:
+        print "Failed to get information from SRPM"
+        return 1
+
+def add_project_to_repository():
+    log.debug('ADD PROJECT TO REPO started')
+
+    items = command_line.repository.split('/')
+    if len(items) == 2:
+        repo_name = items[1]
+        pl_name = items[0]
+    elif len(items) == 1:
+        repo_name = items[0]
+        pl_name = default_build_platform
+        log.info("Platform is assumed to be " + pl_name)
+    else:
+        log.error("repository argument format: [platform/]repository")
+        exit(1)
+
+    proj = get_project(models, must_exist=True, name=command_line.project)
+
+    # TODO: better to just get plaform by name...
+    platforms = Platform.search(models, pl_name)
+    for plat in platforms:
+        if plat.name == pl_name:
+            break
+
+    for repo in plat.repositories:
+        if repo.name == repo_name:
+            break
+
+    ProjectCreator.add_project_to_repo(models, repo.id, proj.id)
+
+def remove_project_from_repository():
+    log.debug('REMOVE PROJECT FROM REPO started')
+
+    items = command_line.repository.split('/')
+    if len(items) == 2:
+        repo_name = items[1]
+        pl_name = items[0]
+    elif len(items) == 1:
+        repo_name = items[0]
+        pl_name = default_build_platform
+        log.info("Platform is assumed to be " + pl_name)
+    else:
+        log.error("repository argument format: [platform/]repository")
+        exit(1)
+
+    proj = get_project(models, must_exist=True, name=command_line.project)
+
+    # TODO: better to just get plaform by name...
+    platforms = Platform.search(models, pl_name)
+    for plat in platforms:
+        if plat.name == pl_name:
+            break
+
+    for repo in plat.repositories:
+        if repo.name == repo_name:
+            break
+
+    ProjectCreator.remove_project_from_repo(models, repo.id, proj.id)
+
 def build():
     log.debug('BUILD started')
     
     if command_line.project and not (command_line.branch or command_line.tag or command_line.commit):
-        log.error("You've specified a project name without brnach, tag or commit (-b, -t or -c)")
+        log.error("You've specified a project name without branch, tag or commit (-b, -t or -c)")
         exit(1)
         
     tag_def = bool(command_line.tag)
@@ -932,6 +1094,8 @@ def _print_build_status(models, ID):
         print '%-20s%s' %('Created at:', bl.created_at)
         print '%-20s%s' %('Updated at:', bl.updated_at)
         print '%-20s%s' %('LOG Url:', bl.log_url)
+        if bl.chroot_tree:
+            print '%-20s%s' %('Chroot Tree:', bl.chroot_tree)
         print ''
             
 def status():
