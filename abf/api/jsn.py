@@ -27,20 +27,6 @@ SYMBOLS = {
     'iec_long'       : ('byte', 'kibi', 'mebi', 'gibi', 'tebi'),
 }
 
-class RequestWithMethod(urllib2.Request):
-    """Workaround for using DELETE and PUT with urllib2"""
-    def __init__(self, url, method, data=None, headers={},\
-        origin_req_host=None, unverifiable=False):
-        self._method = method
-        urllib2.Request.__init__(self, url, data, headers,\
-                 origin_req_host, unverifiable)
-
-    def get_method(self):
-        if self._method:
-            return self._method
-        else:
-            return urllib2.Request.get_method(self) 
-
 def bytes2human(n, format='%(value).1f%(symbol)s', symbols='basic'):
     n = int(n)
     if n < 0:
@@ -146,23 +132,22 @@ class AbfJson(object):
             request = urllib2.Request(url, post_json, {'Content-Type': 'application/json'})
         elif PUT:
             put_json = json.dumps(PUT).encode('utf-8')
-            request = RequestWithMethod(url, 'PUT', data=put_json)
-            request.add_header("Content-Length", len(put_json))
+            request = urllib2.Request(url, put_json, {'Content-Type': 'application/json'})
+            request.get_method = lambda: 'PUT'
         elif DELETE:
             data_json = json.dumps(DELETE).encode('utf-8')
-            request = RequestWithMethod(url, 'DELETE', data=data_json)
-            request.add_header("Content-Length", len(data_json))
+            request = urllib2.Request(url, data_json, {'Content-Type': 'application/json'})
+            request.get_method = lambda: 'DELETE'
         else:
             request = urllib2.Request(url)
-            
+
             if cache_etags.has_key(url):
                 etag = cache_etags.get(url)
                 if cache_data.has_key(etag):
                     self.log.debug("It was cached! ETag: " + etag)
-                    request.add_header("If-None-Match", etag) 
-                
-        
-        request.add_header("Authorization", "Basic %s" % self.base64_auth_string)  
+                    request.add_header("If-None-Match", etag)
+
+        request.add_header("Authorization", "Basic %s" % self.base64_auth_string)
         etag_new = None
         try:
             result = urllib2.urlopen(request)
@@ -178,7 +163,7 @@ class AbfJson(object):
                 if ex.code == 401: # auth failed
                     self.log.error("Authorization failed. Incorrect username or password")
                     exit()
-                    
+
                 #remove cached data if exists
                 if etag:
                     try:
@@ -187,17 +172,18 @@ class AbfJson(object):
                     except:
                         pass
                 res = ex.fp.read()
-                
+
         if etag_new:
             self.log.debug("Caching the new value for %s. ETag is %s" % (url, etag_new))
             cache_etags.put(url, etag_new)
             cache_data.put(etag_new, res)
-            
+
         res = self.process_response(res)
-  
-        #print 'RAW OUTPUT', res
+
+#        print 'RAW OUTPUT', res
+
         return res
-      
+
 
 
     MAX_SIZE = 32 * 1024 * 1024

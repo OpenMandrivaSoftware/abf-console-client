@@ -584,13 +584,12 @@ class ProjectCreator(Model):
 
         log.debug('Adding project to repository: ' + str(DATA))
         try:
-            #continue
-            result = models.jsn.add_project_to_repo({'project': DATA}, repo_id)
+            result = models.jsn.add_project_to_repo(DATA, repo_id)
         except BadRequestError, ex:
             log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
             exit(1)
-        log.info("The project has been added to repository.")
+        log.info("The project %d has been added to repository %d." % (project_id, repo_id) )
 
     @staticmethod
     def remove_project_from_repo(models, repo_id, project_id):
@@ -600,8 +599,7 @@ class ProjectCreator(Model):
 
         log.debug('Removing project from repository: ' + str(DATA))
         try:
-            #continue
-            result = models.jsn.remove_project_from_repo({'project': DATA}, repo_id)
+            result = models.jsn.remove_project_from_repo(DATA, repo_id)
         except BadRequestError, ex:
             log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
@@ -622,9 +620,7 @@ class ProjectCreator(Model):
 
         log.debug('Forking project: ' + str(DATA))
         try:
-            #continue
             result = models.jsn.fork_project(DATA, proj_id)
-#            result = models.jsn.fork_project({'project:': DATA}, proj_id)
         except BadRequestError, ex:
             log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )

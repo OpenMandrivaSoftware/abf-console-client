@@ -245,16 +245,16 @@ def parse_command_line():
     parser_pull.set_defaults(func=create)
 
     # add project to repository
-#    parser_pull = subparsers.add_parser('add', help='Add project to specified repository')
-#    parser_pull.add_argument('repository', action='store', help='target repository ([platform/]repository)')
-#    parser_pull.add_argument('-p', '--project', action='store', help='project name (group/project).')
-#    parser_pull.set_defaults(func=add_project_to_repository)
+    parser_pull = subparsers.add_parser('add', help='Add project to specified repository')
+    parser_pull.add_argument('repository', action='store', help='target repository ([platform/]repository)')
+    parser_pull.add_argument('-p', '--project', action='store', help='project name (group/project).')
+    parser_pull.set_defaults(func=add_project_to_repository)
 
     # remove project from repository
-#    parser_pull = subparsers.add_parser('remove', help='Remove project from specified repository')
-#    parser_pull.add_argument('repository', action='store', help='target repository ([platform/]repository)')
-#    parser_pull.add_argument('-p', '--project', action='store', help='project name (group/project).')
-#    parser_pull.set_defaults(func=remove_project_from_repository)
+    parser_pull = subparsers.add_parser('remove', help='Remove project from specified repository')
+    parser_pull.add_argument('repository', action='store', help='target repository ([platform/]repository)')
+    parser_pull.add_argument('-p', '--project', action='store', help='project name (group/project).')
+    parser_pull.set_defaults(func=remove_project_from_repository)
 
     # status
     parser_status = subparsers.add_parser('status', help='get a build-task status', epilog='If a project specified '
@@ -313,7 +313,7 @@ def fix_default_config():
                 print '"%s" is not a valid configuration.' % res
             res = raw_input('Select one (it will be remembered): ')
         os.symlink('/etc/abf/mock-urpm/configs/%s.cfg' % res, '/etc/abf/mock-urpm/configs/default.cfg')
-    
+
 def run_mock_urpm(binary=True):
     fix_default_config()
     if not command_line.config:
