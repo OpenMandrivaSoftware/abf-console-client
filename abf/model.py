@@ -391,9 +391,12 @@ class BuildList(Model):
         9000: 'publishing rejected',
         10000: 'build is canceling',
         11000: 'tests failed',
+        12000: '[testing] Build has been published',
+        13000: '[testing] Build is being published',
+        14000: '[testing] Publishing error'
     }
     status_by_name = dict([(status_by_id[x], x) for x in status_by_id])
-    final_statuses = [1, 2, 3, 4, 666, 5000, 6000, 8000, 9000]
+    final_statuses = [1, 2, 3, 4, 666, 5000, 6000, 8000, 9000, 12000, 14000]
         
     def get_init_data(self, ID):
         ID = str(ID)
@@ -450,20 +453,22 @@ class BuildList(Model):
                 self.arch.name, self.status_string)
 
     update_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
+    auto_publish_statuses = ['default', 'none', 'testing']
     @staticmethod
-    def new_build_task(models, project, save_to_repository, repositories, commit_hash, update_type, auto_publish, arches, skip_personal, auto_create_container):
+    def new_build_task(models, project, save_to_repository, repositories, commit_hash, project_version, update_type, auto_publish_status, arches, skip_personal, auto_create_container):
         DATA = {
-            'project_id': project.id,
-            'commit_hash': commit_hash,
-            'update_type': update_type, 
-            'save_to_repository_id': save_to_repository.id,
-            'build_for_platform_id': None,
-            'auto_publish': auto_publish,
-            'auto_create_container': auto_create_container,
-            'arch_id': None,
-            'include_repos': [],
-            'extra_repositories': [],
-            }
+            'project_id':               project.id,
+            'commit_hash':              commit_hash,
+            'update_type':              update_type, 
+            'save_to_repository_id':    save_to_repository.id,
+            'build_for_platform_id':    None,
+            'auto_publish_status':      auto_publish_status,
+            'project_version':          project_version,
+            'auto_create_container':    auto_create_container,
+            'arch_id':                  None,
+            'include_repos':            [],
+            'extra_repositories':       []
+        }
         build_platforms = {}
 
         if not skip_personal and string.find(save_to_repository.platform.name,"_personal") > 0:
