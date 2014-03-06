@@ -190,10 +190,11 @@ def parse_command_line():
     parser_build.add_argument('-r', '--repository', action='append', help='repositories to build with ([platform/]repository). '
         'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
         ' If no repositories were specified at all, use the "main" repository from save-to platform.')
-    parser_build.add_argument('--auto-publish', action='store_true', help='enable automatic publishing.')
+    parser_build.add_argument('--auto-publish-status', action='store', choices=BuildList.auto_publish_statuses, help='enable automatic publishing. Default is "%s".' %
+                    (BuildList.auto_publish_statuses[0]))
     parser_build.add_argument('--skip-personal', action='store_true', help='do not use personal repository to resolve dependencies.')
-    upd_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
-    parser_build.add_argument('--update-type', action='store', choices=upd_types, help='Update type. Default is "%s".' %
+    parser_build.add_argument('--auto-create-container', action='store_true', help='enable automatic creation of container')
+    parser_build.add_argument('--update-type', action='store', choices=BuildList.update_types, help='Update type. Default is "%s".' %
                     (BuildList.update_types[0]) )
     parser_build.add_argument('--skip-spec-check', action='store_true', help='Do not check spec file.' )
     parser_build.set_defaults(func=build)
@@ -1054,6 +1055,11 @@ def build():
         
     log.debug("Build repositories: " + str(build_repositories))
     #exit()
+
+    auto_create_container = command_line.auto_create_container
+    if auto_create_container is None:
+        auto_create_container = True
+
     build_ids = BuildList.new_build_task(
         models,
         proj,
@@ -1065,7 +1071,7 @@ def build():
         command_line.auto_publish_status or BuildList.auto_publish_statuses[0],
         arches,
         command_line.skip_personal,
-        command_line.auto_create_container or True
+        auto_create_container
     )
     ids = ','.join([str(i) for i in build_ids])
     projects_cfg['main']['last_build_ids'] = ids
