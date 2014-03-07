@@ -190,6 +190,7 @@ def parse_command_line():
     parser_build.add_argument('-r', '--repository', action='append', help='repositories to build with ([platform/]repository). '
         'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
         ' If no repositories were specified at all, use the "main" repository from save-to platform.')
+    parser_build.add_argument('--auto-publish', action='store_true', help='deprecated synonym for --auto-publish-status=default.')
     parser_build.add_argument('--auto-publish-status', action='store', choices=BuildList.auto_publish_statuses, help='enable automatic publishing. Default is "%s".' %
                     (BuildList.auto_publish_statuses[0]))
     parser_build.add_argument('--skip-personal', action='store_true', help='do not use personal repository to resolve dependencies.')
@@ -1059,6 +1060,9 @@ def build():
     auto_create_container = command_line.auto_create_container
     if auto_create_container is None:
         auto_create_container = True
+
+    if command_line.auto_publish and not command_line.auto_publish_status:
+        command_line.auto_publish_status = 'default'
 
     build_ids = BuildList.new_build_task(
         models,
