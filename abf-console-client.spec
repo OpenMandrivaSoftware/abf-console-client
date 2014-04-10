@@ -1,5 +1,5 @@
 Name:           abf-console-client
-Version:        1.14.1
+Version:        1.14.2
 Release:        1
 Summary:        Console client for ABF (https://abf.rosalinux.ru)
 Group:          System/Configuration/Packaging

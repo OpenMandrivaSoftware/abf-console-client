@@ -572,7 +572,7 @@ class ProjectCreator(Model):
             }
 
         log.debug('Creating project: ' + str(DATA))
-        log.info("The project %s for owner %d has been created." % (name, owner_id) + str (DATA))
+        log.info("The project %s for owner %d has been created." % (name, owner_id))
         try:
             result = models.jsn.new_project({'project': DATA})
         except BadRequestError, ex:

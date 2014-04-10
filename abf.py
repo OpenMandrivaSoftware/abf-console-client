@@ -244,6 +244,7 @@ def parse_command_line():
     parser_pull = subparsers.add_parser('create', help='Create project from SRPM')
     parser_pull.add_argument('srpm', action='store', help='srpm file')
     parser_pull.add_argument('owner', action='store', help='who will own the project')
+    parser_pull.add_argument('-b', '--branch', action='append', help='create additional branch; can be set more than once.')
     parser_pull.set_defaults(func=create)
 
     # add project to repository
@@ -765,6 +766,11 @@ def create():
         os.system("rpm2cpio ../" + os.path.basename(command_line.srpm) + " | cpio -id")
         os.system("abf put -m 'Imported from SRPM'")
         os.system("git push -u origin master")
+
+        if command_line.branch:
+            for branch in command_line.branch:
+                os.system("git checkout -b " + branch);
+                os.system("git push origin " + branch);
 
         # Go back to initial dir and delete temp folder
         os.chdir(curdir)
