@@ -567,6 +567,8 @@ def get():
     cmd = ['git', 'clone', uri]
     if command_line.branch:
         cmd += ['-b', command_line.branch]
+    elif default_branch > '' and default_branch != 'master':
+        cmd += ['-b', default_branch]
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     
     projects_cfg[proj]['location'] = os.path.join(os.getcwd(), project_name)
