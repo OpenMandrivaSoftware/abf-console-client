@@ -567,9 +567,16 @@ def get():
     cmd = ['git', 'clone', uri]
     if command_line.branch:
         cmd += ['-b', command_line.branch]
-    elif default_branch > '' and default_branch != 'master':
-        cmd += ['-b', default_branch]
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+
+    if (not command_line.branch) and default_branch > '' and default_branch != 'master':
+        os.chdir(project_name)
+        check_branch = Popen(["git", "checkout", default_branch], stdout=PIPE, stderr=PIPE)
+        (output, err) = check_branch.communicate()
+        branch_missing = check_branch.wait()
+        if branch_missing != 0:
+            log.info("Branch " + default_branch + " is missing, will use HEAD")
+        os.chdir("..")
     
     projects_cfg[proj]['location'] = os.path.join(os.getcwd(), project_name)
 
