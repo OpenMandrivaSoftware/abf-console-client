@@ -74,8 +74,12 @@ class Section(dict):
         try:
             res = self.config.get(self.section, key)
         except ConfigParser.NoOptionError, ex:
-            print 'error in config "%s": %s' % (self.conf_path, str(ex))
-            exit(1)
+            if key == 'default_branch':
+                print 'non-critical error in config "%s": %s' % (self.conf_path, str(ex))
+                return ''
+            else:
+                print 'error in config "%s": %s' % (self.conf_path, str(ex))
+                exit(1)
         
     def pop(self, key, init=None):
         if init is not None and key not in self:
@@ -173,6 +177,11 @@ class Config(dict):
         
         self['user']['git_uri'] = git_uri
         
+        if 'default_branch' not in self['user']:
+            def_br = 'master'
+            res = ask_user('Default project branch [%s]: ' % def_br, can_be_empty=True)
+            self['user']['default_branch'] = res or def_br
+
         if 'default_group' not in self['user']:
             res = ask_user('Default project owner [%s]: ' % self['user']['login'], can_be_empty=True)
             self['user']['default_group'] = res or self['user']['login']

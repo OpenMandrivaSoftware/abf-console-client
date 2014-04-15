@@ -31,6 +31,7 @@ login = cfg['user']['login']
 password = cfg['user']['password']
 default_group = cfg['user']['default_group']
 default_build_platform = cfg['user']['default_build_platform']
+default_branch = cfg['user']['default_branch']
 models_params = ((abf_url, file_store_url, login, password))
 
 models = Models(*models_params)
@@ -243,8 +244,9 @@ def parse_command_line():
     # create project from SRPM
     parser_pull = subparsers.add_parser('create', help='Create project from SRPM')
     parser_pull.add_argument('srpm', action='store', help='srpm file')
-    parser_pull.add_argument('owner', action='store', help='who will own the project')
+    parser_pull.add_argument('owner', action='store', nargs='?', help='who will own the project; default_owner is used by default')
     parser_pull.add_argument('-b', '--branch', action='append', help='create additional branch; can be set more than once.')
+    parser_pull.add_argument('--no-def-branch', action='store_true', help='Do not automatically create branch set as default in user config (if it is set to smth different from "master").')
     parser_pull.set_defaults(func=create)
 
     # add project to repository
@@ -736,6 +738,9 @@ def fork_project():
 def create():
     log.debug('CREATE PROJECT started')
 
+    if not command_line.owner:
+        command_line.owner = default_group
+
     owner_group = Group.search(models, command_line.owner)
     owner_user = User.search(models, command_line.owner)
 
@@ -771,6 +776,9 @@ def create():
             for branch in command_line.branch:
                 os.system("git checkout -b " + branch);
                 os.system("git push origin " + branch);
+        elif (not command_line.no_def_branch) and default_branch > '' and default_branch != 'master':
+            os.system("git checkout -b " + default_branch);
+            os.system("git push origin " + default_branch);
 
         # Go back to initial dir and delete temp folder
         os.chdir(curdir)
