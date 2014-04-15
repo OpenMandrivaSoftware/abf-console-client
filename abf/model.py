@@ -185,9 +185,7 @@ class Repository(Model):
         if 'updated_at' in self.init_data:
             self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
         self.cacher = lt_cache
-            
-        self.cacher = lt_cache
-    
+
     def __repr__(self):
         return '%s/%s' % (self.platform.name, self.name)
         
@@ -594,6 +592,8 @@ class ProjectCreator(Model):
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
             exit(1)
         log.info("The project %d has been added to repository %d." % (project_id, repo_id) )
+        # Would be nice to invalidate only record corresponding to our project...
+        models.clear_cache()
 
     @staticmethod
     def remove_project_from_repo(models, repo_id, project_id):
@@ -609,6 +609,8 @@ class ProjectCreator(Model):
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
             exit(1)
         log.info("The project has been removed from repository.")
+        # Would be nice to invalidate only record corresponding to our project...
+        models.clear_cache()
 
     @staticmethod
     def fork_project(models, proj_id, owner_id, target_name):
