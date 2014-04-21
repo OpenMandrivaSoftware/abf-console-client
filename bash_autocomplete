@@ -64,7 +64,7 @@ __abf_rpmbuild()
 
 __abf_build()
 {
-  __abf_opts "--branch --tag --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --update-type --skip-spec-check --auto-create-container"
+  __abf_opts "--branch --tag --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --auto-publish --update-type --skip-spec-check --auto-create-container"
   update_types="security bugfix enhancement recommended newpackage"
   auto_publish_status="none default testing"
   if [ ${prev} == -r ] || [ ${prev} == --repository ] ; then
@@ -188,7 +188,7 @@ __abf_alias()
 __abf() 
 {
     local opts modes
-    modes="help get put show build publish status locate search test fetch mock-urpm rpmbuild clean copy store alias"
+    modes="help get put show build publish status locate search test fetch mock-urpm rpmbuild clean copy create store alias add remove fork"
     COMPREPLY=()
     mode="${COMP_WORDS[1]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
