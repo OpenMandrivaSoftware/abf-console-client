@@ -2,6 +2,7 @@ import ConfigParser
 import os
 import sys
 import getpass
+import fcntl
 
 #####################################################
 # USAGE:
@@ -28,7 +29,7 @@ def mkdirs(path):
         p += '/' + item
         if not os.path.isdir(p):
             os.mkdir(p)
-            
+
 def ask_user(prompt, can_be_empty=False, variants=None):
     while True:
         sys.stdout.write(prompt)
@@ -37,14 +38,14 @@ def ask_user(prompt, can_be_empty=False, variants=None):
         res = res.strip()
         if not can_be_empty and not res:
             continue
-        
+
         if variants:
             if res in variants:
                 break
             else:
                 continue
         break
-        
+
     return res
 
 class Section(dict):
@@ -55,11 +56,13 @@ class Section(dict):
         if not section in self.config.sections():
             self.config.add_section(self.section)
             self.save()
-            
+
     def save(self):
-        with open(self.conf_path, 'wb') as configfile:
-            self.config.write(configfile)
-            
+        configfile = open(self.conf_path, 'wb')
+        fcntl.flock(configfile, fcntl.LOCK_EX)
+        self.config.write(configfile)
+        fcntl.flock(configfile, fcntl.LOCK_UN)
+
     def __setitem__(self, key, value):
         '''NOTE: value is ignored'''
         if key in self and self[key] == value:
@@ -67,7 +70,7 @@ class Section(dict):
         super(Section, self).__setitem__(key, value)
         self.config.set(self.section, key, value)
         self.save()
-            
+
     def __getitem__(self, key):
         if super(Section, self).__contains__(key):
             return super(Section, self).__getitem__(key)
