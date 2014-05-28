@@ -577,7 +577,7 @@ def get():
         if branch_missing != 0:
             log.info("Branch " + default_branch + " is missing, will use HEAD")
         os.chdir("..")
-    
+
     projects_cfg[proj]['location'] = os.path.join(os.getcwd(), project_name)
 
 def put():
@@ -885,26 +885,6 @@ def build():
         log.error('The project %s is not a package and can not be built.' % proj)
         exit(1)
     
-    # get architectures
-    arches = []
-    all_arches = Arch.get_arches(models)
-    if command_line.arch:
-        for arch in command_line.arch:
-            a = Arch.get_arch_by_name(models, arch)
-            if not a:
-                log.error("Invalid architecture: %s" % arch)
-                exit(1)
-            arches.append(a)
-    else:
-#        arches = all_arches
-        for arch in ['i586','i686','x86_64']:
-            a = Arch.get_arch_by_name(models, arch)
-            if a:
-                arches.append(a)
-        log.info("Arches are assumed to be " + str(arches))
-
-    log.debug('Architectures: %s' % arches)
-    
     
     # try to automatically resolve all the options, discarding all the other options except --branch
     # If we couldn't - use only user-given options. If we could, but user specified other parameters -
@@ -1078,7 +1058,30 @@ def build():
         exit(1)
         
     log.debug("Build repositories: " + str(build_repositories))
-    #exit()
+
+    # get architectures
+    arches = []
+    all_arches = Arch.get_arches(models)
+    if command_line.arch:
+        for arch in command_line.arch:
+            a = Arch.get_arch_by_name(models, arch)
+            if not a:
+                log.error("Invalid architecture: %s" % arch)
+                exit(1)
+            arches.append(a)
+    else:
+        try_arches = ['i586','i686','x86_64']
+        if str(build_repositories[0]).find("openmandriva") >= 0 or str(build_repositories[0]).find("cooker") >= 0:
+            print "AAA" + str(build_repositories[0]);
+            try_arches = ['i586','i686','x86_64','armv7l','armv7hl','aarch64']
+
+        for arch in try_arches:
+            a = Arch.get_arch_by_name(models, arch)
+            if a:
+                arches.append(a)
+        log.info("Arches are assumed to be " + str(arches))
+
+    log.debug('Architectures: %s' % arches)
 
     auto_create_container = command_line.auto_create_container
     if auto_create_container is None:
