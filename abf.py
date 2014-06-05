@@ -1073,7 +1073,7 @@ def build():
         try_arches = ['i586','i686','x86_64']
         if str(build_repositories[0]).find("openmandriva") >= 0 or str(build_repositories[0]).find("cooker") >= 0:
             print "AAA" + str(build_repositories[0]);
-            try_arches = ['i586','i686','x86_64','armv7l','armv7hl','aarch64']
+            try_arches = ['i586','i686','x86_64','armv7hl','aarch64']
 
         for arch in try_arches:
             a = Arch.get_arch_by_name(models, arch)
