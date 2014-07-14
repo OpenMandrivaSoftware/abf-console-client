@@ -44,38 +44,38 @@ def test():
     grs_import = Group.search(models, 'import')
     prs_abfcc = Project.search(models, 'abf-console-client')
     uss_akirilenko = User.search(models, 'akirilenko')
-    
+
     assert pls_import_personal
     assert grs_import
     assert prs_abfcc
     assert uss_akirilenko
-    
+
     assert pls_import_personal[0].repositories[0].platform == pls_import_personal[0]
-    
+
     # check last items
     assert Platform(models, ID=pls_import_personal[0].id).name == pls_import_personal[0].name
     assert Group(models, ID=grs_import[0].id).uname == grs_import[0].uname
     assert Project(models, ID=prs_abfcc[0].id).name == prs_abfcc[0].name
     assert User(models, ID=uss_akirilenko[0].id).uname == uss_akirilenko[0].uname
-    
+
     # make models load the whole object
     pls_import_personal[0].description
     grs_import[0].description
     prs_abfcc[0].description
     uss_akirilenko[0].professional_experience
-    
+
     pr_abfcc = Project.get_by_name(models, 'akirilenko/abf-console-client')
     assert pr_abfcc in prs_abfcc
-    
+
     #bl = BuildList(models, ID=750988)
     Platform.get_user_platforms_main(models)
     Platform.get_user_platforms_personal(models)
     Platform.get_build_platforms(models)
-    
+
     arches = Arch.get_arches(models)
     arch_x86_64 = Arch.get_arch_by_name(models, 'x86_64')
     assert arch_x86_64 in arches
-    
+
     log.info('Datamodel seems to work fine')
 
 
@@ -88,7 +88,7 @@ def apply_aliases():
             if sys.argv[i] not in ['-h', '-v', '--help', '--verbose', 'help']:
                 found = True
         if not found:
-            return 
+            return
     for alias_name in cfg['alias']:
         alias = shlex.split(cfg['alias'][alias_name])
         if alias_name in sys.argv:
@@ -97,7 +97,7 @@ def apply_aliases():
             for item in alias:
                 sys.argv.insert(ind, item)
                 ind += 1
-            
+
 
 def parse_command_line():
     global command_line
@@ -106,26 +106,26 @@ def parse_command_line():
     parser.add_argument('-c', '--clear-cache', action='store_true', help='clear cached information about repositories, platforms, projects, etc.')
     parser.add_argument('-q', '--quiet', action='store_true', help='Do not display info messages')
     subparsers = parser.add_subparsers(title='command')
-    
+
     # help
     parser_help = subparsers.add_parser('help', help='show a help for command')
     parser_help.add_argument('command', action='store', nargs='?', help='a command to show help for')
     parser_help.set_defaults(func=help)
-    
+
     # alias
     parser_alias = subparsers.add_parser('alias', help='Manage aliases')
     alias_commands = ['list', 'add', 'remove']
     parser_alias.add_argument('command', action='store', choices=alias_commands)
     parser_alias.add_argument('options', action='store', nargs='*', help='name and alias (not quoted, e. g. "abf alias add sg search groups") for adding, only name for removing.')
     parser_alias.set_defaults(func=alias)
-    
+
     # get
     parser_get = subparsers.add_parser('get', help='clone a project from ABF')
     parser_get.add_argument('project', action='store', help='project name. ([group/]project). If no group specified, '
             'it\'s assumed to be your default group.')
     parser_get.add_argument('-b', '--branch', action='store', help='branch to checkout')
     parser_get.set_defaults(func=get)
-    
+
     # put
     parser_put = subparsers.add_parser('put', help='Upload large binary files to File-Store and update (or create) .abf.yml file. Can also commit and push changes.')
     parser_put.add_argument('-m', '--message', action='store', help='With this option specified, "git add --all", "git commit -m MSG" and "git push" will be executed.')
@@ -134,17 +134,17 @@ def parse_command_line():
     parser_put.add_argument('-n', '--do-not-remove-files', action='store_true', help='By default files are being removed on uploading. Override this behavior.')
     parser_put.add_argument('-u', '--upload-only', action='store_true', help='Deprecated! Affects nothing. Saved for compatibility reasons and will be removed later.')
     parser_put.set_defaults(func=put)
-    
+
     # store
     parser_store = subparsers.add_parser('store', help='Upload a given file to File-Store. Prints a sha1 hash or error message (with non-zero return code).')
     parser_store.add_argument('path', action='store', help='Path to file')
     parser_store.set_defaults(func=store)
-    
+
     # fetch
     parser_fetch = subparsers.add_parser('fetch', help='Download all the files listed in .abf.yml from File-Store to local directory.')
     parser_fetch.add_argument('-o', '--only', action='append', help='Limit the list of downloaded files to this file name(s). This option can be specified more than once.')
     parser_fetch.set_defaults(func=fetch)
-    
+
     # show
     parser_show = subparsers.add_parser('show', help='show some general information. Bash autocomplete uses it.')
     show_choices = ['build-repos', 'build-platforms', 'save-to-repos', 'save-to-platforms']
@@ -152,7 +152,7 @@ def parse_command_line():
     parser_show.add_argument('-p', '--project', action='store',  help='Project to show information for (if needed). Format: '
         '"[group/]name". If no group specified, default group will be used.')
     parser_show.set_defaults(func=show)
-    
+
     # locate
     parser_locate = subparsers.add_parser('locate', help='tool can remember the project location and use it for some reasons (abfcd, etc.).',
     epilog='Every interaction with git repository (build, get, put, etc.) updates the cached location of the project (overriding '
@@ -164,7 +164,7 @@ def parse_command_line():
     parser_locate.add_argument('-d', '--directory', action='store',  help='Directory to update locations for. It should be a '
             'git repository for "update" and any directory for "update-recursive". If not specified - the current directory will be used')
     parser_locate.set_defaults(func=locate)
-    
+
     # build
     parser_build = subparsers.add_parser('build', help='Initiate a build task on ABF.', formatter_class=RawDescriptionHelpFormatter,
         epilog= 'NOTES:\n'
@@ -187,7 +187,7 @@ def parse_command_line():
         '([platform/]repository). If no platform part specified, it is assumed to be "<default_group>_personal". '
         'If this option is not specified at all, "<default_group>_personal/main" will be used.')
     parser_build.add_argument('-a', '--arch', action='append', help='architectures to build, '
-                        'can be set more than once. If not set - use all the available architectures.')   
+                        'can be set more than once. If not set - use all the available architectures.')
     parser_build.add_argument('-r', '--repository', action='append', help='repositories to build with ([platform/]repository). '
         'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
         ' If no repositories were specified at all, use the "main" repository from save-to platform.')
@@ -200,25 +200,25 @@ def parse_command_line():
                     (BuildList.update_types[0]) )
     parser_build.add_argument('--skip-spec-check', action='store_true', help='Do not check spec file.' )
     parser_build.set_defaults(func=build)
-    
+
     # mock-urpm
     parser_mock_urpm = subparsers.add_parser('mock-urpm', help='Build a project locally using mock-urpm.', epilog='No checkouts will be made,'
                                                                     'the current git repository state will be used')
-    parser_mock_urpm.add_argument('-c', '--config', action='store', help='A config template to use. Specify owne of the config names ' 
+    parser_mock_urpm.add_argument('-c', '--config', action='store', help='A config template to use. Specify owne of the config names '
         'from %s. Directory path should be omitted. If no config specified, "default.cfg" will be used' % configs_dir)
     parser_mock_urpm.set_defaults(func=localbuild_mock_urpm)
-    
+
     # rpmbuild
     parser_rpmbuild = subparsers.add_parser('rpmbuild', help='Build a project locally using rpmbuild.', epilog='No checkouts will be made,'
                                                                     'the current git repository state will be used')
-    parser_rpmbuild.add_argument('-b', '--build', action='store', choices=['b', 's', 'a'], default='a', help='Build src.rpm (s), rpm (b) or both (a)')                                                                
+    parser_rpmbuild.add_argument('-b', '--build', action='store', choices=['b', 's', 'a'], default='a', help='Build src.rpm (s), rpm (b) or both (a)')
     parser_rpmbuild.set_defaults(func=localbuild_rpmbuild)
-    
+
     # publish
     parser_publish = subparsers.add_parser('publish', help='Publish the task that have already been built.')
     parser_publish.add_argument('task_ids', action='store', nargs="+", help='The IDs of tasks to publish.')
     parser_publish.set_defaults(func=publish)
-    
+
     # copy
     parser_copy = subparsers.add_parser('copy', help='Copy all the files from SRC_BRANCH to DST_BRANCH')
     parser_copy.add_argument('src_branch', action='store', help='source branch')
@@ -271,28 +271,53 @@ def parse_command_line():
     parser_status.add_argument('-s', '--short', action='store_true',  help='Show one-line information including id, project, '
                                                                                                         'arch and status')
     parser_status.set_defaults(func=status)
-    
+
     # clean
     parser_clean = subparsers.add_parser('clean', help='Analyze spec file and show missing and unnecessary files from '
                                                                             'the current git repository directory.')
     parser_clean.add_argument('--auto-remove', action='store_true', help='automatically remove all the unnecessary files')
     parser_clean.set_defaults(func=clean)
-    
+
     # search
     parser_search = subparsers.add_parser('search', help='Search for something on ABF.', epilog='NOTE: only first 100 results of any request will be shown')
     search_choices = ['users', 'groups', 'platforms', 'projects']
     parser_search.add_argument('type', action='store', choices=search_choices, help='what to search for')
     parser_search.add_argument('query', action='store', help='a string to search for')
     parser_search.set_defaults(func=search)
-    
+
+    #list
+
+    # info
+    parser_info = subparsers.add_parser('info', help='get information about single instance', epilog='NOTE: only first 100 results of any request will be shown')
+    info_choices = ['user' ,'platform', 'product', 'repository', 'group', 'project']
+    parser_info.add_argument('type', action='store', choices=info_choices, help='type of the instance')
+    parser_info.add_argument('name', action='store', help='name of the instance')
+    parser_info.set_defaults(func=info_single)
+
     # test
     parser_test = subparsers.add_parser('test', help='Execute a set of internal datamodel tests')
     parser_test.set_defaults(func=test)
-    
+
     for s in subparsers._name_parser_map:
         subparsers._name_parser_map[s].add_argument('-v', '--verbose', action='store_true', help='be verbose, display even debug messages')
-    
-    command_line = parser.parse_args(sys.argv[1:])   
+
+    command_line = parser.parse_args(sys.argv[1:])
+
+def info_single():
+    log.debug('get info about %s with name' % command_line.type, command_line.name )
+    print 123
+    st = command_line.type
+    sn = command_line.name
+    cl = {'platform': Platform, 'user': User, 'repository':Repository, 'project': Project}
+    items = cl[st].info(models, sn)
+    platforms = Platform.search(models, sn)
+    print platforms
+    for plat in platforms:
+        if plat.name == sn:
+            break
+    print plat.name
+    for item in items:
+        print item
 
 def fix_default_config():
     if not os.path.exists('/etc/abf/mock-urpm/configs/default.cfg'):
@@ -300,7 +325,7 @@ def fix_default_config():
             print "To set up a default configuration file, symbolic link in " +\
                     "/etc/abf/mock-urpm/configs have to be created. I need sudo rights to do it."
             exit(1)
-        
+
         files = os.listdir('/etc/abf/mock-urpm/configs')
         print 'Avaliable configurations: '
         out = []
@@ -310,7 +335,7 @@ def fix_default_config():
             if f == 'site-defaults.cfg':
                 continue
             out.append(f[:-4])
-        
+
         print ', '.join(out)
         res = None
         while res not in out:
@@ -331,19 +356,19 @@ def run_mock_urpm(binary=True):
         if os.path.basename(config_path) == 'default.cfg':
             log.error("You should create this file or a symbolic link to another config in order to execute 'abf mock-urpm' withow --config")
         exit(1)
-    config_opts = {'plugins': [], 'scm_opts': {}}  
+    config_opts = {'plugins': [], 'scm_opts': {}}
     config_opts['plugin_conf'] = {'ccache_opts': {}, 'root_cache_opts': {}, 'bind_mount_opts': {'dirs': []}, 'tmpfs_opts': {}, 'selinux_opts': {}}
     try:
         execfile(config_path)
     except Exception, ex:
         log.error("Could not read the contents of '%s': %s" % (config_path, str(ex)))
         exit(2)
-    
+
     basedir = ('basedir' in config_opts and config_opts['basedir']) or '/var/lib/abf/mock-urpm'
     root = config_opts['root']
     resultsdir = ('resultdir' in config_opts and config_opts['resultdir']) or '%s/%s/result' % (basedir, root)
     src_dir = basedir + '/src'
-    
+
     if os.path.exists(src_dir):
         shutil.rmtree(src_dir)
     src = get_root_git_dir()
@@ -370,7 +395,7 @@ def run_mock_urpm(binary=True):
         exit(1)
     finally:
         shutil.rmtree(src_dir)
-    
+
     srpm_path = glob(os.path.join(resultsdir, '*.src.rpm'))
     if len (srpm_path) != 1:
         log.error('Could not find a single src.rpm file in %s' % resultsdir)
@@ -380,7 +405,7 @@ def run_mock_urpm(binary=True):
     if os.path.exists(srpm_path_new):
         os.remove(srpm_path_new)
     shutil.move(srpm_path, os.getcwd())
-    
+
     log.info('\nSRPM: %s\n' % srpm_path_new)
     if binary:
         cmd = ['mock-urpm', '-r', command_line.config, '--configdir', configs_dir,  srpm_path_new]
@@ -397,18 +422,18 @@ def run_mock_urpm(binary=True):
                 os.remove(new_path)
             shutil.move(rpm, os.getcwd())
             print('RPM: ' + os.path.join(os.getcwd(), os.path.basename(rpm)))
-    
-def localbuild_mock_urpm():          
+
+def localbuild_mock_urpm():
     # get project
     proj = get_project(models, must_exist=True)
     find_spec_problems()
-    
+
     try:
         run_mock_urpm(binary=True)
     except OSError, ex:
         log.error(str(ex))
         exit(1)
-        
+
 def alias():
     log.debug('ALIAS started')
     if command_line.command == 'list':
@@ -445,9 +470,9 @@ def alias():
             exit(1)
         cfg['alias'].pop(al_name)
         log.info('Done')
-    
-    
-    
+
+
+
 def localbuild_rpmbuild():
     log.debug('RPMBUILD started')
     src_dir = '/tmp/abf/rpmbuild'
@@ -460,7 +485,7 @@ def localbuild_rpmbuild():
         cmd.append('-v')
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     shutil.copytree(src, src_dir, symlinks=True)
-    
+
     spec_path = find_spec(src_dir)
     if not spec_path:
         log.error('Can not locate a spec file in %s' % src_dir)
@@ -491,7 +516,7 @@ def localbuild_rpmbuild():
                 log.info('SRPM: ' + new_ff)
             else:
                 log.info('RPM: ' + new_ff)
-    
+
     shutil.rmtree(src_dir)
 
 def help():
@@ -500,7 +525,7 @@ def help():
     else:
         sys.argv = [sys.argv[0], '-h']
     parse_command_line()
-    
+
 def search():
     log.debug('SEARCH started')
     st = command_line.type
@@ -509,7 +534,7 @@ def search():
     items = cl[st].search(models, sq)
     for item in items:
         print item
-    
+
 def get_project_name_only(must_exist=True, name=None):
     if name:
         tmp = name.split('/')
@@ -522,7 +547,7 @@ def get_project_name_only(must_exist=True, name=None):
             owner_name = default_group
         else: # len == 2
             owner_name = tmp[0]
-            project_name = tmp[1]  
+            project_name = tmp[1]
     else:
         owner_name, project_name = get_project_name()
         if not project_name:
@@ -535,7 +560,7 @@ def get_project_name_only(must_exist=True, name=None):
     return (owner_name, project_name)
 
 def get_project(models, must_exist=True, name=None):
-    
+
     owner_name, project_name = get_project_name_only(must_exist, name)
     try:
         proj = Project.get_by_name(models, '%s/%s' % (owner_name, project_name))
@@ -545,11 +570,11 @@ def get_project(models, must_exist=True, name=None):
     except ForbiddenError:
         log.error('You do not have acces to the project %s/%s!' % (owner_name, project_name))
         exit(1)
-        
+
     log.debug('Project: %s' % proj)
     return proj
-    
-    
+
+
 def get():
     log.debug('GET started')
     proj = command_line.project
@@ -562,7 +587,7 @@ def get():
         proj = '%s/%s' % (cfg['user']['default_group'], proj)
     elif len(tmp) == 2:
         project_name = tmp[1]
-    
+
     uri = "%s/%s.git" % (cfg['user']['git_uri'], proj)
     cmd = ['git', 'clone', uri]
     if command_line.branch:
@@ -582,15 +607,15 @@ def get():
 
 def put():
     log.debug('PUT started')
-        
+
     path = get_root_git_dir()
     yaml_path = os.path.join(path, '.abf.yml')
     if not path:
         log.error("You have to be in a git repository directory")
         exit(1)
     _update_location()
-    
-    
+
+
     try:
         min_size = human2bytes(command_line.minimal_file_size)
     except ValueError, ex:
@@ -600,20 +625,20 @@ def put():
     if error_count:
         log.info('There were errors while uploading, stopping.')
         exit(1)
-    
+
     if not command_line.message:
         return
 
     cmd = ['git', 'add', '--all']
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
-    
+
     if os.path.isfile(yaml_path):
         cmd = ['git', 'add', '-f', yaml_path]
         execute_command(cmd, print_to_stdout=True, exit_on_error=True)
-    
+
     cmd = ['git', 'commit', '-m', command_line.message]
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
-    
+
     log.info('Commited.')
     cmd = ['git', 'push']
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
@@ -645,10 +670,10 @@ def store():
     if not os.path.isfile(p):
         log.error('"%s" is not a regular file!' % p)
         exit(1)
-    
+
     res = models.jsn.upload_file(p, silent=True)
     print res
-        
+
 def copy():
     log.debug('COPY started')
     sbrn = command_line.src_branch
@@ -661,14 +686,14 @@ def copy():
         dbrn = command_line.dst_branch
     else:
         dbrn = start_branch
-    
+
     if sbrn == dbrn:
         log.error("Source and destination branches shold be different branches!")
         exit(1)
-        
+
     path = get_root_git_dir()
     log.debug("Repository root folder is " + path)
-    
+
     _update_location(path=path)
 
     stage = 0
@@ -692,7 +717,7 @@ def copy():
             log.error(str(ex))
         else:
             log.exception(ex)
-            
+
         if stage == 1 or stage == 2:
             log.info("Checking out the initial branch (%s)" % start_branch)
             cmd = ['git', 'reset', '--hard', start_branch]
@@ -856,27 +881,27 @@ def remove_project_from_repository():
 
 def build():
     log.debug('BUILD started')
-    
+
     if command_line.project and not (command_line.branch or command_line.tag or command_line.commit):
         log.error("You've specified a project name without branch, tag or commit (-b, -t or -c)")
         exit(1)
-        
+
     tag_def = bool(command_line.tag)
     branch_def = bool(command_line.branch)
     commit_def = bool(command_line.commit)
-    
+
     tmp = tag_def + branch_def + commit_def
     if tmp > 1:
         log.error("You should specify ONLY ONE of the following options: branch, tag or commit.")
         exit(1)
-    
+
     IDs = {
             'arches':[],
             'version':None,
             'target_platform':None,
             'repositories':[],
         }
-        
+
     # get project
     proj = get_project(models, must_exist=True, name=command_line.project)
     if not command_line.project and not command_line.skip_spec_check: # local git repository
@@ -884,8 +909,8 @@ def build():
     if not proj.is_package:
         log.error('The project %s is not a package and can not be built.' % proj)
         exit(1)
-    
-    
+
+
     # try to automatically resolve all the options, discarding all the other options except --branch
     # If we couldn't - use only user-given options. If we could, but user specified other parameters -
     #  reject averything we've resolved and use only user-given options.
@@ -951,13 +976,13 @@ def build():
         log.debug('Aitoresolved options were rejected.')
     log.debug('Git commit hash: %s' % commit_hash)
 
-    
+
     # get save-to repository
     save_to_repository = None
     build_for_platform = None
 
     available_repos = proj.repositories
-    
+
     if command_line.save_to_repository:
         items = command_line.save_to_repository.split('/')
     else:
@@ -979,8 +1004,8 @@ def build():
     else:
         log.error("save-to-repository option format: [platform/]repository")
         exit(1)
-        
-    if (as_saveto and as_saveto in available_repos and as_saveto.platform.name == pl_name 
+
+    if (as_saveto and as_saveto in available_repos and as_saveto.platform.name == pl_name
                                                         and as_saveto.name == repo_name):
         save_to_repository = as_saveto
     else:
@@ -992,19 +1017,19 @@ def build():
         if not build_for_platform:
             log.error("Can not build for platform %s. Select one of the following:\n%s" % (pl_name, ', '.join(pls)))
             exit(1)
-            
+
         for repo in build_for_platform.repositories:
             if repo.name == repo_name:
                 save_to_repository = repo
                 break
-        
+
         if not save_to_repository:
-            log.error("Incorrect save-to repository %s/%s.\nSelect one of the following:\n%s" % (pl_name, repo_name, 
+            log.error("Incorrect save-to repository %s/%s.\nSelect one of the following:\n%s" % (pl_name, repo_name,
                     ', '.join([str(x) for x in build_for_platform.repositories])))
             exit(1)
-    
+
     log.debug('Save-to repository: ' + str(save_to_repository))
-    
+
     # get the list of build repositories
     build_platforms = Platform.get_build_platforms(models)
     build_platform_names = [x.name for x in build_platforms]
@@ -1017,12 +1042,12 @@ def build():
                 pl_name = items[0]
             elif len(items) == 1:
                 repo_name = items[0]
-                pl_name = default_build_platform 
+                pl_name = default_build_platform
                 log.debug("Platform for selected repository %s is assumed to be %s" % (repo_name, pl_name))
             else:
                 log.error("'repository' option format: [platform/]repository")
                 exit(1)
-            
+
             if pl_name not in build_platform_names:
                 log.error("Can not use build repositories from platform %s!\nSelect one of the following:\n%s" % (pl_name,
                         ', '.join(build_platform_names)))
@@ -1043,7 +1068,7 @@ def build():
             build_repositories.append(build_repo)
     else:
         build_platform = save_to_repository.platform
-        
+
         if build_platform.name not in build_platform_names or not build_platform.repositories:
             log.error("Could not resolve repositories to build with. Please specify it (-r option)")
             exit(1)
@@ -1056,7 +1081,7 @@ def build():
     if not build_repositories:
         log.error("You have to specify the repository(s) to build with (-r option)")
         exit(1)
-        
+
     log.debug("Build repositories: " + str(build_repositories))
 
     # get architectures
@@ -1106,7 +1131,7 @@ def build():
     ids = ','.join([str(i) for i in build_ids])
     projects_cfg['main']['last_build_ids'] = ids
     projects_cfg[str(proj)]['last_build_ids'] = ids
-    
+
 def publish():
     log.debug('PUBLISH started')
     for task_id in command_line.task_ids:
@@ -1129,7 +1154,7 @@ def _print_build_status(models, ID):
     if command_line.short:
         print repr(bl)
     else:
-        print '%-20s%s' %('Buildlist ID:', bl.id) 
+        print '%-20s%s' %('Buildlist ID:', bl.id)
 #        print '%-20s%s' %('Owner:', bl.owner.uname)
         print '%-20s%s' %('Project:', bl.project.fullname)
         print '%-20s%s' %('Status:', bl.status_string)
@@ -1144,7 +1169,7 @@ def _print_build_status(models, ID):
         if bl.chroot_tree:
             print '%-20s%s' %('Chroot Tree:', bl.chroot_tree)
         print ''
-            
+
 def status():
     log.debug('STATUS started')
     ids = []
@@ -1168,9 +1193,9 @@ def status():
             log.error('"%s" is not a number' % i)
             continue
         _print_build_status(models, i)
-        
-    
-    
+
+
+
 def _update_location(path=None, silent=True):
     try:
         if not path:
@@ -1193,22 +1218,22 @@ def _update_location_recursive(path):
     if '.git' in items: # it's a git directory!
         _update_location(path, silent=False)
         return
-    
+
     for item in items:
         item_path = os.path.join(path, item)
         if not os.path.isdir(item_path) or os.path.islink(item_path):
             continue
         _update_location_recursive(item_path)
-        
-        
+
+
 def locate():
     log.debug('LOCATE started')
-    
+
     if not command_line.action: # show location
         if not command_line.project:
             print "To show a project location, you have to specify a project name ('-p' option)"
             return
-        
+
         tmp = command_line.project.split('/')
         if len(tmp) > 2:
             log.error('error: the project format is "[owner_name/]project_name"')
@@ -1217,7 +1242,7 @@ def locate():
             proj = '%s/%s' % (default_group, tmp[0])
         else: # len == 2
             proj = command_line.project
-            
+
         if proj not in projects_cfg or 'location' not in projects_cfg[proj] or not projects_cfg[proj]['location']:
             print 'error: project %s can not be located' % proj
             exit(1)
@@ -1235,7 +1260,7 @@ def locate():
         elif command_line.action == 'update-recursive':
             path = command_line.directory or os.getcwd()
             _update_location_recursive(path)
-    
+
 def show():
     log.debug('SHOW started')
     Log.set_silent()
@@ -1251,7 +1276,7 @@ def show():
             for repo in plat.repositories:
                 repo_names.append(str(repo))
         out = (t == 'build-platforms' and platform_names) or (t == 'build-repos' and repo_names)
-            
+
     if t in ['save-to-platforms', 'save-to-repos']:
         proj = get_project(models, must_exist=True, name=command_line.project)
         repos = proj.repositories
@@ -1263,14 +1288,14 @@ def show():
         platform_names = list(set(platform_names))
         out = (t == 'save-to-platforms' and platform_names) or (t == 'save-to-repos' and repo_names)
     print ' '.join(out)
-    
 
-    
+
+
 def clean():
     log.debug("CLEAN started")
     _update_location()
     find_spec_problems(auto_remove=command_line.auto_remove)
-    
+
 
 if __name__ == '__main__':
     apply_aliases()
