@@ -28,7 +28,7 @@ def get_cached(cache, cache_key, func, *args, **kwargs):
     return val
 
 
-        
+
 class Model(object):
     def __init__(self, models, ID=None, init_data=None):
         self.params_dict = {}
@@ -40,34 +40,34 @@ class Model(object):
 
         if not ID and not init_data:
             raise Exception("At least one of 'ID' or 'init_data' parameters have to be set! ")
-        
+
         if init_data and 'id' not in init_data:
             raise Exception("Key 'id' have to present in initial data!")
-        
+
         if ID:
             cache_key = '%s-%s' % (self.__class__.__name__, ID)
-            
+
             if st_cache and st_cache.has_key(cache_key):
                 #read cached value
                 log.debug( 'Loading %s %s from cache' % (self.__class__.__name__, ID))
                 self.stub = False
                 self.init_data = st_cache.get(cache_key)
                 self.load()
-                
+
             else:
                 log.debug('Loading %s %s using API' % (self.__class__.__name__, ID))
                 self.stub = False
                 self.get_init_data(ID)
                 self.load()
-                
+
                 #write to cache
                 if self.cacher:
                     self.cacher.put(cache_key, self.init_data)
                     log.debug('Results were cached')
-                    
+
             for field in self.__class__.required_fields:
                 if field not in self.params_dict:
-                    raise Exception("One of the fields required for %s model was not specified: %s" % 
+                    raise Exception("One of the fields required for %s model was not specified: %s" %
                                 (self.__class__.__name__, field))
         else:
             log.debug('Creating a stub for %s %s' % (self.__class__.__name__, self.init_data['id']))
@@ -89,16 +89,16 @@ class Model(object):
             if key in self.params_dict:
                 return self.params_dict[key]
         raise KeyError("Key '%s' can not be found!" % key)
-    
+
     def __eq__(self, other):
         return self.id == other.id
-        
+
     def __ne__(self, other):
-        return self.id != other.id   
-        
-        
+        return self.id != other.id
+
+
 class Platform(Model):
-    required_fields = ['id', 'name', 'description', 'parent_platform_id', 'created_at', 'updated_at', 'released', 
+    required_fields = ['id', 'name', 'description', 'parent_platform_id', 'created_at', 'updated_at', 'released',
     'owner', 'visibility', 'platform_type', 'distrib_type', 'repositories']
 
     def get_init_data(self, ID):
@@ -106,8 +106,8 @@ class Platform(Model):
         log.debug('Reading platform ' + ID)
         self.init_data = self.models.jsn.get_platform_by_id(ID)
         self.init_data = self.init_data['platform']
-            
-    def load(self):        
+
+    def load(self):
         self.params_dict = self.init_data.copy()
         if 'repositories' in self.init_data:
             repos = self.params_dict['repositories']
@@ -124,11 +124,11 @@ class Platform(Model):
         if 'updated_at' in self.init_data:
             self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
         self.cacher = lt_cache
-                 
+
     def __repr__(self):
         return self.name
-        
-    @staticmethod 
+
+    @staticmethod
     def _get_platforms_filtered(models, typ):
         cache_key = '%s__%s' % (Platform.__name__, typ)
         platforms = get_cached(st_cache, cache_key, models.jsn.get_platforms, typ=typ)['platforms']
@@ -137,15 +137,15 @@ class Platform(Model):
             p = Platform(models, init_data = pl)
             output.append(p)
         return output
-        
+
     @staticmethod
     def get_user_platforms_main(models):
         return Platform._get_platforms_filtered(models, 'main')
-        
+
     @staticmethod
     def get_user_platforms_personal(models):
         return Platform._get_platforms_filtered(models, 'personal')
-        
+
     @staticmethod
     def get_build_platforms(models):
         cache_key = '%s__buil' % (Platform.__name__)
@@ -155,7 +155,7 @@ class Platform(Model):
             p = Platform(models, init_data=pl)
             output.append(p)
         return output
-        
+
     @staticmethod
     def search(models, query):
         res = models.jsn.get_search_results('platforms', query)
@@ -165,8 +165,26 @@ class Platform(Model):
             p = Platform(models, init_data=platform)
             platforms_out.append(p)
         return platforms_out
-        
-        
+
+    @staticmethod
+    def info(models, name):
+        res = models.jsn.get_search_results('platforms', name)
+        platforms = res['results']['platforms']
+        platforms_out = []
+        ln = len(platforms)
+        if ln == 0:
+            log.info(" %s not found" % name)
+        elif ln == 1:
+            ID=str(platforms[0]['id'])
+            res = models.jsn.get_platform_by_id(ID)
+            p = Platform(models, init_data=res['platform'])
+            for field in Platform.required_fields:
+                str_out += str(field)+ ':\t' + str(p.params_dict[field])
+        else:
+            log.info("Please, specify one of the following names:")
+        return platforms
+
+
 class Repository(Model):
     required_fields = ['id', 'name', 'created_at', 'updated_at', 'description', 'publish_without_qa', 'platform']
 
@@ -175,7 +193,7 @@ class Repository(Model):
         log.debug('Reading repository ' + str(ID))
         self.init_data = self.models.jsn.get_repository_by_id(ID)
         self.init_data = self.init_data['repository']
-        
+
     def load(self):
         self.params_dict = self.init_data.copy()
         if 'platform' in self.init_data:
@@ -188,7 +206,7 @@ class Repository(Model):
 
     def __repr__(self):
         return '%s/%s' % (self.platform.name, self.name)
-        
+
 
 
 class Arch(Model):
@@ -204,11 +222,11 @@ class Arch(Model):
                 self.init_data = arch
         if not self.init_data:
             raise Exception("Architecture with id %s not found!" % ID)
-                
+
     def load(self):
         self.params_dict = self.init_data
         self.cacher = lt_cache
-    
+
     @staticmethod
     def get_arches(models):
         cache_key = '%s__all' % (Arch.__name__)
@@ -218,7 +236,7 @@ class Arch(Model):
             a = Arch(models, init_data=arch)
             output.append(a)
         return output
-        
+
     @staticmethod
     def get_arch_by_name(models, name):
         cache_key = '%s__all' % (Arch.__name__)
@@ -228,10 +246,10 @@ class Arch(Model):
                 a = Arch(models, init_data=arch)
                 return a
         return None
-        
+
     def __repr__(self):
         return self.name
-        
+
 class User(Model):
     required_fields = ['id', 'name', 'email', 'language', 'professional_experience', 'site', 'company', 'location',
     'uname', 'own_projects_count', 'build_priority', 'created_at', 'updated_at', 'avatar_url', 'html_url']
@@ -241,17 +259,17 @@ class User(Model):
         log.debug('Reading user ' + ID)
         self.init_data = self.models.jsn.get_user_by_id(ID)
         self.init_data = self.init_data['user']
-            
-    def load(self):        
+
+    def load(self):
         self.params_dict = self.init_data.copy()
-        
+
         if 'created_at' in self.init_data:
             self.params_dict['created_at'] = datetime.fromtimestamp(float(self.init_data['created_at']))
         if 'updated_at' in self.init_data:
             self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
-        
+
         self.cacher = lt_cache
-    
+
     @staticmethod
     def search(models, query):
         res = models.jsn.get_search_results('users', query)
@@ -261,10 +279,10 @@ class User(Model):
             u = User(models, init_data=user)
             users_out.append(u)
         return users_out
-    
+
     def __repr__(self):
         return self.uname
-        
+
 class Group(Model):
     required_fields = ['id', 'uname', 'own_projects_count', 'created_at', 'updated_at', 'description', 'owner',
                                                                                 'avatar_url', 'html_url']
@@ -274,20 +292,20 @@ class Group(Model):
         log.debug('Reading group ' + ID)
         self.init_data = self.models.jsn.get_group_by_id(ID)
         self.init_data = self.init_data['group']
-            
-    def load(self):        
+
+    def load(self):
         self.params_dict = self.init_data.copy()
-        
+
         if 'created_at' in self.init_data:
             self.params_dict['created_at'] = datetime.fromtimestamp(float(self.init_data['created_at']))
         if 'updated_at' in self.init_data:
             self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
-        
+
         if 'owner' in self.params_dict:
             self.params_dict['owner'] = User(self.models, init_data=self.params_dict['owner'])
-        
+
         self.cacher = lt_cache
-        
+
     @staticmethod
     def search(models, query):
         res = models.jsn.get_search_results('groups', query)
@@ -297,20 +315,20 @@ class Group(Model):
             g = Group(models, init_data=group)
             groups_out.append(g)
         return groups_out
-    
-        
+
+
     def __repr__(self):
         return self.uname
-        
+
 class Project(Model):
-    required_fields = ['id', 'name', 'created_at', 'updated_at', 'visibility', 'description', 'ancestry', 'has_issues', 
+    required_fields = ['id', 'name', 'created_at', 'updated_at', 'visibility', 'description', 'ancestry', 'has_issues',
             'has_wiki', 'default_branch', 'is_package', 'owner', 'repositories', 'owner_type']
 
     def get_init_data(self, proj_id):
         log.debug("Reading project " + str(proj_id))
         self.init_data = self.models.jsn.get_project_by_id(proj_id)
         self.init_data = self.init_data['project']
-    
+
     @staticmethod
     def get_by_name(models, key):
         ''' key is a pair (owner_name, project_name), or just  owner_name/project_name'''
@@ -322,7 +340,7 @@ class Project(Model):
         res = models.jsn.get_project_id_by_name(key)
         proj_id = res['project']['id']
         return Project(models, ID=proj_id)
-        
+
     def load(self):
         self.params_dict = self.init_data.copy()
         if 'repositories' in self.init_data:
@@ -337,14 +355,14 @@ class Project(Model):
                 self.params_dict['owner'] = User(self.models, init_data=self.init_data['owner'])
             elif self.params_dict['owner_type'] == 'Group':
                 self.params_dict['owner'] = Group(self.models, init_data=self.init_data['owner'])
-            
+
         if 'created_at' in self.init_data:
             self.params_dict['created_at'] = datetime.fromtimestamp(float(self.init_data['created_at']))
         if 'updated_at' in self.init_data:
             self.params_dict['updated_at'] = datetime.fromtimestamp(float(self.init_data['updated_at']))
-            
+
         self.cacher = st_cache
-        
+
     @staticmethod
     def search(models, query):
         res = models.jsn.get_search_results('projects', query)
@@ -354,24 +372,24 @@ class Project(Model):
             pr = Project(models, init_data=proj)
             projects_out.append(pr)
         return projects_out
-                
+
     def __repr__(self):
         if 'owner' in self.params_dict:
-            return '%s/%s' % (self.owner.uname, self.name) 
+            return '%s/%s' % (self.owner.uname, self.name)
         else:
             return self.fullname
-        
+
     def get_refs_list(self, models):
         return self.models.jsn.get_git_refs_list(self.id)['refs_list']
-        
-        
+
+
 class BuildList(Model):
     required_fields = ['id', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
 #    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'auto_publish', 'extra_repositories',
     'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'extra_repositories',
     'commit_hash', 'duration', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build', 'log_url', 'chroot_tree']
 #    'commit_hash', 'duration', 'owner', 'owner_type', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
-    
+
     status_by_id = {
         0: 'build complete',
         1: 'platform not found',
@@ -395,15 +413,15 @@ class BuildList(Model):
     }
     status_by_name = dict([(status_by_id[x], x) for x in status_by_id])
     final_statuses = [1, 2, 3, 4, 666, 5000, 6000, 8000, 9000, 12000, 14000]
-        
+
     def get_init_data(self, ID):
         ID = str(ID)
         log.debug('Reading buildlist ' + str(ID))
         self.init_data = self.models.jsn.get_buildlist_by_id(ID)
         self.init_data = self.init_data['build_list']
-        
-        
-    def load(self):  
+
+
+    def load(self):
         self.params_dict = self.init_data.copy()
 
         self.params_dict['project'] = Project(self.models, init_data=self.params_dict['project'])
@@ -457,7 +475,7 @@ class BuildList(Model):
         DATA = {
             'project_id':               project.id,
             'commit_hash':              commit_hash,
-            'update_type':              update_type, 
+            'update_type':              update_type,
             'save_to_repository_id':    save_to_repository.id,
             'build_for_platform_id':    None,
             'auto_publish_status':      auto_publish_status,
@@ -478,7 +496,7 @@ class BuildList(Model):
                 build_platforms[repo.platform.name]['repositories'] = []
                 build_platforms[repo.platform.name]['id'] = repo.platform.id
             build_platforms[repo.platform.name]['repositories'].append(repo.id)
-        build_ids = []    
+        build_ids = []
         for bpl in build_platforms:
             DATA['build_for_platform_id'] = build_platforms[bpl]['id']
             DATA['include_repos'] = build_platforms[bpl]['repositories']
@@ -493,11 +511,11 @@ class BuildList(Model):
                     log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                         'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
                     exit(1)
-                log.info("Task %s|%s|%s|%s has been sent. Build task id is %s" % 
+                log.info("Task %s|%s|%s|%s has been sent. Build task id is %s" %
                     (project, bpl, save_to_repository, arch, result['build_list']['id']))
                 build_ids.append(result['build_list']['id'])
         return build_ids
-                    
+
     def publish(self):
         try:
             log.info("Publishing the project %s..." % self.id)
@@ -641,11 +659,11 @@ class Models(object):
             cls._instance[tmp] = super(Models, cls).__new__(
                                 cls, abf_url, file_store_url, login, password, *args, **kwargs)
         return cls._instance[tmp]
-        
+
     #properties_by_class = {Platform: 'platforms', Repository: 'repositories', Arch: 'arches',
     #        BuildList: 'buildlists', Project: 'projects'}
     #properties_by_name = dict([(properties_by_class[x], x) for x in properties_by_class])
-        
+
     def __init__(self, abf_url, file_store_url, login, password):
         log.debug('Initializing models for ' + abf_url)
         self.abf_url = abf_url
@@ -653,12 +671,12 @@ class Models(object):
         self.login = login
         self.password = password
         self.jsn = AbfJson(abf_url, file_store_url, login, password, log)
-    
-        
+
+
     @staticmethod
     def clear_cache():
         lt_cache.clear()
         st_cache.clear()
 
 
-        
+

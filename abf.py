@@ -289,9 +289,11 @@ def parse_command_line():
 
     # info
     parser_info = subparsers.add_parser('info', help='get information about single instance', epilog='NOTE: only first 100 results of any request will be shown')
-    info_choices = ['user' ,'platform', 'product', 'repository', 'group', 'project']
+    info_choices = ['platforms', 'groups', 'projects']
     parser_info.add_argument('type', action='store', choices=info_choices, help='type of the instance')
-    parser_info.add_argument('name', action='store', help='name of the instance')
+    parser_info.add_argument('value', nargs='?' ,action='store', help='value')
+    parser_info.add_argument('-q', '--query', nargs=1, action='store', help='field of the instance', default='name')
+    parser_info.add_argument('-f', '--format', nargs='*', action='store', help='format output ')
     parser_info.set_defaults(func=info_single)
 
     # test
@@ -303,21 +305,32 @@ def parse_command_line():
 
     command_line = parser.parse_args(sys.argv[1:])
 
+def filterbyvalue(seq, value):
+   for el in seq:
+       if el.attribute == value: yield el
+
 def info_single():
-    log.debug('get info about %s with name' % command_line.type, command_line.name )
-    print 123
+    sq = command_line.query
     st = command_line.type
-    sn = command_line.name
-    cl = {'platform': Platform, 'user': User, 'repository':Repository, 'project': Project}
-    items = cl[st].info(models, sn)
-    platforms = Platform.search(models, sn)
-    print platforms
-    for plat in platforms:
-        if plat.name == sn:
-            break
-    print plat.name
-    for item in items:
-        print item
+    cl = {'groups': Group, 'users': User, 'platforms': Platform, 'projects': Project}
+    if not command_line.format:
+        log.info('You can query for one of the following parameters:\n %s' % cl[st].required_fields)
+        sf = [cl[st].required_fields[1]]
+    else:
+        sf = command_line.format
+    res = models.jsn.get_list_results(st, 1)
+    result = res[st]
+    if command_line.value:
+        result = [i for i in result if command_line.value in i[sq] ]
+    str_out = ""
+    for item in result:
+        for param in sf:
+            try:
+                str_out += param + ':\t' + str(item[param]) + "\n"
+            except:
+                pass
+        str_out += "\n"
+    print str_out
 
 def fix_default_config():
     if not os.path.exists('/etc/abf/mock-urpm/configs/default.cfg'):
