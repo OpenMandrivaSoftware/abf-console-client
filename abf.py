@@ -288,12 +288,12 @@ def parse_command_line():
     #list
 
     # info
-    parser_info = subparsers.add_parser('info', help='get information about single instance', epilog='NOTE: only first 100 results of any request will be shown')
-    info_choices = ['platforms', 'groups', 'projects']
+    parser_info = subparsers.add_parser('info', help='get information about single instance')
+    info_choices = ['platforms', 'repositories', 'projects']
     parser_info.add_argument('type', action='store', choices=info_choices, help='type of the instance')
-    parser_info.add_argument('value', nargs='?' ,action='store', help='value')
-    parser_info.add_argument('-q', '--query', nargs=1, action='store', help='field of the instance', default='name')
-    parser_info.add_argument('-f', '--format', nargs='*', action='store', help='format output ')
+    parser_info.add_argument('-f', '--filter', action='store', help='filter', nargs='*')
+    parser_info.add_argument('-o', '--output', action='store', help='format output ', nargs='*')
+    parser_info.add_argument('-p', '--page', action='store', help='page number ', default=1)
     parser_info.set_defaults(func=info_single)
 
     # test
@@ -305,32 +305,39 @@ def parse_command_line():
 
     command_line = parser.parse_args(sys.argv[1:])
 
-def filterbyvalue(seq, value):
-   for el in seq:
-       if el.attribute == value: yield el
 
 def info_single():
-    sq = command_line.query
     st = command_line.type
-    cl = {'groups': Group, 'users': User, 'platforms': Platform, 'projects': Project}
-    if not command_line.format:
-        log.info('You can query for one of the following parameters:\n %s' % cl[st].required_fields)
-        sf = [cl[st].required_fields[1]]
+    cl = {'platforms': Platform, 'repositories': Repository, 'projects': Project}
+    filter_value = []
+    if not command_line.filter:
+        log.info('Filter may be specified with the following parameters:\n %s' % cl[st].required_fields)
+        sf = None
     else:
-        sf = command_line.format
-    res = models.jsn.get_list_results(st, 1)
-    result = res[st]
-    if command_line.value:
-        result = [i for i in result if command_line.value in i[sq] ]
-    str_out = ""
-    for item in result:
-        for param in sf:
+        for params in command_line.filter:
             try:
-                str_out += param + ':\t' + str(item[param]) + "\n"
+                inst, lst = map(str, params.split('.'))
+                cl[inst].setup_filter(lst)
+                log.info('Filter setup for instance %s ' % inst)
             except:
-                pass
-        str_out += "\n"
-    print str_out
+                cl[st].setup_filter(params)
+                log.info('Filter setup for instance %s ' % st)
+
+    if not command_line.output:
+        log.info('Query format may be specified with the following parameters:\n %s' % cl[st].required_fields)
+        so = [cl[st].required_fields[1]]
+        log.info('Using default query format: %s' % so)
+    else:
+        so = command_line.output
+    res = cl[st].info(models, command_line.page)
+    info_out = []
+    for inst in res:
+        for param in so:
+            try:
+                print param + ':\t' + str(inst.params_dict[param])
+            except:
+                log.debug("Parameter %s not available:" % param)
+
 
 def fix_default_config():
     if not os.path.exists('/etc/abf/mock-urpm/configs/default.cfg'):

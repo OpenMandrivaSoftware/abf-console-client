@@ -387,8 +387,12 @@ class AbfJson(object):
         GET = {'type': search_type, 'query': query, 'per_page': 100}
         return self.get_url_contents(URL, GET=GET)
 
-    def get_list_results(self, search_type, page):
-        URL = "/api/v1/" + search_type +".json"
+    def get_list(self, list_type, page):
+        URL = "/api/v1/" + list_type +".json"
         GET = {'page': page }
         return self.get_url_contents(URL, GET=GET)
 
+    def get_projects_single(self, repo_id, page):
+        URL = "/api/v1/repositories/%d/projects.json" % repo_id
+        GET = {'page': page }
+        return self.get_url_contents(URL, GET=GET)
