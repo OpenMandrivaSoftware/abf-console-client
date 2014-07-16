@@ -593,6 +593,36 @@ def get_project(models, must_exist=True, name=None):
     return proj
 
 
+def split_repo_name(fullname):
+    items = fullname.split('/')
+    if len(items) == 2:
+        repo_name = items[1]
+        pl_name = items[0]
+    elif len(items) == 1:
+        repo_name = items[0]
+        pl_name = default_build_platform
+        log.info("Platform is assumed to be " + pl_name)
+    else:
+        log.error("repository argument format: [platform/]repository")
+        exit(1)
+
+    return [repo_name, pl_name]
+
+
+def get_repo_id(repo_name, pl_name):
+    # TODO: better to just get plaform by name...
+    platforms = Platform.search(models, pl_name)
+    for plat in platforms:
+        if plat.name == pl_name:
+            break
+
+    for repo in plat.repositories:
+        if repo.name == repo_name:
+            break
+
+    return repo.id
+
+
 def get():
     log.debug('GET started')
     proj = command_line.project
@@ -841,61 +871,17 @@ def create():
 
 def add_project_to_repository():
     log.debug('ADD PROJECT TO REPO started')
-
-    items = command_line.repository.split('/')
-    if len(items) == 2:
-        repo_name = items[1]
-        pl_name = items[0]
-    elif len(items) == 1:
-        repo_name = items[0]
-        pl_name = default_build_platform
-        log.info("Platform is assumed to be " + pl_name)
-    else:
-        log.error("repository argument format: [platform/]repository")
-        exit(1)
-
+    (repo_name, pl_name) = split_repo_name(command_line.repository)
+    repo_id = get_repo_id(repo_name, pl_name)
     proj = get_project(models, must_exist=True, name=command_line.project)
-
-    # TODO: better to just get plaform by name...
-    platforms = Platform.search(models, pl_name)
-    for plat in platforms:
-        if plat.name == pl_name:
-            break
-
-    for repo in plat.repositories:
-        if repo.name == repo_name:
-            break
-
-    ProjectCreator.add_project_to_repo(models, repo.id, proj.id)
+    ProjectCreator.add_project_to_repo(models, repo_id, proj.id)
 
 def remove_project_from_repository():
     log.debug('REMOVE PROJECT FROM REPO started')
-
-    items = command_line.repository.split('/')
-    if len(items) == 2:
-        repo_name = items[1]
-        pl_name = items[0]
-    elif len(items) == 1:
-        repo_name = items[0]
-        pl_name = default_build_platform
-        log.info("Platform is assumed to be " + pl_name)
-    else:
-        log.error("repository argument format: [platform/]repository")
-        exit(1)
-
+    (repo_name, pl_name) = split_repo_name(command_line.repository)
+    repo_id = get_repo_id(repo_name, pl_name)
     proj = get_project(models, must_exist=True, name=command_line.project)
-
-    # TODO: better to just get plaform by name...
-    platforms = Platform.search(models, pl_name)
-    for plat in platforms:
-        if plat.name == pl_name:
-            break
-
-    for repo in plat.repositories:
-        if repo.name == repo_name:
-            break
-
-    ProjectCreator.remove_project_from_repo(models, repo.id, proj.id)
+    ProjectCreator.remove_project_from_repo(models, repo_id, proj.id)
 
 def build():
     log.debug('BUILD started')
