@@ -100,7 +100,7 @@ class Model(object):
 class Platform(Model):
     required_fields = ['id', 'name', 'description', 'parent_platform_id', 'created_at', 'updated_at', 'released',
     'owner', 'visibility', 'platform_type', 'distrib_type', 'repositories']
-    filter_setup = []
+    filter_dict = { 'id': '*', 'name': '*', 'visibility': '*', 'owner': '*', 'platform_type': '*', 'repositories': '*', 'page': '1' }
 
     def get_init_data(self, ID):
         ID = str(ID)
@@ -168,24 +168,31 @@ class Platform(Model):
         return platforms_out
 
     @staticmethod
-    def info(models, page):
-        res = models.jsn.get_list('platforms', page)
+    def info(models):
+        if Platform.filter_dict['page'] == '*':
+            num = 1
+            while 1:
+                res = models.jsn.get_list('platforms', num)
+                if not res['platforms']:
+                    break
+                platforms += res['platforms']
+                num += 1
+        else:
+            res = models.jsn.get_list('platforms', Platform.filter_dict['page'])
+            platforms = res['platforms']
         platforms = res['platforms']
         platforms_out = []
         for platform in platforms:
             p = Platform(models, init_data=platform)
             platforms_out.append(p)
-        for value in Platform.filter_setup:
-            platforms_out = [i for i in platforms_out if str(value[1]) in str(i.params_dict[value[0]]) ]
+            for value in Platform.filter_dict:
+                if Platform.filter_dict[value] != '*' and value != 'page':
+                    platforms_out = [i for i in platforms_out if str(Platform.filter_dict[value]) in str(i.params_dict[value]) ]
         return platforms_out
-
-    @staticmethod
-    def setup_filter(filter_value):
-        Platform.filter_setup.append(filter_value.split('='))
 
 class Repository(Model):
     required_fields = ['id', 'name', 'created_at', 'updated_at', 'description', 'publish_without_qa', 'platform']
-    filter_setup = []
+    filter_dict = { 'id': '*', 'name': '*', 'page': '1' }
 
     def get_init_data(self, ID):
         ID = str(ID)
@@ -207,22 +214,19 @@ class Repository(Model):
         return '%s/%s' % (self.platform.name, self.name)
 
     @staticmethod
-    def info(models, page):
-        platform_info = Platform.info(models, page)
+    def info(models):
+        platform_info = Platform.info(models)
         repo_info = []
         for platform in platform_info:
             repos = platform.params_dict['repositories']
             for repo in repos:
-                p = models.jsn.get_repository_by_id(repo.id)
-                repo_fin = Repository(models, init_data=p['repository'])
+                repo_fin = Repository(models, repo.id)
                 repo_info.append(repo_fin)
-        for value in Repository.filter_setup:
-            repo_info = [i for i in repo_info if str(value[1]) in str(i.params_dict[value[0]]) ]
+            for value in Repository.filter_dict:
+                if Repository.filter_dict[value] != '*' and value != 'page':
+                    repo_info = [i for i in repo_info if str(Repository.filter_dict[value]) in str(i.params_dict[value]) ]
         return repo_info
 
-    @staticmethod
-    def setup_filter(filter_value):
-        Repository.filter_setup.append(filter_value.split('='))
 
 class Arch(Model):
     required_fields = ['id', 'name']
@@ -338,7 +342,8 @@ class Group(Model):
 class Project(Model):
     required_fields = ['id', 'name', 'created_at', 'updated_at', 'visibility', 'description', 'ancestry', 'has_issues',
             'has_wiki', 'default_branch', 'is_package', 'owner', 'repositories', 'owner_type']
-    filter_setup = []
+    filter_dict = { 'id': '*', 'name': '*', 'page': '1' }
+
 
     def get_init_data(self, proj_id):
         log.debug("Reading project " + str(proj_id))
@@ -399,23 +404,29 @@ class Project(Model):
         return self.models.jsn.get_git_refs_list(self.id)['refs_list']
 
     @staticmethod
-    def info(models, page):
-        repo_info = Repository.info(models, page)
+    def info(models):
+        repo_info = Repository.info(models)
         projects_info = []
+        projs = []
         for repo in repo_info:
-            p = models.jsn.get_projects_single(repo.id, page)
-            projs = p['repository']['projects']
+            if Project.filter_dict['page'] == '*':
+                num = 1
+                while 1:
+                    p = models.jsn.get_projects_single(repo.id, num)
+                    if not p['repository']['projects']:
+                        break
+                    projs += p['repository']['projects']
+                    num += 1
+            else:
+                p = models.jsn.get_projects_single(repo.id, Project.filter_dict['page'])
+                projs = p['repository']['projects']
             for proj in projs:
                 pr = Project(models, init_data=proj)
                 projects_info.append(pr)
-        for value in Project.filter_setup:
-            projects_info = [i for i in projects_info if str(value[1]) in str(i.params_dict[value[0]]) ]
+        for value in Project.filter_dict:
+            if Project.filter_dict[value] != '*' and value != 'page':
+                projects_info = [i for i in projects_info if str(Project.filter_dict[value]) in str(i.params_dict[value]) ]
         return projects_info
-
-    @staticmethod
-    def setup_filter(filter_value):
-        Project.filter_setup.append(filter_value.split('='))
-
 
 class BuildList(Model):
     required_fields = ['id', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',

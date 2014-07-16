@@ -291,9 +291,8 @@ def parse_command_line():
     parser_info = subparsers.add_parser('info', help='get information about single instance')
     info_choices = ['platforms', 'repositories', 'projects']
     parser_info.add_argument('type', action='store', choices=info_choices, help='type of the instance')
-    parser_info.add_argument('-f', '--filter', action='store', help='filter', nargs='*')
-    parser_info.add_argument('-o', '--output', action='store', help='format output ', nargs='*')
-    parser_info.add_argument('-p', '--page', action='store', help='page number ', default=1)
+    parser_info.add_argument('-f', '--filter', action='store', help='The filter may be specified by defining multiple pairs <type>.<attribute>=<value> or <attribute>=<value>, where <type> is one of the following positional arguments: %s, <attribute> is the one of the instance fields or special attribute (page - using for pagination) and <value> - string, that can take asterisk (*) or anything else... Example: abf info projects -f platforms.name=rosa2012lts page=*' % info_choices, nargs='*')
+    parser_info.add_argument('-o', '--output', action='store', help='output format ', nargs='*')
     parser_info.set_defaults(func=info_single)
 
     # test
@@ -309,27 +308,26 @@ def parse_command_line():
 def info_single():
     st = command_line.type
     cl = {'platforms': Platform, 'repositories': Repository, 'projects': Project}
-    filter_value = []
     if not command_line.filter:
-        log.info('Filter may be specified with the following parameters:\n %s' % cl[st].required_fields)
+        log.debug('Filter can be specified with the following parameters:\n %s' % cl[st].filter_dict)
         sf = None
     else:
-        for params in command_line.filter:
+        for param in command_line.filter:
             try:
-                inst, lst = map(str, params.split('.'))
-                cl[inst].setup_filter(lst)
-                log.info('Filter setup for instance %s ' % inst)
+                st, param = map(str, param.split('.'))
             except:
-                cl[st].setup_filter(params)
-                log.info('Filter setup for instance %s ' % st)
-
+                pass
+            attr, value = map(str, param.split('='))
+            cl[st].filter_dict[attr]=value
+            log.debug('Filter setup for instance %s ' % st)
+            st = command_line.type
     if not command_line.output:
-        log.info('Query format may be specified with the following parameters:\n %s' % cl[st].required_fields)
+        log.debug('Output format can be specified with the following parameters:\n %s' % cl[st].required_fields)
         so = [cl[st].required_fields[1]]
-        log.info('Using default query format: %s' % so)
+        log.debug('Using default query format: %s' % so)
     else:
         so = command_line.output
-    res = cl[st].info(models, command_line.page)
+    res = cl[st].info(models)
     info_out = []
     for inst in res:
         for param in so:
