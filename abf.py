@@ -142,7 +142,7 @@ def parse_command_line():
 
     # fetch
     parser_fetch = subparsers.add_parser('fetch', help='Download all the files listed in .abf.yml or file with given hash from File-Store to local directory.')
-    parser_fetch.add_argument('filehash', action='store', help='Download file with given hash')
+    parser_fetch.add_argument('filehash',  nargs='*', action='store', help='Download file with given hash')
     parser_fetch.add_argument('-o', '--only', action='append', help='Limit the list of downloaded files to this file name(s). This option can be specified more than once.')
     parser_fetch.set_defaults(func=fetch)
 
@@ -696,8 +696,9 @@ def put():
 def fetch():
     log.debug('FETCH started')
     if command_line.filehash:
-        log.info("Fetching file with hash " + command_line.filehash)
-        os.system("wget -c --content-disposition " + file_store_url + "/api/v1/file_stores/" + command_line.filehash)
+        for filehash in command_line.filehash:
+            log.info("Fetching file with hash " + filehash)
+            os.system("wget -c --content-disposition " + file_store_url + "/api/v1/file_stores/" + filehash)
         exit(0)
 
     path = get_root_git_dir()
