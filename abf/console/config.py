@@ -94,7 +94,7 @@ class Section(dict):
         return res
             
 class Config(dict):
-    default_url = 'https://abf.rosalinux.ru'
+    default_url = 'https://abf.io'
     default_filestore_url = 'http://file-store.rosalinux.ru'
     default_log_path = '/var/log/abf.log'
     def __init__(self, conf_path='~/.abfcfg', main_conf=True):
