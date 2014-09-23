@@ -441,8 +441,13 @@ class BuildList(Model):
         2: 'platform pending',
         3: 'project not found',
         4: 'project version not found',
+        6: 'project source error',
+        555: 'dependencies error',
         666: 'build error',
+        777: 'packages fail',
         2000: 'build pending',
+        2500: 'rerun tests',
+        2550: 'rerunning tests',
         3000: 'build started',
         4000: 'waiting for response',
         5000: 'build canceled',
@@ -454,7 +459,8 @@ class BuildList(Model):
         11000: 'tests failed',
         12000: '[testing] Build has been published',
         13000: '[testing] Build is being published',
-        14000: '[testing] Publishing error'
+        14000: '[testing] Publishing error',
+        15000: 'unpermitted architecture'
     }
     status_by_name = dict([(status_by_id[x], x) for x in status_by_id])
     final_statuses = [1, 2, 3, 4, 666, 5000, 6000, 8000, 9000, 12000, 14000]
