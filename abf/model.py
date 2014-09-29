@@ -39,23 +39,23 @@ class Model(object):
         self.cacher = None
 
         if not ID and not init_data:
-            raise Exception("At least one of 'ID' or 'init_data' parameters have to be set! ")
+            raise Exception(_("At least one of 'ID' or 'init_data' parameters have to be set! "))
 
         if init_data and 'id' not in init_data:
-            raise Exception("Key 'id' have to present in initial data!")
+            raise Exception(_("Key 'id' have to present in initial data!"))
 
         if ID:
             cache_key = '%s-%s' % (self.__class__.__name__, ID)
 
             if st_cache and st_cache.has_key(cache_key):
                 #read cached value
-                log.debug( 'Loading %s %s from cache' % (self.__class__.__name__, ID))
+                log.debug( _('Loading %s %s from cache') % (self.__class__.__name__, ID))
                 self.stub = False
                 self.init_data = st_cache.get(cache_key)
                 self.load()
 
             else:
-                log.debug('Loading %s %s using API' % (self.__class__.__name__, ID))
+                log.debug(_('Loading %s %s using API') % (self.__class__.__name__, ID))
                 self.stub = False
                 self.get_init_data(ID)
                 self.load()
@@ -63,14 +63,14 @@ class Model(object):
                 #write to cache
                 if self.cacher:
                     self.cacher.put(cache_key, self.init_data)
-                    log.debug('Results were cached')
+                    log.debug(_('Results were cached'))
 
             for field in self.__class__.required_fields:
                 if field not in self.params_dict:
-                    raise Exception("One of the fields required for %s model was not specified: %s" %
+                    raise Exception(_("One of the fields required for %s model was not specified: %s") %
                                 (self.__class__.__name__, field))
         else:
-            log.debug('Creating a stub for %s %s' % (self.__class__.__name__, self.init_data['id']))
+            log.debug(_('Creating a stub for %s %s') % (self.__class__.__name__, self.init_data['id']))
             self.load()
             self.stub = True
 
@@ -81,14 +81,13 @@ class Model(object):
         if key in self.params_dict:
             return self.params_dict[key]
         if self.__dict__['stub']:
-            #print 'REAL LOADING'
             self.stub = False
             obj = self.__class__(self.models, ID=self.params_dict['id'])
             self.__dict__ = obj.__dict__
             #self.load(self.params_dict['id'])
             if key in self.params_dict:
                 return self.params_dict[key]
-        raise KeyError("Key '%s' can not be found!" % key)
+        raise KeyError(_("Key '%s' can not be found!") % key)
 
     def __eq__(self, other):
         return self.id == other.id
@@ -104,7 +103,7 @@ class Platform(Model):
 
     def get_init_data(self, ID):
         ID = str(ID)
-        log.debug('Reading platform ' + ID)
+        log.debug(_('Reading platform ') + ID)
         self.init_data = self.models.jsn.get_platform_by_id(ID)
         self.init_data = self.init_data['platform']
 
@@ -196,7 +195,7 @@ class Repository(Model):
 
     def get_init_data(self, ID):
         ID = str(ID)
-        log.debug('Reading repository ' + str(ID))
+        log.debug(_('Reading repository ') + str(ID))
         self.init_data = self.models.jsn.get_repository_by_id(ID)
         self.init_data = self.init_data['repository']
 
@@ -233,14 +232,14 @@ class Arch(Model):
 
     def get_init_data(self, ID):
         ID = str(ID)
-        log.debug('Reading arch ' + str(ID))
+        log.debug(_('Reading arch ') + str(ID))
         arches = self.models.jsn.get_architectures()['architectures']
         self.init_data = None
         for arch in arches:
             if str(arch['id']) == ID:
                 self.init_data = arch
         if not self.init_data:
-            raise Exception("Architecture with id %s not found!" % ID)
+            raise Exception(_("Architecture with id %s not found!") % ID)
 
     def load(self):
         self.params_dict = self.init_data
@@ -275,7 +274,7 @@ class User(Model):
 
     def get_init_data(self, ID):
         ID = str(ID)
-        log.debug('Reading user ' + ID)
+        log.debug(_('Reading user ') + ID)
         self.init_data = self.models.jsn.get_user_by_id(ID)
         self.init_data = self.init_data['user']
 
@@ -308,7 +307,7 @@ class Group(Model):
 
     def get_init_data(self, ID):
         ID = str(ID)
-        log.debug('Reading group ' + ID)
+        log.debug(_('Reading group ') + ID)
         self.init_data = self.models.jsn.get_group_by_id(ID)
         self.init_data = self.init_data['group']
 
@@ -346,7 +345,7 @@ class Project(Model):
 
 
     def get_init_data(self, proj_id):
-        log.debug("Reading project " + str(proj_id))
+        log.debug(_("Reading project ") + str(proj_id))
         self.init_data = self.models.jsn.get_project_by_id(proj_id)
         self.init_data = self.init_data['project']
 
@@ -356,7 +355,7 @@ class Project(Model):
         if type(key) is unicode or type(key) is str:
             items = key.split('/')
             if len(items) != 2:
-                raise Exception('Invalid key: ' + key)
+                raise Exception(_('Invalid key: ') + key)
             key = (items[0], items[1])
         res = models.jsn.get_project_id_by_name(key)
         proj_id = res['project']['id']
@@ -467,7 +466,7 @@ class BuildList(Model):
 
     def get_init_data(self, ID):
         ID = str(ID)
-        log.debug('Reading buildlist ' + str(ID))
+        log.debug(_('Reading buildlist ') + str(ID))
         self.init_data = self.models.jsn.get_buildlist_by_id(ID)
         self.init_data = self.init_data['build_list']
 
@@ -479,7 +478,6 @@ class BuildList(Model):
         self.params_dict['arch'] = Arch(self.models, init_data=self.params_dict['arch'])
         self.params_dict['save_to_repository'] = Repository(self.models, init_data=self.params_dict['save_to_repository'])
         self.params_dict['build_for_platform'] = Platform(self.models, init_data=self.params_dict['build_for_platform'])
-
 
         include_repos = self.params_dict['include_repos']
         self.params_dict['include_repos'] = []
@@ -522,7 +520,18 @@ class BuildList(Model):
     update_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
     auto_publish_statuses = ['default', 'none', 'testing']
     @staticmethod
-    def new_build_task(models, project, save_to_repository, repositories, commit_hash, project_version, update_type, auto_publish_status, arches, skip_personal, auto_create_container):
+    def new_build_task(models,
+			project,
+			save_to_repository,
+			repositories,
+			commit_hash,
+			project_version,
+			update_type,
+			auto_publish_status,
+			arches, skip_personal,
+			cached_chroot,
+			save_chroot,
+			auto_create_container):
         DATA = {
             'project_id':               project.id,
             'commit_hash':              commit_hash,
@@ -532,6 +541,8 @@ class BuildList(Model):
             'auto_publish_status':      auto_publish_status,
             'project_version':          project_version,
             'auto_create_container':    auto_create_container,
+            'use_cached_chroot':	cached_chroot,
+            'save_buildroot':		save_chroot,
             'arch_id':                  None,
             'include_repos':            [],
             'extra_repositories':       []
@@ -554,22 +565,22 @@ class BuildList(Model):
 
             for arch in arches:
                 DATA['arch_id'] = arch.id
-                log.debug('Sending the build task: ' + str(DATA))
+                log.debug(_('Sending the build task: ') + str(DATA))
                 try:
                     #continue
                     result = models.jsn.new_build_task({'build_list': DATA})
                 except BadRequestError, ex:
-                    log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
-                        'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+                    log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                        'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
                     exit(1)
-                log.info("Task %s|%s|%s|%s has been sent. Build task id is %s" %
+                log.info(_("Task %s|%s|%s|%s has been sent. Build task id is %s") %
                     (project, bpl, save_to_repository, arch, result['build_list']['id']))
                 build_ids.append(result['build_list']['id'])
         return build_ids
 
     def publish(self):
         try:
-            log.info("Publishing the project %s..." % self.id)
+            log.info(_("Publishing the project %s...") % self.id)
             result = self.models.jsn.publish(self.id)
             if result['is_published']:
                 log.info(result['message'])
@@ -578,8 +589,8 @@ class BuildList(Model):
 
             return result
         except BadRequestError, ex:
-            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
-                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
 
 
@@ -604,15 +615,15 @@ class PullRequest(Model):
             'from_ref': from_ref,
             }
 
-        log.debug('Sending pull request: ' + str(DATA))
+        log.debug(_('Sending pull request: ') + str(DATA))
         try:
             #continue
             result = models.jsn.new_pull_request({'pull_request': DATA}, project.id)
         except BadRequestError, ex:
-            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
-                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info("Pull request for %s from %s to %s has been sent." % (project, from_ref, to_ref))
+        log.info(_("Pull request for %s from %s to %s has been sent.") % (project, from_ref, to_ref))
 
 class ProjectCreator(Model):
     required_fields = ['name', 'description', 'owner']
@@ -638,14 +649,14 @@ class ProjectCreator(Model):
             'has_wiki': 'false',
             }
 
-        log.debug('Creating project: ' + str(DATA))
+        log.debug(_('Creating project: ') + str(DATA))
         try:
             result = models.jsn.new_project({'project': DATA})
         except BadRequestError, ex:
-            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
-                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info("The project %s for owner %d has been created." % (name, owner_id))
+        log.info(_("The project %s for owner %d has been created.") % (name, owner_id))
 
     @staticmethod
     def add_project_to_repo(models, repo_id, project_id):
@@ -653,14 +664,14 @@ class ProjectCreator(Model):
             'project_id': project_id,
             }
 
-        log.debug('Adding project to repository: ' + str(DATA))
+        log.debug(_('Adding project to repository: ') + str(DATA))
         try:
             result = models.jsn.add_project_to_repo(DATA, repo_id)
         except BadRequestError, ex:
-            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
-                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info("The project %d has been added to repository %d." % (project_id, repo_id) )
+        log.info(_("The project %d has been added to repository %d.") % (project_id, repo_id) )
         # Would be nice to invalidate only record corresponding to our project...
         models.clear_cache()
 
@@ -670,14 +681,14 @@ class ProjectCreator(Model):
             'project_id': project_id,
             }
 
-        log.debug('Removing project from repository: ' + str(DATA))
+        log.debug(_('Removing project from repository: ') + str(DATA))
         try:
             result = models.jsn.remove_project_from_repo(DATA, repo_id)
         except BadRequestError, ex:
-            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
-                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info("The project has been removed from repository.")
+        log.info(_("The project has been removed from repository."))
         # Would be nice to invalidate only record corresponding to our project...
         models.clear_cache()
 
@@ -693,14 +704,14 @@ class ProjectCreator(Model):
                 'fork_name': target_name,
                 }
 
-        log.debug('Forking project: ' + str(DATA))
+        log.debug(_('Forking project: ') + str(DATA))
         try:
             result = models.jsn.fork_project(DATA, proj_id)
         except BadRequestError, ex:
-            log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
-                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s' % DATA )
+            log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info("The project has been forked.")
+        log.info(_("The project has been forked."))
 
 class Models(object):
     _instance = {}
@@ -716,7 +727,7 @@ class Models(object):
     #properties_by_name = dict([(properties_by_class[x], x) for x in properties_by_class])
 
     def __init__(self, abf_url, file_store_url, login, password):
-        log.debug('Initializing models for ' + abf_url)
+        log.debug(_('Initializing models for ') + abf_url)
         self.abf_url = abf_url
         self.file_store_url = file_store_url
         self.login = login

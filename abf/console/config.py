@@ -78,10 +78,10 @@ class Section(dict):
             res = self.config.get(self.section, key)
         except ConfigParser.NoOptionError, ex:
             if key == 'default_branch':
-                print 'non-critical error in config "%s": %s' % (self.conf_path, str(ex))
+                print(_('non-critical error in config "%s": %s') % (self.conf_path, str(ex)))
                 return ''
             else:
-                print 'error in config "%s": %s' % (self.conf_path, str(ex))
+                print(_('error in config "%s": %s') % (self.conf_path, str(ex)))
                 exit(1)
         
     def pop(self, key, init=None):
@@ -94,7 +94,7 @@ class Section(dict):
         return res
             
 class Config(dict):
-    default_url = 'https://abf.io'
+    default_url = 'https://abf.rosalinux.ru'
     default_filestore_url = 'http://file-store.rosalinux.ru'
     default_log_path = '/var/log/abf.log'
     def __init__(self, conf_path='~/.abfcfg', main_conf=True):
@@ -117,7 +117,7 @@ class Config(dict):
                 
 
         if main_conf and ('config_version' not in self['main'] or int(self['main']['config_version']) != VERSION):
-            print "Configuration schema have been changed or config file have been corrupted, rebuilding config..."
+            print(_("Configuration schema have been changed or config file have been corrupted, rebuilding config..."))
             init = True
             
         if init and main_conf:
@@ -152,10 +152,10 @@ class Config(dict):
                 domain = domain[:-1] # remove trailing '/'
             parts = domain.split('//')
             if len(parts) == 1:
-                print 'No protocol part specified (http://, https://, etc.)'
-                continue         
+                print(_('No protocol part specified (http://, https://, etc.)'))
+                continue
             if len(parts) > 2:
-                print 'Double slashe must present only once (in a ptocol part)'
+                print(_('Double slash must present only once (in a ptocol part)'))
                 continue
             done = True
         return domain
@@ -241,9 +241,9 @@ class Config(dict):
             self['alias']['sp'] = 'search projects'        
         
         self['main']['config_version'] = VERSION
-        print('Configuration have been completed')
-        print 'Now you can execute "abf locate update-recursive -d PATH", where PATH is your directory with ' + \
-        'cloned ABF projects. It will let you use "abfcd <project>" command to simply cd to project directory.\n\n'
+        print(_('Configuration have been completed'))
+        print(_('Now you can execute "abf locate update-recursive -d PATH", where PATH is your directory with ' + \
+        'cloned ABF projects. It will let you use "abfcd <project>" command to simply cd to project directory.\n\n'))
 
         
         

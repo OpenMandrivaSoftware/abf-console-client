@@ -37,9 +37,10 @@ class ReturnCodeNotZero(Exception):
     def __init__(self, message, code):
         super(ReturnCodeNotZero, self).__init__(message)
         self.code = code
-        
+
 def get_project_name(path=None):
     try:
+        # TODO: Force C locale?
         output, ret_code = execute_command(['git', 'remote', 'show', 'origin', '-n'], cwd=path)
 
         for line in output.split('\n'):
@@ -67,7 +68,7 @@ def parse_spec_silently(ts, spec_path):
         os.dup2(stdout, sys.stdout.fileno())
         #se.close()
     return rpm_spec
-        
+
 def get_project_name_version(spec_path):
     try:
         rpm = __import__('rpm') # it's initialization is too long to place it to the top of the file
@@ -78,7 +79,7 @@ def get_project_name_version(spec_path):
         return (name, version)
     except:
         return None
-        
+
 def get_project_data(spec_path):
         rpm = __import__('rpm') #  it's initialization is too long to place it to the top of the file
         ts = rpm.TransactionSet()
@@ -93,7 +94,7 @@ def get_project_data(spec_path):
             sources_all = rpm_spec.sources() # rpm5
             src_flag = 65536
             patch_fkag = 131072
-        
+
         sources = []
         patches = []
         for src in sources_all:
@@ -117,19 +118,19 @@ def get_branch_name(path=None):
             return line.split()[1]
     except ReturnCodeNotZero:
         return None
-    
+
 def get_current_commit_hash(path=None):
     try:
         output, ret_code = execute_command(['git', 'rev-parse', 'HEAD'], cwd=path)
         return output.strip()
     except ReturnCodeNotZero:
         return None
-        
+
 def get_remote_branch_hash(branch, cwd=None):
     ''' Get the hash of the remote branch top commit.
     If not in git repository directory - exception will be reised. If hash can not be found - return None'''
     re_ref = re.compile('^([0-9a-f]+) refs/remotes/\w+/%s$' % branch)
-    
+
     output, ret_code = execute_command(['git', 'show-ref'], cwd=cwd)
     for line in output.split('\n'):
         res = re_ref.match(line)
@@ -137,74 +138,74 @@ def get_remote_branch_hash(branch, cwd=None):
             h = res.group(1)
             return h
     return None
-    
+
 def get_tag_hash(tag, cwd=None):
     ''' Get the hash of the tag.
     If not in git repository directory - exception will be reised. If hash can not be found - return None'''
     re_ref = re.compile('^([0-9a-f]+) refs/tags/%s$' % tag)
-    
+
     output, ret_code = execute_command(['git', 'show-ref', '--tags'], cwd=cwd)
     for line in output.split('\n'):
         res = re_ref.match(line)
         if res:
             h = res.group(1)
             return h
-    return None   
+    return None
 
 def clone_git_repo_tmp(uri, depth=None):
-    log.info('Cloning git repository (temporary workaround)')
+    log.info(_('Cloning git repository (temporary workaround)'))
     tmp_dir = tempfile.mkdtemp(prefix='tmp_abf_')
-    log.info("Temporary directory os " + tmp_dir)
+    log.info(_("Temporary directory os ") + tmp_dir)
     cmd = ['git', 'clone', uri, tmp_dir]
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     return tmp_dir
-    
-        
+
+
 def get_root_git_dir(path=None):
     ''' Get the root directory of the git project '''
     if path:
         p = path
     else:
         p = os.getcwd()
-        
+
     while '.git' not in os.listdir(p) and p != '/':
         p = os.path.dirname(p)
     if p == '/':
         return None
     else:
         return p
-        
+
 def get_spec_file(root_path):
     specs = glob(os.path.join(root_path, '*.spec'))
-    log.debug("Spec files found: " + str(specs))
+    log.debug(_("Spec files found: ") + str(specs))
     if len(specs) == 1:
         spec = specs[0]
         return spec
     else:
-        raise Excpetion("Could not find single spec file")
+        raise Excpetion(_("Could not find single spec file"))
 
 def find_spec(path=None):
     path = path or get_root_git_dir()
     if not path:
-        log.error('No path specified and you are not in a git repository')
+        log.error(_('No path specified and you are not in a git repository'))
         exit(1)
     files = os.listdir(path)
     specs_present = []
     for fl in files:
         if fl.endswith('.spec'):
             specs_present.append(fl)
-            
+
     if len(specs_present) == 0:
-        raise Exception("No spec files found!")
+        raise Exception(_("No spec files found!"))
     elif len(specs_present) > 1:
-        raise Exception("There are more than one spec files found!")
-    
+        raise Exception(_("More than one spec file found!"))
+
     return specs_present[0]
-        
+
 def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
     path = get_root_git_dir()
     files = os.listdir(path)
-    
+
     files_present = []
     dirs_present = []
     yaml_files = []
@@ -217,7 +218,7 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
         if fl.endswith('.spec'):
             continue
         files_present.append(fl)
-        
+
     yaml_path = os.path.join(path, '.abf.yml')
     yaml_data = {'sources': {}}
     if os.path.isfile(yaml_path):
@@ -225,54 +226,54 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
             try:
                 yaml_data = yaml.load(fd)
             except yaml.scanner.ScannerError, ex:
-                log.error('Invalid yml file %s!\nProblem in line %d column %d: %s' % (yaml_path, ex.problem_mark.line, ex.problem_mark.column, ex.problem))
+                log.error(_('Invalid yml file %s!\nProblem in line %d column %d: %s') % (yaml_path, ex.problem_mark.line, ex.problem_mark.column, ex.problem))
             except yaml.composer.ComposerError, ex:
-                log.error('Invalid yml file %s!\n%s' % (yaml_path, ex))
-        
+                log.error(_('Invalid yml file %s!\n%s') % (yaml_path, ex))
+
         if not 'sources' in yaml_data:
-            log.error("Incorrect .abf.yml file: no 'sources' key")
+            log.error(_("Incorrect .abf.yml file: no 'sources' key"))
             exit(1)
         for fl in yaml_data['sources']:
             yaml_files.append(fl)
-            
+
     spec_path = find_spec(path)
-    
+
     for d in dirs_present:
-        log.info("warning: directory '%s' was found" % d)
+        log.info(_("warning: directory '%s' was found") % d)
         if auto_remove:
             shutil.rmtree(os.path.join(path,d) )
-    
+
     res = get_project_data(spec_path)
-    
+
     errors = False
     warnings = False
     files_required = []
     for fl in res['sources'] + res['patches']:
         fname, n = fl
         fname_base = os.path.basename(fname)
-        
+
         files_required.append(fname_base)
-        
+
         is_url = fname.startswith('http://')
         presents = fname_base in files_present
         in_yaml = fname_base in yaml_files
-        
+
 #        if is_url  and in_yaml:
 #            warnings = True
 #            log.info('warning: file "%s" presents in spec (url) and in .abf.yml' % fname_base)
-        
+
         if is_url and not presents and not in_yaml:
             warnings = True
-            log.info('warning: file "%s" is listed in spec as a URL, but does not present in the current directory or in .abf.yml file' % fname_base)
-        
+            log.info(_('warning: file "%s" is listed in spec as a URL, but does not present in the current directory or in .abf.yml file') % fname_base)
+
         if presents and in_yaml:
             warnings = True
-            log.info('warning: file "%s" presents in the git directory and in .abf.yml' % fname_base)
-            
+            log.info(_('warning: file "%s" presents in the git directory and in .abf.yml') % fname_base)
+
         if not presents and not in_yaml and not is_url:
             errors = True
-            log.info("error: missing file %s" % fname)
-            
+            log.info(_("error: missing file %s") % fname)
+
     remove_from_yaml = []
     for fl in set(files_present + yaml_files):
         if fl in files_required:
@@ -281,56 +282,56 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
         in_yaml = fl in yaml_files
         if presents:
             warnings = True
-            log.info('warning: unnecessary file "%s"' % fl)
+            log.info(_('warning: unnecessary file "%s"') % fl)
             if auto_remove:
                 os.remove( os.path.join(path, fl) )
-        
+
         if in_yaml:
             warnings = True
-            log.info('warning: unnecessary file "%s" in .abf.yml' % fl)
+            log.info(_('warning: unnecessary file "%s" in .abf.yml') % fl)
             remove_from_yaml.append(fl)
-            
+
     if auto_remove:
         for fl in remove_from_yaml:
             yaml_data['sources'].pop(fl)
         with open(yaml_path, 'w') as fd:
             yaml.dump(yaml_data, fd, default_flow_style=False)
-            log.info('.abf.yml file was rewritten')
-    
+            log.info(_('.abf.yml file was rewritten'))
+
     if exit_on_error and (errors or (strict and warnings)):
         exit(1)
-        
+
 def pack_project(root_path):
     # look for a spec file
     spec = get_spec_file(root_path)
-        
+
     if spec:
         name, version = get_project_name_version(spec)
     else:
-        log.error("Could not resolve project name and version from the spec file")
+        log.error(_("Could not resolve project name and version from the spec file"))
         return
-    log.debug("Project name is " + str(name))
-    log.debug("Project version is " + str(version))
+    log.debug(_("Project name is ") + str(name))
+    log.debug(_("Project version is ") + str(version))
 
     tardir = '%s-%s' % (name, version)
     tarball = tardir + ".tar.gz"
-    log.debug("Writing %s/%s ..." % (root_path, tarball))
-    
+    log.debug(_("Writing %s/%s ...") % (root_path, tarball))
+
     full_tarball_path = '%s/%s' % (root_path, tarball)
     if os.path.exists(full_tarball_path):
         os.unlink(full_tarball_path)
     #open(full_tarball_path, 'w').close()
-    cmd = ['tar', 'czf', full_tarball_path, '--exclude-vcs', os.path.basename(root_path)] 
+    cmd = ['tar', 'czf', full_tarball_path, '--exclude-vcs', os.path.basename(root_path)]
     try:
         execute_command(cmd, cwd=os.path.dirname(root_path), exit_on_error=False)
     except ReturnCodeNotZero, ex:
         if ex.code != 1:
             raise
-    
+
     #remove other files
     files = os.listdir(root_path)
     do_not_remove = ['.git', tarball, os.path.basename(spec)]
-    log.debug("Removing files except " + str(do_not_remove))
+    log.debug(_("Removing files except ") + str(do_not_remove))
     for f in files:
         if f in do_not_remove:
             continue
@@ -340,15 +341,15 @@ def pack_project(root_path):
             os.remove(f)
         else:
             shutil.rmtree(f)
-           
 
-        
+
+
 def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, print_to_stdout=False, exit_on_error=False):
     output = ""
     start = time.time()
     try:
         child = None
-        log.debug("Executing command: %s" % command)
+        log.debug(_("Executing command: %s") % command)
         child = subprocess.Popen(
             command,
             shell=shell,
@@ -364,7 +365,7 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
     except Exception, ex:
         # kill children if they arent done
         if type(ex) == IOError and ex.errno==4:
-            print 'Process execution has been terminated'
+            print(_('Process execution has been terminated'))
             exit()
         try:
             if child is not None and child.returncode is None:
@@ -374,7 +375,7 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
         except:
             pass
         raise ex
-    
+
     # wait until child is done, kill it if it passes timeout
     niceExit=1
     while child.poll() is None:
@@ -385,27 +386,27 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
             niceExit=0
             os.killpg(child.pid, 9)
     if not niceExit and raiseExc:
-        raise CommandTimeoutExpired("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
-    
-    log.debug("Child returncode was: %s" % str(child.returncode))
+        raise CommandTimeoutExpired(_("Timeout(%s) expired for command:\n # %s\n%s") % (timeout, command, output))
+
+    log.debug(_("Child returncode was: %s") % str(child.returncode))
     if child.returncode:
         if exit_on_error:
             exit(1)
         if raiseExc:
-            raise ReturnCodeNotZero("Command failed.\nReturn code: %s\nOutput: %s" % (child.returncode, output), child.returncode)
+            raise ReturnCodeNotZero(_("Command failed.\nReturn code: %s\nOutput: %s") % (child.returncode, output), child.returncode)
     return (output, child.returncode)
-    
+
 def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
     done = 0
     output = ''
     #print 'NEW CALL epoll', fds[0].fileno(), fds[1].fileno()
-    
+
     # set all fds to nonblocking
     for fd in fds:
         flags = fcntl.fcntl(fd, fcntl.F_GETFL)
         if not fd.closed:
             fcntl.fcntl(fd, fcntl.F_SETFL, flags| os.O_NONBLOCK)
-            
+
     epoll = select.epoll()
     epoll.register(fds[0].fileno(), select.EPOLLIN)
     epoll.register(fds[1].fileno(), select.EPOLLIN)
@@ -435,53 +436,53 @@ def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
                     if not reg_num:
                         done = True
     finally:
-        epoll.close()    
+        epoll.close()
     return output
-    
+
 def is_text_file(path):
     m = magic.open(magic.MAGIC_MIME)
     m.load()
     r = m.file(path)
-    log.debug("Magic type of file %s is %s" % (path, r))
+    log.debug(_("Magic type of file %s is %s") % (path, r))
     if r.startswith('text'):
         return True
     return False
-    
+
 def fetch_files(models, yaml_path, file_names=None):
     with open(yaml_path, 'r') as fd:
         yaml_data = yaml.load(fd)
     if not 'sources' in yaml_data:
-        log.error("Incorrect .abf.yml file: no 'sources' key.")
+        log.error(_("Incorrect .abf.yml file: no 'sources' key."))
         exit(1)
     yaml_files = yaml_data['sources']
     if file_names:
         to_fetch = dict([(x, yaml_files[x]) for x in file_names])
     else:
         to_fetch = yaml_files
-    
-    dest_dir = os.path.dirname(yaml_path)    
+
+    dest_dir = os.path.dirname(yaml_path)
     for file_name in to_fetch:
-        log.info('Fetching file %s' % file_name)
+        log.info(_('Fetching file %s') % file_name)
         path = os.path.join(dest_dir, file_name)
         if os.path.isfile(path):
             sha_hash_current = to_fetch[file_name]
             sha_hash_new = models.jsn.compute_sha1(path)
             if sha_hash_current == sha_hash_new:
-                log.debug('The file %s already presents and has a correct hash' % file_name)
+                log.debug(_('The file %s already presents and has a correct hash') % file_name)
                 continue
             else:
-                log.info('The file %s already presents but its hash is not the same as in .abf.yml, so it will be rewritten.' % file_name)
+                log.info(_('The file %s already presents but its hash is not the same as in .abf.yml, so it will be rewritten.') % file_name)
         try:
             models.jsn.fetch_file(to_fetch[file_name], path)
         except AbfApiException, ex:
-            print 'error: ' + str(ex)
+            print(_('error: ') + str(ex))
 
 def upload_files(models, min_size, path=None, remove_files=True):
     log.debug('Uploading files for directory ' + str(path))
     spec_path = find_spec(path)
     dir_path = os.path.dirname(spec_path)
     errors_count = 0
-    
+
     yaml_path = os.path.join(dir_path, '.abf.yml')
     yaml_file_changed = False
     yaml_files = {}
@@ -491,11 +492,11 @@ def upload_files(models, min_size, path=None, remove_files=True):
             try:
                 yaml_data = yaml.load(fd)
             except (yaml.composer.ComposerError, yaml.scanner.ScannerError) :
-                log.error('Could not parse .abf.yml file. It seems to be corrupted and will be rewritten.')
+                log.error(_('Could not parse .abf.yml file. It seems to be corrupted and will be rewritten.'))
                 yaml_file_changed = True
                 yaml_data['sources'] = {}
         if not 'sources' in yaml_data:
-            log.error("Incorrect .abf.yml file: no 'sources' key. The file will be rewritten.")
+            log.error(_("Incorrect .abf.yml file: no 'sources' key. The file will be rewritten."))
             yaml_file_changed = True
             yaml_data['sources'] = {}
         yaml_files = yaml_data['sources']
@@ -509,29 +510,29 @@ def upload_files(models, min_size, path=None, remove_files=True):
         if '://' in src:
             src = os.path.basename(src)
             is_url = True
-        
+
         do_not_upload = False
         source = os.path.join(dir_path, src)
-        
+
         if not os.path.exists(source):
             if is_url:
-                log.info('File %s not found, URL will be used instead. Skipping.' % src)
+                log.info(_('File %s not found, URL will be used instead. Skipping.') % src)
                 continue
             if src not in yaml_files:
-                log.error("error: Source%d file %s does not exist, skipping!" % (num, source))
+                log.error(_("error: Source%d file %s does not exist, skipping!") % (num, source))
                 errors_count += 1;
             else:
-                log.info('File %s not found, but it\'s listed in .abf.yml. Skipping.' % src)
+                log.info(_('File %s not found, but it\'s listed in .abf.yml. Skipping.') % src)
             continue
         filesize = os.stat(source).st_size
         if filesize == 0:
-            log.debug('Size of %s is 0, skipping' % src)
+            log.debug(_('Size of %s is 0, skipping') % src)
             do_not_upload = True
         if filesize < min_size:
-            log.debug('Size of %s less then minimal, skipping' % src)
+            log.debug(_('Size of %s less then minimal, skipping') % src)
             do_not_upload = True
         if is_text_file(source):
-            log.debug('File %s is textual, skipping' % src)
+            log.debug(_('File %s is textual, skipping') % src)
             do_not_upload = True
         if do_not_upload:
             # remove file from .abf.yml
@@ -540,9 +541,9 @@ def upload_files(models, min_size, path=None, remove_files=True):
                 yaml_file_changed = True
             continue
         sha_hash = models.jsn.upload_file(source)
-        
+
         if src not in yaml_files or sha_hash != yaml_files[src]:
-            log.debug('Hash for file %s has been updated' % src)
+            log.debug(_('Hash for file %s has been updated') % src)
             # try to remove previous versions
             re_src = re.compile('^([\w\d\-\.]+)-([\d\.]+)\.(tar\.gz|tar.xz|tgz|zip|tar\.bz2)$')
             res = re_src.match(src)
@@ -560,24 +561,24 @@ def upload_files(models, min_size, path=None, remove_files=True):
                     if 'removed_sources' not in yaml_data:
                         yaml_data['removed_sources'] = {}
                     yaml_data['removed_sources'][item] = h
-                    log.info('Removing %s:%s from .abf.yml' % (item, h ))
+                    log.info(_('Removing %s:%s from .abf.yml') % (item, h ))
             yaml_files[src] = sha_hash.encode()
             yaml_file_changed = True
         else:
-            log.debug('Hash for file %s is already correct' % src)
-        
-        log.info('File %s has been processed' % src)
+            log.debug(_('Hash for file %s is already correct') % src)
+
+        log.info(_('File %s has been processed') % src)
         if remove_files:
-            log.debug('Removing file %s' % source)
+            log.debug(_('Removing file %s') % source)
             os.remove(source)
-            
-            
+
+
     if yaml_file_changed:
-        log.debug('Writing the new .abf.yml file...')
+        log.debug(_('Writing the new .abf.yml file...'))
         yaml_data['sources'] = yaml_files
         with open(yaml_path, 'w') as fd:
             yaml.dump(yaml_data, fd, default_flow_style=False)
-            
+
     return errors_count
 
 SYMBOLS = {
@@ -603,9 +604,9 @@ def human2bytes(s):
         if letter in sset:
             ss = sset
             break
-      
+
     if not ss:
-        raise ValueError("can't interpret %r" % init)
+        raise ValueError(_("can't interpret %r") % init)
     prefix = {ss[0]:1}
 
     for i, s in enumerate(sset[1:]):

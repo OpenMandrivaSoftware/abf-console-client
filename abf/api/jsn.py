@@ -52,7 +52,7 @@ class AbfJson(object):
         self.file_store_url = re.compile('/+$').sub('', file_store_url)
 
         if not self.file_store_url.startswith('http://'):
-            log.error('File-store url have to start with "http://"')
+            log.error(_('File-store url have to start with "http://"'))
             exit(1)
 
         self.file_store_domain = self.file_store_url[7:]
@@ -89,7 +89,7 @@ class AbfJson(object):
         try:
             res = json.loads(response_sting)
         except ValueError, ex:
-            self.log.error("Internal server error: it has returned non-json data. ")
+            self.log.error(_("Internal server error: it has returned non-json data. "))
             print response_sting
             exit(1)
         m = None
@@ -104,11 +104,11 @@ class AbfJson(object):
                 self.log.debug(m)
                 exception = AbfJson.errors[m]
             else:
-                self.log.error("Unknown server error: " + m)
+                self.log.error(_("Unknown server error: ") + m)
                 exception = AbfApiException
             if exception == BadRequestError:
-                log.error('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
-                    'notify developers, send them a set of command-line arguments and the request data:\n%s\n%s' % (URL, post_json or "No POST DATA") )
+                log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                    'notify developers, send them a set of command-line arguments and the request data:\n%s\n%s') % (URL, post_json or "No POST DATA") )
                 exit(1)
 
             if exception in AbfJson.fatal_errors:
@@ -124,7 +124,7 @@ class AbfJson(object):
                 url = url + '&' + get_string
             else:
                 url = url + '?' + get_string
-        self.log.debug('Fetching url %s' % url)
+        self.log.debug(_('Fetching url %s') % url)
 
         etag = None
         if POST:
@@ -144,7 +144,7 @@ class AbfJson(object):
             if cache_etags.has_key(url):
                 etag = cache_etags.get(url)
                 if cache_data.has_key(etag):
-                    self.log.debug("It was cached! ETag: " + etag)
+                    self.log.debug(_("It was cached! ETag: ") + etag)
                     request.add_header("If-None-Match", etag)
 
         request.add_header("Authorization", "Basic %s" % self.base64_auth_string)
@@ -156,12 +156,12 @@ class AbfJson(object):
         except urllib2.HTTPError, ex:
             if ex.code == 304: # data was not modified
                 res = cache_data.get(etag)
-                self.log.debug('Getting cached result (cache was validated)')
+                self.log.debug(_('Getting cached result (cache was validated)'))
             else:
-                self.log.debug('Return code: ' + str(ex.code))
+                self.log.debug(_('Return code: ') + str(ex.code))
 
                 if ex.code == 401: # auth failed
-                    self.log.error("Authorization failed. Incorrect username or password")
+                    self.log.error(_("Authorization failed. Incorrect username or password"))
                     exit()
 
                 #remove cached data if exists
@@ -174,7 +174,7 @@ class AbfJson(object):
                 res = ex.fp.read()
 
         if etag_new:
-            self.log.debug("Caching the new value for %s. ETag is %s" % (url, etag_new))
+            self.log.debug(_("Caching the new value for %s. ETag is %s") % (url, etag_new))
             cache_etags.put(url, etag_new)
             cache_data.put(etag_new, res)
 
@@ -236,20 +236,20 @@ class AbfJson(object):
         return hex_sha
 
     def upload_file(self, file_name, silent=False):
-        self.log.debug('Looking for "%s" in file-store...' % file_name)
+        self.log.debug(_('Looking for "%s" in file-store...') % file_name)
         sha_hash = self.compute_sha1(file_name)
-        self.log.debug('File hash is %s' % sha_hash)
+        self.log.debug(_('File hash is %s') % sha_hash)
 
         res = self.get_file_info_by_hash(sha_hash)
         if res:
             fn = res[0]['file_name']
             sha_hash_new = res[0]['sha1_hash']
             if sha_hash_new != sha_hash:
-                self.log.critical('File-Store returned file for sha1 %s instead of %s!' % (sha_hash_new, sha_hash))
+                self.log.critical(_('File-Store returned file for sha1 %s instead of %s!') % (sha_hash_new, sha_hash))
                 exit(1)
             new_fn = os.path.basename(file_name)
             if fn != new_fn and not silent:
-                self.log.warning('The name of the file in file-store is %s, but you are trying to upload file %s' % (fn, new_fn))
+                self.log.warning(_('The name of the file in file-store is %s, but you are trying to upload file %s') % (fn, new_fn))
             return sha_hash
 
         tempfile.tempdir = '/tmp'
@@ -261,7 +261,7 @@ class AbfJson(object):
         length = body.tell()
         body.seek(0)
         if not silent:
-            self.log.info('Uploading %s (%s)' % (file_name, bytes2human(os.stat(file_name).st_size)))
+            self.log.info(_('Uploading %s (%s)') % (file_name, bytes2human(os.stat(file_name).st_size)))
         conn = httplib.HTTPConnection(self.file_store_domain, 80)
         content_type = 'multipart/form-data; boundary=%s' % boundary
         headers = {'Content-Type' : content_type, 'Content-Length' : length, "Authorization": "Basic %s" % self.base64_auth_string}
@@ -272,7 +272,7 @@ class AbfJson(object):
         output = resp.read()
         conn.close()
         if resp.status < 200 or resp.status > 299:
-            self.log.error("Could not upload file. HTTP error %s %s" %  (resp.status, resp.reason))
+            self.log.error(_("Could not upload file. HTTP error %s %s") %  (resp.status, resp.reason))
             exit(1)
 
         output = json.loads(output)
@@ -285,9 +285,9 @@ class AbfJson(object):
             response = urllib2.urlopen(URL)
         except urllib2.HTTPError, ex:
             if ex.code == 404: # data was not modified
-                raise PageNotFoundError('File with hash %s can not be downloaded from File-Store.' % sha_hash)
+                raise PageNotFoundError(_('File with hash %s can not be downloaded from File-Store.') % sha_hash)
             else:
-                raise AbfApiException('Error while downloading file by hash %s: %s' % (sha_hash, str(ex)))
+                raise AbfApiException(_('Error while downloading file by hash %s: %s') % (sha_hash, str(ex)))
         fd = open(path, 'wb')
         shutil.copyfileobj(response, fd)
         fd.close()
