@@ -1,0 +1,1544 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-09-30 12:13+0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../abf/model.py:42
+msgid "At least one of 'ID' or 'init_data' parameters have to be set! "
+msgstr ""
+
+#: ../abf/model.py:45
+msgid "Key 'id' have to present in initial data!"
+msgstr ""
+
+#: ../abf/model.py:52
+#, python-format
+msgid "Loading %(name)s %(id)s from cache"
+msgstr ""
+
+#: ../abf/model.py:58
+#, python-format
+msgid "Loading %(name)s %(id)s using API"
+msgstr ""
+
+#: ../abf/model.py:66
+msgid "Results were cached"
+msgstr ""
+
+#: ../abf/model.py:70
+#, python-format
+msgid ""
+"One of the fields required for %(name)s model was not specified: %(field)s"
+msgstr ""
+
+#: ../abf/model.py:73
+#, python-format
+msgid "Creating a stub for %(name)s %(id)s"
+msgstr ""
+
+#: ../abf/model.py:90
+#, python-format
+msgid "Key '%s' can not be found!"
+msgstr ""
+
+#: ../abf/model.py:106
+msgid "Reading platform "
+msgstr ""
+
+#: ../abf/model.py:198
+msgid "Reading repository "
+msgstr ""
+
+#: ../abf/model.py:235
+msgid "Reading arch "
+msgstr ""
+
+#: ../abf/model.py:242
+#, python-format
+msgid "Architecture with id %s not found!"
+msgstr ""
+
+#: ../abf/model.py:277
+msgid "Reading user "
+msgstr ""
+
+#: ../abf/model.py:310
+msgid "Reading group "
+msgstr ""
+
+#: ../abf/model.py:348
+msgid "Reading project "
+msgstr ""
+
+#: ../abf/model.py:358
+msgid "Invalid key: "
+msgstr ""
+
+#: ../abf/model.py:469
+msgid "Reading buildlist "
+msgstr ""
+
+#: ../abf/model.py:568
+msgid "Sending the build task: "
+msgstr ""
+
+#: ../abf/model.py:573 ../abf/model.py:592 ../abf/model.py:623
+#: ../abf/model.py:656 ../abf/model.py:671 ../abf/model.py:688
+#: ../abf/model.py:711
+#, python-format
+msgid ""
+"Sorry, but something went wrong and request I've sent to ABF is bad. Please, "
+"notify the console-client developers. Send them a set of command-line "
+"arguments and the request data:\n"
+"%s"
+msgstr ""
+
+#: ../abf/model.py:576
+#, python-format
+msgid ""
+"Task %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has been sent. Build task id "
+"is %(id)s"
+msgstr ""
+
+#: ../abf/model.py:583
+#, python-format
+msgid "Publishing the project %s..."
+msgstr ""
+
+#: ../abf/model.py:618
+msgid "Sending pull request: "
+msgstr ""
+
+#: ../abf/model.py:626
+#, python-format
+msgid "Pull request for %(proj)s from %(from)s to %(to)s has been sent."
+msgstr ""
+
+#: ../abf/model.py:652
+msgid "Creating project: "
+msgstr ""
+
+#: ../abf/model.py:659
+#, python-format
+msgid "The project %(name)s for owner %(owner)d has been created."
+msgstr ""
+
+#: ../abf/model.py:667
+msgid "Adding project to repository: "
+msgstr ""
+
+#: ../abf/model.py:674
+#, python-format
+msgid "The project %(project)d has been added to repository %(repo)d."
+msgstr ""
+
+#: ../abf/model.py:684
+msgid "Removing project from repository: "
+msgstr ""
+
+#: ../abf/model.py:691
+msgid "The project has been removed from repository."
+msgstr ""
+
+#: ../abf/model.py:707
+msgid "Forking project: "
+msgstr ""
+
+#: ../abf/model.py:714
+msgid "The project has been forked."
+msgstr ""
+
+#: ../abf/model.py:730
+msgid "Initializing models for "
+msgstr ""
+
+#: ../abf.py:43
+msgid "TEST started"
+msgstr ""
+
+#: ../abf.py:80
+msgid "Datamodel seems to work fine"
+msgstr ""
+
+#: ../abf.py:105
+msgid "ABF Console Client"
+msgstr ""
+
+#: ../abf.py:106 ../abf.py:307
+msgid "be verbose, display even debug messages"
+msgstr ""
+
+#: ../abf.py:107
+msgid "clear cached information about repositories, platforms, projects, etc."
+msgstr ""
+
+#: ../abf.py:108
+msgid "Do not display info messages"
+msgstr ""
+
+#: ../abf.py:112
+msgid "show a help for command"
+msgstr ""
+
+#: ../abf.py:113
+msgid "a command to show help for"
+msgstr ""
+
+#: ../abf.py:117
+msgid "Manage aliases"
+msgstr ""
+
+#: ../abf.py:120
+msgid ""
+"name and alias (not quoted, e. g. \"abf alias add sg search groups\") for "
+"adding, only name for removing."
+msgstr ""
+
+#: ../abf.py:124
+msgid "clone a project from ABF"
+msgstr ""
+
+#: ../abf.py:125
+msgid ""
+"project name. ([group/]project). If no group specified, it's assumed to be "
+"your default group."
+msgstr ""
+
+#: ../abf.py:127
+msgid "branch to checkout"
+msgstr ""
+
+#: ../abf.py:131
+msgid ""
+"Upload large binary files to File-Store and update (or create) .abf.yml "
+"file. Can also commit and push changes."
+msgstr ""
+
+#: ../abf.py:132
+msgid ""
+"With this option specified, \"git add --all\", \"git commit -m MSG\" and "
+"\"git push\" will be executed."
+msgstr ""
+
+#: ../abf.py:133
+msgid "The minimal file size to upload to File-Store. Default is 0B."
+msgstr ""
+
+#: ../abf.py:135
+msgid ""
+"By default files are being removed on uploading. Override this behavior."
+msgstr ""
+
+#: ../abf.py:136
+msgid ""
+"Deprecated! Affects nothing. Saved for compatibility reasons and will be "
+"removed later."
+msgstr ""
+
+#: ../abf.py:140
+msgid ""
+"Upload a given file to File-Store. Prints a sha1 hash or error message (with "
+"non-zero return code)."
+msgstr ""
+
+#: ../abf.py:141
+msgid "Path to file"
+msgstr ""
+
+#: ../abf.py:145
+msgid ""
+"Download all the files listed in .abf.yml or file with given hash from File-"
+"Store to local directory."
+msgstr ""
+
+#: ../abf.py:146
+msgid "Download file with given hash"
+msgstr ""
+
+#: ../abf.py:147
+msgid ""
+"Limit the list of downloaded files to this file name(s). This option can be "
+"specified more than once."
+msgstr ""
+
+#: ../abf.py:151
+msgid "show some general information. Bash autocomplete uses it."
+msgstr ""
+
+#: ../abf.py:153 ../abf.py:163
+msgid "The type of information to show"
+msgstr ""
+
+#: ../abf.py:154 ../abf.py:164
+msgid ""
+"Project to show information for (if needed). Format: \"[group/]name\". If no "
+"group specified, default group will be used."
+msgstr ""
+
+#: ../abf.py:159
+msgid ""
+"tool can remember the project location and use it for some reasons (abfcd, "
+"etc.)."
+msgstr ""
+
+#: ../abf.py:160
+msgid ""
+"Every interaction with git repository (build, get, put, etc.) updates the "
+"cached location of the project (overriding an existing one if needed). For "
+"any cached project you can execute \"abfcd <project>\" and you will cd to "
+"the project directory."
+msgstr ""
+
+#: ../abf.py:166
+msgid ""
+"Directory to update locations for. It should be a git repository for \"update"
+"\" and any directory for \"update-recursive\". If not specified - the "
+"current directory will be used"
+msgstr ""
+
+#: ../abf.py:171
+msgid "Initiate a build task on ABF."
+msgstr ""
+
+#: ../abf.py:172
+msgid ""
+"NOTES:\n"
+"API takes git commit hash to build. So client have to resolve it.\n"
+"1) If you've specified commit hash - it will be used \"as is\".\n"
+"2) If you've specified branch or tag name - it will be resolved "
+"automatically\n"
+"using ABF API. (the hash of top commit will be used for branch)\n"
+"3) If you've specified no git commit related options and you've\n"
+" specified a project name - this project's default branch will be used.\n"
+"4) If you've specified no git commit related options and you've\n"
+"not specified a project name (you have to be in a git repository) -\n"
+"the top remote commit of your current branch will be used.\n"
+msgstr ""
+
+#: ../abf.py:182
+msgid ""
+"project name ([group/]project). If no group specified, it is assumed to be "
+"your default group. If the option is not specified and you are in a git "
+"repository directory - resolve a project name from it."
+msgstr ""
+
+#: ../abf.py:185
+msgid "branch to build."
+msgstr ""
+
+#: ../abf.py:186
+msgid "tag to build."
+msgstr ""
+
+#: ../abf.py:187
+msgid "commit sha hash to build."
+msgstr ""
+
+#: ../abf.py:188
+msgid ""
+"repository to save results to ([platform/]repository). If no platform part "
+"specified, it is assumed to be \"<default_group>_personal\". If this option "
+"is not specified at all, \"<default_group>_personal/main\" will be used."
+msgstr ""
+
+#: ../abf.py:191
+msgid ""
+"architectures to build, can be set more than once. If not set - use all the "
+"available architectures."
+msgstr ""
+
+#: ../abf.py:193
+msgid ""
+"repositories to build with ([platform/]repository). Can be set more than "
+"once. If no platform part specified, it is assumed to be your "
+"\"<default_build_platform>\". If no repositories were specified at all, use "
+"the \"main\" repository from save-to platform."
+msgstr ""
+
+#: ../abf.py:196
+msgid "deprecated synonym for --auto-publish-status=default."
+msgstr ""
+
+#: ../abf.py:197
+#, python-format
+msgid "enable automatic publishing. Default is \"%s\"."
+msgstr ""
+
+#: ../abf.py:199
+msgid "do not use personal repository to resolve dependencies."
+msgstr ""
+
+#: ../abf.py:200
+msgid "enable automatic creation of container"
+msgstr ""
+
+#: ../abf.py:201
+msgid "use cached chroot for the build"
+msgstr ""
+
+#: ../abf.py:202
+msgid "save build chroot in case of failure"
+msgstr ""
+
+#: ../abf.py:203
+#, python-format
+msgid "Update type. Default is \"%s\"."
+msgstr ""
+
+#: ../abf.py:205
+msgid "Do not check spec file."
+msgstr ""
+
+#: ../abf.py:209
+msgid "Build a project locally using mock-urpm."
+msgstr ""
+
+#: ../abf.py:209 ../abf.py:216
+msgid "No checkouts will be made,the current git repository state will be used"
+msgstr ""
+
+#: ../abf.py:211
+#, python-format
+msgid ""
+"A config template to use. Specify owne of the config names from %s. "
+"Directory path should be omitted. If no config specified, \"default.cfg\" "
+"will be used"
+msgstr ""
+
+#: ../abf.py:216
+msgid "Build a project locally using rpmbuild."
+msgstr ""
+
+#: ../abf.py:218
+msgid "Build src.rpm (s), rpm (b) or both (a)"
+msgstr ""
+
+#: ../abf.py:222
+msgid "Publish the task that have already been built."
+msgstr ""
+
+#: ../abf.py:223
+msgid "The IDs of tasks to publish."
+msgstr ""
+
+#: ../abf.py:227
+msgid "Copy all the files from SRC_BRANCH to DST_BRANCH"
+msgstr ""
+
+#: ../abf.py:228
+msgid "source branch"
+msgstr ""
+
+#: ../abf.py:229
+msgid ""
+"destination branch. If not specified, it's assumed to be the current branch"
+msgstr ""
+
+#: ../abf.py:230
+msgid ""
+"Create a tar.gz from the src_branch and put this archive and spec file to "
+"dst_branch"
+msgstr ""
+
+#: ../abf.py:234
+msgid "Send a pull request from SRC_BRANCH to DST_BRANCH"
+msgstr ""
+
+#: ../abf.py:235
+msgid "source ref or branch"
+msgstr ""
+
+#: ../abf.py:236
+msgid "destination ref or branch"
+msgstr ""
+
+#: ../abf.py:237
+msgid "Request title"
+msgstr ""
+
+#: ../abf.py:238
+msgid "Request body"
+msgstr ""
+
+#: ../abf.py:239 ../abf.py:259 ../abf.py:265
+msgid "project name (group/project)."
+msgstr ""
+
+#: ../abf.py:243
+msgid "Fork existing project"
+msgstr ""
+
+#: ../abf.py:244
+msgid "project to fork (group/project)"
+msgstr ""
+
+#: ../abf.py:245
+msgid "target project group and name (group/project)"
+msgstr ""
+
+#: ../abf.py:249
+msgid "Create project from SRPM"
+msgstr ""
+
+#: ../abf.py:250
+msgid "srpm file"
+msgstr ""
+
+#: ../abf.py:251
+msgid "who will own the project; default_owner is used by default"
+msgstr ""
+
+#: ../abf.py:252
+msgid "create additional branch; can be set more than once."
+msgstr ""
+
+#: ../abf.py:253
+msgid ""
+"Do not automatically create branch set as default in user config (if it is "
+"set to smth different from \"master\")."
+msgstr ""
+
+#: ../abf.py:257
+msgid "Add project to specified repository"
+msgstr ""
+
+#: ../abf.py:258 ../abf.py:264
+msgid "target repository ([platform/]repository)"
+msgstr ""
+
+#: ../abf.py:263
+msgid "Remove project from specified repository"
+msgstr ""
+
+#: ../abf.py:269
+msgid "get a build-task status"
+msgstr ""
+
+#: ../abf.py:269
+msgid ""
+"If a project specified  or you are in a git repository - try to get the IDs "
+"from the last build task sent for this project. If you are not in a git "
+"repository directory and project is not specified - try to get build IDs "
+"from the last build you've done with console client."
+msgstr ""
+
+#: ../abf.py:273
+msgid "build list ID"
+msgstr ""
+
+#: ../abf.py:274
+msgid "Project. If last IDs for this project can be found - use them"
+msgstr ""
+
+#: ../abf.py:275
+msgid "Show one-line information including id, project, arch and status"
+msgstr ""
+
+#: ../abf.py:280
+msgid ""
+"Analyze spec file and show missing and unnecessary files from the current "
+"git repository directory."
+msgstr ""
+
+#: ../abf.py:282
+msgid "automatically remove all the unnecessary files"
+msgstr ""
+
+#: ../abf.py:286
+msgid "Search for something on ABF."
+msgstr ""
+
+#: ../abf.py:286
+msgid "NOTE: only first 100 results of any request will be shown"
+msgstr ""
+
+#: ../abf.py:288
+msgid "what to search for"
+msgstr ""
+
+#: ../abf.py:289
+msgid "a string to search for"
+msgstr ""
+
+#: ../abf.py:295
+msgid "get information about single instance"
+msgstr ""
+
+#: ../abf.py:297
+msgid "type of the instance"
+msgstr ""
+
+#: ../abf.py:298
+#, python-format
+msgid ""
+"The filter may be specified by defining multiple pairs <type>."
+"<attribute>=<value> or <attribute>=<value>, where <type> is one of the "
+"following positional arguments: %s, <attribute> is the one of the instance "
+"fields or special attribute (page - using for pagination) and <value> - "
+"string, that can take asterisk (*) or anything else... Example: abf info "
+"projects -f platforms.name=rosa2012lts page=*"
+msgstr ""
+
+#: ../abf.py:299
+msgid "output format "
+msgstr ""
+
+#: ../abf.py:303
+msgid "Execute a set of internal datamodel tests"
+msgstr ""
+
+#: ../abf.py:316
+#, python-format
+msgid ""
+"Filter can be specified with the following parameters:\n"
+" %s"
+msgstr ""
+
+#: ../abf.py:326
+#, python-format
+msgid "Filter setup for instance %s "
+msgstr ""
+
+#: ../abf.py:329
+#, python-format
+msgid ""
+"Output format can be specified with the following parameters:\n"
+" %s"
+msgstr ""
+
+#: ../abf.py:331
+#, python-format
+msgid "Using default query format: %s"
+msgstr ""
+
+#: ../abf.py:341
+#, python-format
+msgid "Parameter %s not available:"
+msgstr ""
+
+#: ../abf.py:347
+msgid "To set up a default configuration file, symbolic link in "
+msgstr ""
+
+#: ../abf.py:352
+msgid "Avaliable configurations: "
+msgstr ""
+
+#: ../abf.py:365
+#, python-format
+msgid "\"%s\" is not a valid configuration."
+msgstr ""
+
+#: ../abf.py:366
+msgid "Select one (it will be remembered): "
+msgstr ""
+
+#: ../abf.py:377
+#, python-format
+msgid "Config file %s can not be found."
+msgstr ""
+
+#: ../abf.py:379
+msgid ""
+"You should create this file or a symbolic link to another config in order to "
+"execute 'abf mock-urpm' withow --config"
+msgstr ""
+
+#: ../abf.py:386
+#, python-format
+msgid "Could not read the contents of '%(path)s': %(exception)s"
+msgstr ""
+
+#: ../abf.py:406 ../abf.py:513
+#, python-format
+msgid "Can not locate a spec file in %s"
+msgstr ""
+
+#: ../abf.py:412 ../abf.py:436
+msgid "Executing mock-urpm..."
+msgstr ""
+
+#: ../abf.py:416
+#, python-format
+msgid "Can not execute mock-urpm (%s). Maybe it is not installed?"
+msgstr ""
+
+#: ../abf.py:423
+#, python-format
+msgid "Could not find a single src.rpm file in %s"
+msgstr ""
+
+#: ../abf.py:431
+#, python-format
+msgid ""
+"\n"
+"SRPM: %s\n"
+msgstr ""
+
+#: ../abf.py:446 ../abf.py:540
+msgid "RPM: "
+msgstr ""
+
+#: ../abf.py:463
+msgid "No aliases found"
+msgstr ""
+
+#: ../abf.py:469
+msgid ""
+"Not enough options. Use it like \"abf alias add <alias_name> opt1 "
+"[opt2 ...]\""
+msgstr ""
+
+#: ../abf.py:473
+msgid "Do not use \" \" or \"=\" for alias name!"
+msgstr ""
+
+#: ../abf.py:482
+#, python-format
+msgid "Alias \"%s\" already exists and will be overwritten."
+msgstr ""
+
+#: ../abf.py:487
+msgid "Enter the alias name!"
+msgstr ""
+
+#: ../abf.py:491
+#, python-format
+msgid "Alias \"%s\" not found"
+msgstr ""
+
+#: ../abf.py:499
+msgid "RPMBUILD started"
+msgstr ""
+
+#: ../abf.py:519
+msgid "Executing rpmbuild..."
+msgstr ""
+
+#: ../abf.py:523
+#, python-format
+msgid "Can not execute rpmbuild (%s). Maybe it is not installed?"
+msgstr ""
+
+#: ../abf.py:525
+msgid "Moving files to current directory..."
+msgstr ""
+
+#: ../abf.py:538
+msgid "SRPM: "
+msgstr ""
+
+#: ../abf.py:552
+msgid "SEARCH started"
+msgstr ""
+
+#: ../abf.py:564
+msgid "The project format is \"[owner_name/]project_name\""
+msgstr ""
+
+#: ../abf.py:568
+msgid "The project group is assumed to be "
+msgstr ""
+
+#: ../abf.py:577
+msgid ""
+"You are not in a git repository directory. Specify the project name please!"
+msgstr ""
+
+#: ../abf.py:590
+#, python-format
+msgid "The project %(owner)s/%(project)s does not exist!"
+msgstr ""
+
+#: ../abf.py:593
+#, python-format
+msgid "You do not have acces to the project %(owner)s/%(project)s!"
+msgstr ""
+
+#: ../abf.py:596
+#, python-format
+msgid "Project: %s"
+msgstr ""
+
+#: ../abf.py:608
+msgid "Platform is assumed to be "
+msgstr ""
+
+#: ../abf.py:610
+msgid "repository argument format: [platform/]repository"
+msgstr ""
+
+#: ../abf.py:631
+msgid "GET started"
+msgstr ""
+
+#: ../abf.py:635 ../abf.py:801
+msgid ""
+"Specify a project name as \"group_name/project_name\" or just \"project_name"
+"\""
+msgstr ""
+
+#: ../abf.py:655
+msgid "Branch "
+msgstr ""
+
+#: ../abf.py:661
+msgid "PUT started"
+msgstr ""
+
+#: ../abf.py:666 ../abf.py:709
+msgid "You have to be in a git repository directory"
+msgstr ""
+
+#: ../abf.py:674
+#, python-format
+msgid "Incorrect \"--minimal-file-size\" value: %s"
+msgstr ""
+
+#: ../abf.py:678
+msgid "There were errors while uploading, stopping."
+msgstr ""
+
+#: ../abf.py:694
+msgid "Commited."
+msgstr ""
+
+#: ../abf.py:697
+msgid "Pushed"
+msgstr ""
+
+#: ../abf.py:700
+msgid "FETCH started"
+msgstr ""
+
+#: ../abf.py:703
+msgid "Fetching file with hash "
+msgstr ""
+
+#: ../abf.py:713
+#, python-format
+msgid "File \"%s\" can not be found"
+msgstr ""
+
+#: ../abf.py:718
+#, python-format
+msgid ""
+"Invalid yml file %(filename)s!\n"
+"Problem in line %(line)d column %(column)d: %(problem)s"
+msgstr ""
+
+#: ../abf.py:720
+#, python-format
+msgid ""
+"Invalid yml file %(filename)s!\n"
+"%(exception)s"
+msgstr ""
+
+#: ../abf.py:723
+msgid "STORE started"
+msgstr ""
+
+#: ../abf.py:726
+#, python-format
+msgid "File \"%s\" does not exist!"
+msgstr ""
+
+#: ../abf.py:729
+#, python-format
+msgid "\"%s\" is not a regular file!"
+msgstr ""
+
+#: ../abf.py:736
+msgid "COPY started"
+msgstr ""
+
+#: ../abf.py:740
+msgid "You are not in a git directory"
+msgstr ""
+
+#: ../abf.py:742
+msgid "Current brunch is "
+msgstr ""
+
+#: ../abf.py:749
+msgid "Source and destination branches shold be different branches!"
+msgstr ""
+
+#: ../abf.py:753
+msgid "Repository root folder is "
+msgstr ""
+
+#: ../abf.py:780
+#, python-format
+msgid "Checking out the initial branch (%s)"
+msgstr ""
+
+#: ../abf.py:787
+msgid "PULL REQUEST started"
+msgstr ""
+
+#: ../abf.py:794
+msgid "FORK PROJECT started"
+msgstr ""
+
+#: ../abf.py:820
+#, python-format
+msgid "No group named '%s', will fork to you personal platform"
+msgstr ""
+
+#: ../abf.py:824
+msgid "Incorrect target group"
+msgstr ""
+
+#: ../abf.py:831
+msgid "CREATE PROJECT started"
+msgstr ""
+
+#: ../abf.py:846
+msgid "Incorrect owner data"
+msgstr ""
+
+#: ../abf.py:879
+msgid "Failed to get information from SRPM"
+msgstr ""
+
+#: ../abf.py:883
+msgid "ADD PROJECT TO REPO started"
+msgstr ""
+
+#: ../abf.py:890
+msgid "REMOVE PROJECT FROM REPO started"
+msgstr ""
+
+#: ../abf.py:897
+msgid "BUILD started"
+msgstr ""
+
+#: ../abf.py:900
+msgid ""
+"You've specified a project name without branch, tag or commit (-b, -t or -c)"
+msgstr ""
+
+#: ../abf.py:909
+msgid ""
+"You should specify ONLY ONE of the following options: branch, tag or commit."
+msgstr ""
+
+#: ../abf.py:924
+#, python-format
+msgid "The project %s is not a package and can not be built."
+msgstr ""
+
+#: ../abf.py:942
+msgid "You've specified a project without a branch."
+msgstr ""
+
+#: ../abf.py:950
+#, python-format
+msgid "Could not resolve hash for branch '%s'"
+msgstr ""
+
+#: ../abf.py:957
+#, python-format
+msgid "Could not resolve a platform to save to from the branch name \"%s\"."
+msgstr ""
+
+#: ../abf.py:964
+#, python-format
+msgid "A list of options which could be resolved automatically: %s"
+msgstr ""
+
+#: ../abf.py:973
+msgid ""
+"Git branch, tag or commit can not be resolved automatically. Specify it by -"
+"b, -t or -c."
+msgstr ""
+
+#: ../abf.py:990
+msgid "Aitoresolved options were rejected."
+msgstr ""
+
+#: ../abf.py:991
+#, python-format
+msgid "Git commit hash: %s"
+msgstr ""
+
+#: ../abf.py:1010
+#, python-format
+msgid "Save-to platform is assumed to be %s"
+msgstr ""
+
+#: ../abf.py:1016
+msgid "Save-to repository can not be resolved automatically. Specify it (-s)."
+msgstr ""
+
+#: ../abf.py:1019
+msgid "save-to-repository option format: [platform/]repository"
+msgstr ""
+
+#: ../abf.py:1032
+#, python-format
+msgid ""
+"Can not build for platform %(platform)s. Select one of the following:\n"
+"%(all_platforms)s"
+msgstr ""
+
+#: ../abf.py:1041
+#, python-format
+msgid ""
+"Incorrect save-to repository %(platform)s/%(repo)s.\n"
+"Select one of the following:\n"
+"%(all_repos)s"
+msgstr ""
+
+#: ../abf.py:1045
+msgid "Save-to repository: "
+msgstr ""
+
+#: ../abf.py:1060
+#, python-format
+msgid "Platform for selected repository %(repo)s is assumed to be %(plat)s"
+msgstr ""
+
+#: ../abf.py:1062
+msgid "'repository' option format: [platform/]repository"
+msgstr ""
+
+#: ../abf.py:1066
+#, python-format
+msgid ""
+"Can not use build repositories from platform %(platform)s!\n"
+"Select one of the following:\n"
+"%(all_plats)s"
+msgstr ""
+
+#: ../abf.py:1079
+#, python-format
+msgid ""
+"Platform %(plat)s does not have repository %(repo)s!\n"
+"Select one of the following:\n"
+"%(all_repos)s"
+msgstr ""
+
+#: ../abf.py:1087
+msgid ""
+"Could not resolve repositories to build with. Please specify it (-r option)"
+msgstr ""
+
+#: ../abf.py:1093
+msgid "Repositories to build with are assumed to be: "
+msgstr ""
+
+#: ../abf.py:1096
+msgid "You have to specify the repository(s) to build with (-r option)"
+msgstr ""
+
+#: ../abf.py:1099
+msgid "Build repositories: "
+msgstr ""
+
+#: ../abf.py:1108
+#, python-format
+msgid "Invalid architecture: %s"
+msgstr ""
+
+#: ../abf.py:1120
+msgid "Arches are assumed to be "
+msgstr ""
+
+#: ../abf.py:1122
+#, python-format
+msgid "Architectures: %s"
+msgstr ""
+
+#: ../abf.py:1156
+#, python-format
+msgid "The status of build task %(id)s is \"%(status)s\", can not published!"
+msgstr ""
+
+#: ../abf.py:1160
+#, python-format
+msgid "Could not publish task %(id)s: %(exception)s"
+msgstr ""
+
+#: ../abf.py:1167
+#, python-format
+msgid "Can not read buildlist %(id)s: %(exception)s"
+msgstr ""
+
+#: ../abf.py:1172
+msgid "Buildlist ID:"
+msgstr ""
+
+#: ../abf.py:1174
+msgid "Project:"
+msgstr ""
+
+#: ../abf.py:1175
+msgid "Status:"
+msgstr ""
+
+#: ../abf.py:1176
+msgid "Build for platform:"
+msgstr ""
+
+#: ../abf.py:1177
+msgid "Save to repository:"
+msgstr ""
+
+#: ../abf.py:1178
+msgid "Build repositories:"
+msgstr ""
+
+#: ../abf.py:1179
+msgid "Extra repositories:"
+msgstr ""
+
+#: ../abf.py:1180
+msgid "Architecture:"
+msgstr ""
+
+#: ../abf.py:1181
+msgid "Created at:"
+msgstr ""
+
+#: ../abf.py:1182
+msgid "Updated at:"
+msgstr ""
+
+#: ../abf.py:1183
+msgid "LOG Url:"
+msgstr ""
+
+#: ../abf.py:1185
+msgid "Chroot Tree:"
+msgstr ""
+
+#: ../abf.py:1189
+msgid "STATUS started"
+msgstr ""
+
+#: ../abf.py:1200
+msgid "Can not find last build IDs. Specify a project name or ID"
+msgstr ""
+
+#: ../abf.py:1208
+#, python-format
+msgid "\"%s\" is not a number"
+msgstr ""
+
+#: ../abf.py:1218
+#, python-format
+msgid "Updating project location for %s"
+msgstr ""
+
+#: ../abf.py:1223
+#, python-format
+msgid "Project %(proj)s has been located in %(path)s"
+msgstr ""
+
+#: ../abf.py:1245
+msgid "LOCATE started"
+msgstr ""
+
+#: ../abf.py:1249
+msgid ""
+"To show a project location, you have to specify a project name ('-p' option)"
+msgstr ""
+
+#: ../abf.py:1254
+msgid "error: the project format is \"[owner_name/]project_name\""
+msgstr ""
+
+#: ../abf.py:1262
+#, python-format
+msgid "error: project %s can not be located"
+msgstr ""
+
+#: ../abf.py:1266
+#, python-format
+msgid "error: project is not located in \"%s\" anymore"
+msgstr ""
+
+#: ../abf.py:1280
+msgid "SHOW started"
+msgstr ""
+
+#: ../abf.py:1310
+msgid "CLEAN started"
+msgstr ""
+
+#: ../abf/console/config.py:81
+#, python-format
+msgid "non-critical error in config \"%(path)s\": %(exception)s"
+msgstr ""
+
+#: ../abf/console/config.py:84
+#, python-format
+msgid "error in config \"%(path)s\": %(exception)s"
+msgstr ""
+
+#: ../abf/console/config.py:120
+msgid ""
+"Configuration schema have been changed or config file have been corrupted, "
+"rebuilding config..."
+msgstr ""
+
+#: ../abf/console/config.py:155
+msgid "No protocol part specified (http://, https://, etc.)"
+msgstr ""
+
+#: ../abf/console/config.py:158
+msgid "Double slash must present only once (in a ptocol part)"
+msgstr ""
+
+#: ../abf/console/config.py:244
+msgid "Configuration have been completed"
+msgstr ""
+
+#: ../abf/console/config.py:245
+msgid ""
+"Now you can execute \"abf locate update-recursive -d PATH\", where PATH is "
+"your directory with "
+msgstr ""
+
+#: ../abf/console/misc.py:156
+msgid "Cloning git repository (temporary workaround)"
+msgstr ""
+
+#: ../abf/console/misc.py:158
+msgid "Temporary directory os "
+msgstr ""
+
+#: ../abf/console/misc.py:180
+msgid "Spec files found: "
+msgstr ""
+
+#: ../abf/console/misc.py:185
+msgid "Could not find single spec file"
+msgstr ""
+
+#: ../abf/console/misc.py:190
+msgid "No path specified and you are not in a git repository"
+msgstr ""
+
+#: ../abf/console/misc.py:199
+msgid "No spec files found!"
+msgstr ""
+
+#: ../abf/console/misc.py:201
+msgid "More than one spec file found!"
+msgstr ""
+
+#: ../abf/console/misc.py:229
+#, python-format
+msgid ""
+"Invalid yml file %(file)s!\n"
+"Problem in line %(line)d column %(col)d: %(exception)s"
+msgstr ""
+
+#: ../abf/console/misc.py:231
+#, python-format
+msgid ""
+"Invalid yml file %(file)s!\n"
+"%(exception)s"
+msgstr ""
+
+#: ../abf/console/misc.py:234
+msgid "Incorrect .abf.yml file: no 'sources' key"
+msgstr ""
+
+#: ../abf/console/misc.py:242
+#, python-format
+msgid "warning: directory '%s' was found"
+msgstr ""
+
+#: ../abf/console/misc.py:267
+#, python-format
+msgid ""
+"warning: file \"%s\" is listed in spec as a URL, but does not present in the "
+"current directory or in .abf.yml file"
+msgstr ""
+
+#: ../abf/console/misc.py:271
+#, python-format
+msgid "warning: file \"%s\" presents in the git directory and in .abf.yml"
+msgstr ""
+
+#: ../abf/console/misc.py:275
+#, python-format
+msgid "error: missing file %s"
+msgstr ""
+
+#: ../abf/console/misc.py:285
+#, python-format
+msgid "warning: unnecessary file \"%s\""
+msgstr ""
+
+#: ../abf/console/misc.py:291
+#, python-format
+msgid "warning: unnecessary file \"%s\" in .abf.yml"
+msgstr ""
+
+#: ../abf/console/misc.py:299
+msgid ".abf.yml file was rewritten"
+msgstr ""
+
+#: ../abf/console/misc.py:311
+msgid "Could not resolve project name and version from the spec file"
+msgstr ""
+
+#: ../abf/console/misc.py:313
+msgid "Project name is "
+msgstr ""
+
+#: ../abf/console/misc.py:314
+msgid "Project version is "
+msgstr ""
+
+#: ../abf/console/misc.py:318
+#, python-format
+msgid "Writing %(path)s/%(tarball)s ..."
+msgstr ""
+
+#: ../abf/console/misc.py:334
+msgid "Removing files except "
+msgstr ""
+
+#: ../abf/console/misc.py:352
+#, python-format
+msgid "Executing command: %s"
+msgstr ""
+
+#: ../abf/console/misc.py:368
+msgid "Process execution has been terminated"
+msgstr ""
+
+#: ../abf/console/misc.py:389
+#, python-format
+msgid ""
+"Timeout(%(timeout)s) expired for command:\n"
+" # %(cmd)s\n"
+"%(output)s"
+msgstr ""
+
+#: ../abf/console/misc.py:391
+#, python-format
+msgid "Child returncode was: %s"
+msgstr ""
+
+#: ../abf/console/misc.py:396
+#, python-format
+msgid ""
+"Command failed.\n"
+"Return code: %(ret_code)s\n"
+"Output: %(output)s"
+msgstr ""
+
+#: ../abf/console/misc.py:446
+#, python-format
+msgid "Magic type of file %(path)s is %(type)s"
+msgstr ""
+
+#: ../abf/console/misc.py:455
+msgid "Incorrect .abf.yml file: no 'sources' key."
+msgstr ""
+
+#: ../abf/console/misc.py:465
+#, python-format
+msgid "Fetching file %s"
+msgstr ""
+
+#: ../abf/console/misc.py:471
+#, python-format
+msgid "The file %s already presents and has a correct hash"
+msgstr ""
+
+#: ../abf/console/misc.py:474
+#, python-format
+msgid ""
+"The file %s already presents but its hash is not the same as in .abf.yml, so "
+"it will be rewritten."
+msgstr ""
+
+#: ../abf/console/misc.py:478
+msgid "error: "
+msgstr ""
+
+#: ../abf/console/misc.py:495
+msgid ""
+"Could not parse .abf.yml file. It seems to be corrupted and will be "
+"rewritten."
+msgstr ""
+
+#: ../abf/console/misc.py:499
+msgid "Incorrect .abf.yml file: no 'sources' key. The file will be rewritten."
+msgstr ""
+
+#: ../abf/console/misc.py:519
+#, python-format
+msgid "File %s not found, URL will be used instead. Skipping."
+msgstr ""
+
+#: ../abf/console/misc.py:522
+#, python-format
+msgid "error: Source%(num)d file %(source)s does not exist, skipping!"
+msgstr ""
+
+#: ../abf/console/misc.py:525
+#, python-format
+msgid "File %s not found, but it's listed in .abf.yml. Skipping."
+msgstr ""
+
+#: ../abf/console/misc.py:529
+#, python-format
+msgid "Size of %s is 0, skipping"
+msgstr ""
+
+#: ../abf/console/misc.py:532
+#, python-format
+msgid "Size of %s less then minimal, skipping"
+msgstr ""
+
+#: ../abf/console/misc.py:535
+#, python-format
+msgid "File %s is textual, skipping"
+msgstr ""
+
+#: ../abf/console/misc.py:546
+#, python-format
+msgid "Hash for file %s has been updated"
+msgstr ""
+
+#: ../abf/console/misc.py:564
+#, python-format
+msgid "Removing %(item)s:%(hash)s from .abf.yml"
+msgstr ""
+
+#: ../abf/console/misc.py:568
+#, python-format
+msgid "Hash for file %s is already correct"
+msgstr ""
+
+#: ../abf/console/misc.py:570
+#, python-format
+msgid "File %s has been processed"
+msgstr ""
+
+#: ../abf/console/misc.py:572
+#, python-format
+msgid "Removing file %s"
+msgstr ""
+
+#: ../abf/console/misc.py:577
+msgid "Writing the new .abf.yml file..."
+msgstr ""
+
+#: ../abf/console/misc.py:609
+#, python-format
+msgid "can't interpret %r"
+msgstr ""
+
+#: ../abf/api/jsn.py:55
+msgid "File-store url have to start with \"http://\""
+msgstr ""
+
+#: ../abf/api/jsn.py:92
+msgid "Internal server error: it has returned non-json data. "
+msgstr ""
+
+#: ../abf/api/jsn.py:107
+msgid "Unknown server error: "
+msgstr ""
+
+#: ../abf/api/jsn.py:110
+#, python-format
+msgid ""
+"Sorry, but something went wrong and request I've sent to ABF is bad. Please, "
+"notify developers, send them a set of command-line arguments and the request "
+"data:\n"
+"%(url)s\n"
+"%(json)s"
+msgstr ""
+
+#: ../abf/api/jsn.py:127
+#, python-format
+msgid "Fetching url %s"
+msgstr ""
+
+#: ../abf/api/jsn.py:147
+msgid "It was cached! ETag: "
+msgstr ""
+
+#: ../abf/api/jsn.py:159
+msgid "Getting cached result (cache was validated)"
+msgstr ""
+
+#: ../abf/api/jsn.py:161
+msgid "Return code: "
+msgstr ""
+
+#: ../abf/api/jsn.py:164
+msgid "Authorization failed. Incorrect username or password"
+msgstr ""
+
+#: ../abf/api/jsn.py:177
+#, python-format
+msgid "Caching the new value for %(url)s. ETag is %(etag)s"
+msgstr ""
+
+#: ../abf/api/jsn.py:239
+#, python-format
+msgid "Looking for \"%s\" in file-store..."
+msgstr ""
+
+#: ../abf/api/jsn.py:241
+#, python-format
+msgid "File hash is %s"
+msgstr ""
+
+#: ../abf/api/jsn.py:248
+#, python-format
+msgid "File-Store returned file for sha1 %(new)s instead of %(old)s!"
+msgstr ""
+
+#: ../abf/api/jsn.py:252
+#, python-format
+msgid ""
+"The name of the file in file-store is %(old)s, but you are trying to upload "
+"file %(new)s"
+msgstr ""
+
+#: ../abf/api/jsn.py:264
+#, python-format
+msgid "Uploading %(file)s (%(size)s)"
+msgstr ""
+
+#: ../abf/api/jsn.py:275
+#, python-format
+msgid "Could not upload file. HTTP error %(status)s %(reason)s"
+msgstr ""
+
+#: ../abf/api/jsn.py:288
+#, python-format
+msgid "File with hash %s can not be downloaded from File-Store."
+msgstr ""
+
+#: ../abf/api/jsn.py:290
+#, python-format
+msgid "Error while downloading file by hash %(hash)s: %(exception)s"
+msgstr ""

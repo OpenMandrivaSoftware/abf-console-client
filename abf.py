@@ -383,7 +383,7 @@ def run_mock_urpm(binary=True):
     try:
         execfile(config_path)
     except Exception, ex:
-        log.error(_("Could not read the contents of '%s': %s") % (config_path, str(ex)))
+        log.error(_("Could not read the contents of '%(path)s': %(exception)s") % (config_path, str(ex)))
         exit(2)
 
     basedir = ('basedir' in config_opts and config_opts['basedir']) or '/var/lib/abf/mock-urpm'
@@ -587,10 +587,10 @@ def get_project(models, must_exist=True, name=None):
     try:
         proj = Project.get_by_name(models, '%s/%s' % (owner_name, project_name))
     except PageNotFoundError:
-        log.error(_('The project %s/%s does not exist!') % (owner_name, project_name))
+        log.error(_('The project %(owner)s/%(project)s does not exist!') % (owner_name, project_name))
         exit(1)
     except ForbiddenError:
-        log.error(_('You do not have acces to the project %s/%s!') % (owner_name, project_name))
+        log.error(_('You do not have acces to the project %(owner)s/%(project)s!') % (owner_name, project_name))
         exit(1)
 
     log.debug(_('Project: %s') % proj)
@@ -715,9 +715,9 @@ def fetch():
     try:
         fetch_files(models, path, command_line.only)
     except yaml.scanner.ScannerError, ex:
-        log.error(_('Invalid yml file %s!\nProblem in line %d column %d: %s') % (path, ex.problem_mark.line, ex.problem_mark.column, ex.problem))
+        log.error(_('Invalid yml file %(filename)s!\nProblem in line %(line)d column %(column)d: %(problem)s') % (path, ex.problem_mark.line, ex.problem_mark.column, ex.problem))
     except yaml.composer.ComposerError, ex:
-        log.error(_('Invalid yml file %s!\n%s') % (path, ex))
+        log.error(_('Invalid yml file %(filename)s!\n%(exception)s') % (path, ex))
 
 def store():
     log.debug(_('STORE started'))
@@ -1029,7 +1029,7 @@ def build():
                 build_for_platform = repo.platform
             pls.append(repo.platform.name)
         if not build_for_platform:
-            log.error(_("Can not build for platform %s. Select one of the following:\n%s") % (pl_name, ', '.join(pls)))
+            log.error(_("Can not build for platform %(platform)s. Select one of the following:\n%(all_platforms)s") % (pl_name, ', '.join(pls)))
             exit(1)
 
         for repo in build_for_platform.repositories:
@@ -1038,7 +1038,7 @@ def build():
                 break
 
         if not save_to_repository:
-            log.error(_("Incorrect save-to repository %s/%s.\nSelect one of the following:\n%s") % (pl_name, repo_name,
+            log.error(_("Incorrect save-to repository %(platform)s/%(repo)s.\nSelect one of the following:\n%(all_repos)s") % (pl_name, repo_name,
                     ', '.join([str(x) for x in build_for_platform.repositories])))
             exit(1)
 
@@ -1057,13 +1057,13 @@ def build():
             elif len(items) == 1:
                 repo_name = items[0]
                 pl_name = default_build_platform
-                log.debug(_("Platform for selected repository %s is assumed to be %s") % (repo_name, pl_name))
+                log.debug(_("Platform for selected repository %(repo)s is assumed to be %(plat)s") % (repo_name, pl_name))
             else:
                 log.error(_("'repository' option format: [platform/]repository"))
                 exit(1)
 
             if pl_name not in build_platform_names:
-                log.error(_("Can not use build repositories from platform %s!\nSelect one of the following:\n%s") % (pl_name,
+                log.error(_("Can not use build repositories from platform %(platform)s!\nSelect one of the following:\n%(all_plats)s") % (pl_name,
                         ', '.join(build_platform_names)))
                 exit(1)
             for pl in build_platforms:
@@ -1076,7 +1076,7 @@ def build():
                     build_repo = repo
                     break
             if not build_repo:
-                log.error(_("Platform %s does not have repository %s!\nSelect one of the following:\n%s") % (pl_name, repo_name,
+                log.error(_("Platform %(plat)s does not have repository %(repo)s!\nSelect one of the following:\n%(all_repos)s") % (pl_name, repo_name,
                         ', '.join([x.name for x in build_platform.repositories])))
                 exit(1)
             build_repositories.append(build_repo)
@@ -1153,18 +1153,18 @@ def publish():
         try:
             bl = BuildList(models, task_id)
             if bl.status != 0:
-                log.error(_("The status of build task %s is \"%s\", can not published!") % (bl.id, bl.status_string))
+                log.error(_("The status of build task %(id)s is \"%(status)s\", can not published!") % (bl.id, bl.status_string))
                 continue
             res = bl.publish()
         except AbfApiException, ex:
-            log.error(_('Could not publish task %s: %s') %(task_id, str(ex)))
+            log.error(_('Could not publish task %(id)s: %(exception)s') %(task_id, str(ex)))
 
 
 def _print_build_status(models, ID):
     try:
         bl = BuildList(models, ID)
     except AbfApiException, ex:
-        log.error(_("Can not read buildlist %s: %s") % (ID, ex))
+        log.error(_("Can not read buildlist %(id)s: %(exception)s") % (ID, ex))
         exit(3)
     if command_line.short:
         print repr(bl)
@@ -1220,7 +1220,7 @@ def _update_location(path=None, silent=True):
         if group:
             proj = '%s/%s' % (group, name)
             projects_cfg[proj]['location'] = path
-            text = _("Project %s has been located in %s") % (proj, path)
+            text = _("Project %(proj)s has been located in %(path)s") % (proj, path)
             if silent:
                 log.debug(text)
             else:

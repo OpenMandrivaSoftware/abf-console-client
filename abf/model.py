@@ -49,13 +49,13 @@ class Model(object):
 
             if st_cache and st_cache.has_key(cache_key):
                 #read cached value
-                log.debug( _('Loading %s %s from cache') % (self.__class__.__name__, ID))
+                log.debug( _('Loading %(name)s %(id)s from cache') % (self.__class__.__name__, ID))
                 self.stub = False
                 self.init_data = st_cache.get(cache_key)
                 self.load()
 
             else:
-                log.debug(_('Loading %s %s using API') % (self.__class__.__name__, ID))
+                log.debug(_('Loading %(name)s %(id)s using API') % (self.__class__.__name__, ID))
                 self.stub = False
                 self.get_init_data(ID)
                 self.load()
@@ -67,10 +67,10 @@ class Model(object):
 
             for field in self.__class__.required_fields:
                 if field not in self.params_dict:
-                    raise Exception(_("One of the fields required for %s model was not specified: %s") %
+                    raise Exception(_("One of the fields required for %(name)s model was not specified: %(field)s") %
                                 (self.__class__.__name__, field))
         else:
-            log.debug(_('Creating a stub for %s %s') % (self.__class__.__name__, self.init_data['id']))
+            log.debug(_('Creating a stub for %(name)s %(id)s') % (self.__class__.__name__, self.init_data['id']))
             self.load()
             self.stub = True
 
@@ -573,7 +573,7 @@ class BuildList(Model):
                     log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                         'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
                     exit(1)
-                log.info(_("Task %s|%s|%s|%s has been sent. Build task id is %s") %
+                log.info(_("Task %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has been sent. Build task id is %(id)s") %
                     (project, bpl, save_to_repository, arch, result['build_list']['id']))
                 build_ids.append(result['build_list']['id'])
         return build_ids
@@ -623,7 +623,7 @@ class PullRequest(Model):
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info(_("Pull request for %s from %s to %s has been sent.") % (project, from_ref, to_ref))
+        log.info(_("Pull request for %(proj)s from %(from)s to %(to)s has been sent.") % (project, from_ref, to_ref))
 
 class ProjectCreator(Model):
     required_fields = ['name', 'description', 'owner']
@@ -656,7 +656,7 @@ class ProjectCreator(Model):
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info(_("The project %s for owner %d has been created.") % (name, owner_id))
+        log.info(_("The project %(name)s for owner %(owner)d has been created.") % (name, owner_id))
 
     @staticmethod
     def add_project_to_repo(models, repo_id, project_id):
@@ -671,7 +671,7 @@ class ProjectCreator(Model):
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info(_("The project %d has been added to repository %d.") % (project_id, repo_id) )
+        log.info(_("The project %(project)d has been added to repository %(repo)d.") % (project_id, repo_id) )
         # Would be nice to invalidate only record corresponding to our project...
         models.clear_cache()
 
