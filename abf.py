@@ -133,7 +133,6 @@ def parse_command_line():
     parser_put.add_argument('-s', '--minimal-file-size', default='0', action='store', help=_('The minimal file size to upload to File-Store. '
             'Default is 0B.'))
     parser_put.add_argument('-n', '--do-not-remove-files', action='store_true', help=_('By default files are being removed on uploading. Override this behavior.'))
-    parser_put.add_argument('-u', '--upload-only', action='store_true', help=_('Deprecated! Affects nothing. Saved for compatibility reasons and will be removed later.'))
     parser_put.set_defaults(func=put)
 
     # store
@@ -383,7 +382,7 @@ def run_mock_urpm(binary=True):
     try:
         execfile(config_path)
     except Exception, ex:
-        log.error(_("Could not read the contents of '%(path)s': %(exception)s") % (config_path, str(ex)))
+        log.error(_("Could not read the contents of '%(path)s': %(exception)s") % {'path': config_path, 'exception': str(ex)})
         exit(2)
 
     basedir = ('basedir' in config_opts and config_opts['basedir']) or '/var/lib/abf/mock-urpm'
@@ -587,10 +586,10 @@ def get_project(models, must_exist=True, name=None):
     try:
         proj = Project.get_by_name(models, '%s/%s' % (owner_name, project_name))
     except PageNotFoundError:
-        log.error(_('The project %(owner)s/%(project)s does not exist!') % (owner_name, project_name))
+        log.error(_('The project %(owner)s/%(project)s does not exist!') % {'owner': owner_name, 'project': project_name})
         exit(1)
     except ForbiddenError:
-        log.error(_('You do not have acces to the project %(owner)s/%(project)s!') % (owner_name, project_name))
+        log.error(_('You do not have acces to the project %(owner)s/%(project)s!') % {'owner': owner_name, 'project': project_name})
         exit(1)
 
     log.debug(_('Project: %s') % proj)
@@ -715,9 +714,9 @@ def fetch():
     try:
         fetch_files(models, path, command_line.only)
     except yaml.scanner.ScannerError, ex:
-        log.error(_('Invalid yml file %(filename)s!\nProblem in line %(line)d column %(column)d: %(problem)s') % (path, ex.problem_mark.line, ex.problem_mark.column, ex.problem))
+        log.error(_('Invalid yml file %(filename)s!\nProblem in line %(line)d column %(column)d: %(problem)s') % {'filename': path, 'line': ex.problem_mark.line, 'column': ex.problem_mark.column, 'problem': ex.problem})
     except yaml.composer.ComposerError, ex:
-        log.error(_('Invalid yml file %(filename)s!\n%(exception)s') % (path, ex))
+        log.error(_('Invalid yml file %(filename)s!\n%(exception)s') % {'filename': path, 'exception': ex})
 
 def store():
     log.debug(_('STORE started'))
@@ -739,7 +738,7 @@ def copy():
     if not start_branch:
         log.error(_("You are not in a git directory"))
         exit(1)
-    log.debug(_("Current brunch is ") + start_branch)
+    log.debug(_("Current branch is ") + start_branch)
     if command_line.dst_branch:
         dbrn = command_line.dst_branch
     else:
@@ -861,7 +860,13 @@ def create():
         os.system("abf get " + command_line.owner + "/" + name)
         os.chdir(tempdir + "/" + name)
         os.system("rpm2cpio ../" + os.path.basename(command_line.srpm) + " | cpio -id")
-        os.system("abf put -m 'Imported from SRPM'")
+        # "abf put" will try to parse spec file to decide which files should be added/uploaded
+        # However, it will fail if we e.g. import SRPM for a system that differs from the current one,
+        # which spec file can't be parsed by current rpm.
+        # At the same time, we are sure that all files from SRPM should be added to Git
+#        os.system("abf put -m 'Imported from SRPM'")
+        os.system("git add *")
+        os.system("git commit -m 'Imported from SRPM'")
         os.system("git push -u origin master")
 
         if command_line.branch:
@@ -983,11 +988,11 @@ def build():
                 if ref['ref'] == to_resolve and ref['object']['type'] == ref_type:
                     commit_hash = ref['object']['sha']
             if commit_hash == None:
-                log.error("Could not resolve hash for %s '%s'" % (ref_type, to_resolve))
+                log.error(_("Could not resolve hash for %(ref_type)s '%(to_resolve)s'") % {'ref_type': ref_type, 'to_resolve': to_resolve})
                 exit(1)
     if commit_hash != as_commit:
         as_saveto = None
-        log.debug(_('Aitoresolved options were rejected.'))
+        log.debug(_('Autoresolved options were rejected.'))
     log.debug(_('Git commit hash: %s') % commit_hash)
 
 
@@ -1029,7 +1034,7 @@ def build():
                 build_for_platform = repo.platform
             pls.append(repo.platform.name)
         if not build_for_platform:
-            log.error(_("Can not build for platform %(platform)s. Select one of the following:\n%(all_platforms)s") % (pl_name, ', '.join(pls)))
+            log.error(_("Can not build for platform %(platform)s. Select one of the following:\n%(all_platforms)s") % {'platform': pl_name, 'all_platforms': ', '.join(pls)})
             exit(1)
 
         for repo in build_for_platform.repositories:
@@ -1038,8 +1043,8 @@ def build():
                 break
 
         if not save_to_repository:
-            log.error(_("Incorrect save-to repository %(platform)s/%(repo)s.\nSelect one of the following:\n%(all_repos)s") % (pl_name, repo_name,
-                    ', '.join([str(x) for x in build_for_platform.repositories])))
+            log.error(_("Incorrect save-to repository %(platform)s/%(repo)s.\nSelect one of the following:\n%(all_repos)s") % {'platform': pl_name, 'repo': repo_name,
+                    'all_repos': ', '.join([str(x) for x in build_for_platform.repositories])})
             exit(1)
 
     log.debug(_('Save-to repository: ') + str(save_to_repository))
@@ -1057,14 +1062,14 @@ def build():
             elif len(items) == 1:
                 repo_name = items[0]
                 pl_name = default_build_platform
-                log.debug(_("Platform for selected repository %(repo)s is assumed to be %(plat)s") % (repo_name, pl_name))
+                log.debug(_("Platform for selected repository %(repo)s is assumed to be %(plat)s") % {'repo': repo_name, 'plat': pl_name})
             else:
                 log.error(_("'repository' option format: [platform/]repository"))
                 exit(1)
 
             if pl_name not in build_platform_names:
-                log.error(_("Can not use build repositories from platform %(platform)s!\nSelect one of the following:\n%(all_plats)s") % (pl_name,
-                        ', '.join(build_platform_names)))
+                log.error(_("Can not use build repositories from platform %(platform)s!\nSelect one of the following:\n%(all_plats)s") % {'platform': pl_name,
+                        'all_plats': ', '.join(build_platform_names)})
                 exit(1)
             for pl in build_platforms:
                 if pl.name == pl_name:
@@ -1076,8 +1081,8 @@ def build():
                     build_repo = repo
                     break
             if not build_repo:
-                log.error(_("Platform %(plat)s does not have repository %(repo)s!\nSelect one of the following:\n%(all_repos)s") % (pl_name, repo_name,
-                        ', '.join([x.name for x in build_platform.repositories])))
+                log.error(_("Platform %(plat)s does not have repository %(repo)s!\nSelect one of the following:\n%(all_repos)s") % {'plat': pl_name, 'repo': repo_name,
+                        'all_repos': ', '.join([x.name for x in build_platform.repositories])})
                 exit(1)
             build_repositories.append(build_repo)
     else:
@@ -1153,18 +1158,18 @@ def publish():
         try:
             bl = BuildList(models, task_id)
             if bl.status != 0:
-                log.error(_("The status of build task %(id)s is \"%(status)s\", can not published!") % (bl.id, bl.status_string))
+                log.error(_("The status of build task %(id)s is \"%(status)s\", can not published!") % {'id': bl.id, 'status': bl.status_string})
                 continue
             res = bl.publish()
         except AbfApiException, ex:
-            log.error(_('Could not publish task %(id)s: %(exception)s') %(task_id, str(ex)))
+            log.error(_('Could not publish task %(id)s: %(exception)s') % {'id': task_id, 'exception': str(ex)})
 
 
 def _print_build_status(models, ID):
     try:
         bl = BuildList(models, ID)
     except AbfApiException, ex:
-        log.error(_("Can not read buildlist %(id)s: %(exception)s") % (ID, ex))
+        log.error(_("Can not read buildlist %(id)s: %(exception)s") % {'id': ID, 'exception': ex})
         exit(3)
     if command_line.short:
         print repr(bl)
@@ -1220,7 +1225,7 @@ def _update_location(path=None, silent=True):
         if group:
             proj = '%s/%s' % (group, name)
             projects_cfg[proj]['location'] = path
-            text = _("Project %(proj)s has been located in %(path)s") % (proj, path)
+            text = _("Project %(proj)s has been located in %(path)s") % {'proj': proj, 'path': path}
             if silent:
                 log.debug(text)
             else:

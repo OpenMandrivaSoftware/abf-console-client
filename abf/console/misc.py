@@ -226,9 +226,9 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
             try:
                 yaml_data = yaml.load(fd)
             except yaml.scanner.ScannerError, ex:
-                log.error(_('Invalid yml file %(file)s!\nProblem in line %(line)d column %(col)d: %(exception)s') % (yaml_path, ex.problem_mark.line, ex.problem_mark.column, ex.problem))
+                log.error(_('Invalid yml file %(file)s!\nProblem in line %(line)d column %(col)d: %(exception)s') % {'file': yaml_path, 'line': ex.problem_mark.line, 'col': ex.problem_mark.column, 'exception': ex.problem})
             except yaml.composer.ComposerError, ex:
-                log.error(_('Invalid yml file %(file)s!\n%(exception)s') % (yaml_path, ex))
+                log.error(_('Invalid yml file %(file)s!\n%(exception)s') % {'file': yaml_path, 'exception': ex})
 
         if not 'sources' in yaml_data:
             log.error(_("Incorrect .abf.yml file: no 'sources' key"))
@@ -316,7 +316,7 @@ def pack_project(root_path):
 
     tardir = '%s-%s' % (name, version)
     tarball = tardir + ".tar.gz"
-    log.debug(_("Writing %(path)s/%(tarball)s ...") % (root_path, tarball))
+    log.debug(_("Writing %(path)s/%(tarball)s ...") % {'path': root_path, 'tarball': tarball})
 
     full_tarball_path = '%s/%s' % (root_path, tarball)
     if os.path.exists(full_tarball_path):
@@ -387,14 +387,14 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
             niceExit=0
             os.killpg(child.pid, 9)
     if not niceExit and raiseExc:
-        raise CommandTimeoutExpired(_("Timeout(%(timeout)s) expired for command:\n # %(cmd)s\n%(output)s") % (timeout, command, output))
+        raise CommandTimeoutExpired(_("Timeout(%(timeout)s) expired for command:\n # %(cmd)s\n%(output)s") % {'timeout': timeout, 'cmd': command, 'output': output})
 
     log.debug(_("Child returncode was: %s") % str(child.returncode))
     if child.returncode:
         if exit_on_error:
             exit(1)
         if raiseExc:
-            raise ReturnCodeNotZero(_("Command failed.\nReturn code: %(ret_code)s\nOutput: %(output)s") % (child.returncode, output), child.returncode)
+            raise ReturnCodeNotZero(_("Command failed.\nReturn code: %(ret_code)s\nOutput: %(output)s") % {'ret_code': child.returncode, 'output': output}, child.returncode)
     return (output, child.returncode)
 
 def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
@@ -444,7 +444,7 @@ def is_text_file(path):
     m = magic.open(magic.MAGIC_MIME)
     m.load()
     r = m.file(path)
-    log.debug(_("Magic type of file %(path)s is %(type)s") % (path, r))
+    log.debug(_("Magic type of file %(path)s is %(type)s") % {'path': path, 'type': r})
     if r.startswith('text'):
         return True
     return False
@@ -520,7 +520,7 @@ def upload_files(models, min_size, path=None, remove_files=True):
                 log.info(_('File %s not found, URL will be used instead. Skipping.') % src)
                 continue
             if src not in yaml_files:
-                log.error(_("error: Source%(num)d file %(source)s does not exist, skipping!") % (num, source))
+                log.error(_("error: Source%(num)d file %(source)s does not exist, skipping!") % {'num': num, 'source': source})
                 errors_count += 1;
             else:
                 log.info(_('File %s not found, but it\'s listed in .abf.yml. Skipping.') % src)
@@ -562,7 +562,7 @@ def upload_files(models, min_size, path=None, remove_files=True):
                     if 'removed_sources' not in yaml_data:
                         yaml_data['removed_sources'] = {}
                     yaml_data['removed_sources'][item] = h
-                    log.info(_('Removing %(item)s:%(hash)s from .abf.yml') % (item, h ))
+                    log.info(_('Removing %(item)s:%(hash)s from .abf.yml') % {'item': item, 'hash': h })
             yaml_files[src] = sha_hash.encode()
             yaml_file_changed = True
         else:

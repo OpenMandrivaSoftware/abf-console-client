@@ -49,13 +49,13 @@ class Model(object):
 
             if st_cache and st_cache.has_key(cache_key):
                 #read cached value
-                log.debug( _('Loading %(name)s %(id)s from cache') % (self.__class__.__name__, ID))
+                log.debug( _('Loading %(name)s %(id)s from cache') % {'name': self.__class__.__name__, 'id': ID})
                 self.stub = False
                 self.init_data = st_cache.get(cache_key)
                 self.load()
 
             else:
-                log.debug(_('Loading %(name)s %(id)s using API') % (self.__class__.__name__, ID))
+                log.debug(_('Loading %(name)s %(id)s using API') % {'name': self.__class__.__name__, 'id': ID})
                 self.stub = False
                 self.get_init_data(ID)
                 self.load()
@@ -70,7 +70,7 @@ class Model(object):
                     raise Exception(_("One of the fields required for %(name)s model was not specified: %(field)s") %
                                 (self.__class__.__name__, field))
         else:
-            log.debug(_('Creating a stub for %(name)s %(id)s') % (self.__class__.__name__, self.init_data['id']))
+            log.debug(_('Creating a stub for %(name)s %(id)s') % {'name': self.__class__.__name__, 'id': self.init_data['id']})
             self.load()
             self.stub = True
 
@@ -623,7 +623,7 @@ class PullRequest(Model):
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info(_("Pull request for %(proj)s from %(from)s to %(to)s has been sent.") % (project, from_ref, to_ref))
+        log.info(_("Pull request for %(proj)s from %(from)s to %(to)s has been sent.") % {'proj': project, 'from': from_ref, 'to': to_ref})
 
 class ProjectCreator(Model):
     required_fields = ['name', 'description', 'owner']
@@ -656,7 +656,7 @@ class ProjectCreator(Model):
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info(_("The project %(name)s for owner %(owner)d has been created.") % (name, owner_id))
+        log.info(_("The project %(name)s for owner %(owner)d has been created.") % {'name': name, 'owner': owner_id})
 
     @staticmethod
     def add_project_to_repo(models, repo_id, project_id):
@@ -671,7 +671,7 @@ class ProjectCreator(Model):
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info(_("The project %(project)d has been added to repository %(repo)d.") % (project_id, repo_id) )
+        log.info(_("The project %(project)d has been added to repository %(repo)d.") % {'project': project_id, 'repo': repo_id} )
         # Would be nice to invalidate only record corresponding to our project...
         models.clear_cache()
 

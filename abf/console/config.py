@@ -78,10 +78,10 @@ class Section(dict):
             res = self.config.get(self.section, key)
         except ConfigParser.NoOptionError, ex:
             if key == 'default_branch':
-                print(_('non-critical error in config "%(path)s": %(exception)s') % (self.conf_path, str(ex)))
+                print(_('non-critical error in config "%(path)s": %(exception)s') % {'path': self.conf_path, 'exception': str(ex)})
                 return ''
             else:
-                print(_('error in config "%(path)s": %(exception)s') % (self.conf_path, str(ex)))
+                print(_('error in config "%(path)s": %(exception)s') % {'path': self.conf_path, 'exception': str(ex)})
                 exit(1)
 
     def pop(self, key, init=None):
