@@ -254,7 +254,8 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
 
         files_required.append(fname_base)
 
-        is_url = fname.startswith('http://')
+        is_url = fname.startswith('http://') or fname.startswith('https://') or fname.startswith('ftp://')
+        abf_url = fname.startswith('http://abf.') or fname.startswith('https://abf.') or fname.startswith('ftp://abf.')
         presents = fname_base in files_present
         in_yaml = fname_base in yaml_files
 
@@ -262,7 +263,7 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
 #            warnings = True
 #            log.info('warning: file "%s" presents in spec (url) and in .abf.yml' % fname_base)
 
-        if is_url and not presents and not in_yaml:
+        if is_url and not abf_url and not presents and not in_yaml:
             warnings = True
             log.info(_('warning: file "%s" is listed in spec as a URL, but does not present in the current directory or in .abf.yml file') % fname_base)
 
