@@ -155,7 +155,7 @@ class Config(dict):
                 print(_('No protocol part specified (http://, https://, etc.)'))
                 continue
             if len(parts) > 2:
-                print(_('Double slash must present only once (in a ptocol part)'))
+                print(_('Double slash must present only once (in a protocol part)'))
                 continue
             done = True
         return domain

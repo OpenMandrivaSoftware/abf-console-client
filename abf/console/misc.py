@@ -155,7 +155,7 @@ def get_tag_hash(tag, cwd=None):
 def clone_git_repo_tmp(uri, depth=None):
     log.info(_('Cloning git repository (temporary workaround)'))
     tmp_dir = tempfile.mkdtemp(prefix='tmp_abf_')
-    log.info(_("Temporary directory os ") + tmp_dir)
+    log.info(_("Temporary directory is ") + tmp_dir)
     cmd = ['git', 'clone', uri, tmp_dir]
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     return tmp_dir
