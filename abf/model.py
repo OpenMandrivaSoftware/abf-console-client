@@ -574,7 +574,7 @@ class BuildList(Model):
                         'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
                     exit(1)
                 log.info(_("Task %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has been sent. Build task id is %(id)s") %
-                    (project, bpl, save_to_repository, arch, result['build_list']['id']))
+                    {'proj': project, 'plat': bpl, 'save_repo': save_to_repository, 'arch': arch, 'id': result['build_list']['id']})
                 build_ids.append(result['build_list']['id'])
         return build_ids
 
