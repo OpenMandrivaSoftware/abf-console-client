@@ -860,13 +860,7 @@ def create():
         os.system("abf get " + command_line.owner + "/" + name)
         os.chdir(tempdir + "/" + name)
         os.system("rpm2cpio ../" + os.path.basename(command_line.srpm) + " | cpio -id")
-        # "abf put" will try to parse spec file to decide which files should be added/uploaded
-        # However, it will fail if we e.g. import SRPM for a system that differs from the current one,
-        # which spec file can't be parsed by current rpm.
-        # At the same time, we are sure that all files from SRPM should be added to Git
-#        os.system("abf put -m 'Imported from SRPM'")
-        os.system("git add *")
-        os.system("git commit -m 'Imported from SRPM'")
+        os.system("abf put -m 'Imported from SRPM'")
         os.system("git push -u origin master")
 
         if command_line.branch:
