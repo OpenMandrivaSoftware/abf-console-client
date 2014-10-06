@@ -133,6 +133,9 @@ def parse_command_line():
     parser_put.add_argument('-s', '--minimal-file-size', default='0', action='store', help=_('The minimal file size to upload to File-Store. '
             'Default is 0B.'))
     parser_put.add_argument('-n', '--do-not-remove-files', action='store_true', help=_('By default files are being removed on uploading. Override this behavior.'))
+    parser_put.add_argument('-a', '--upload-all', action='store_true', help=_('By default, console client analyzes spec file and tries to detect which files located in the '
+										'current folder are really used by the project and uploads only these files to file store. '
+										'With this option, console client will upload all binary files located in the current folder.'))
     parser_put.set_defaults(func=put)
 
     # store
@@ -671,7 +674,7 @@ def put():
     except ValueError, ex:
         log.error(_('Incorrect "--minimal-file-size" value: %s') % command_line.minimal_file_size)
         exit(1)
-    error_count = upload_files(models, min_size, remove_files=not command_line.do_not_remove_files, path=path)
+    error_count = upload_files(models, min_size, remove_files=not command_line.do_not_remove_files, path=path, upload_all=command_line.upload_all)
     if error_count:
         log.info(_('There were errors while uploading, stopping.'))
         exit(1)
@@ -859,7 +862,7 @@ def create():
         os.system("abf get " + command_line.owner + "/" + name)
         os.chdir(tempdir + "/" + name)
         os.system("rpm2cpio ../" + os.path.basename(command_line.srpm) + " | cpio -id")
-        os.system("abf put -m 'Imported from SRPM'")
+        os.system("abf put --upload-all -m 'Imported from SRPM'")
         os.system("git push -u origin master")
 
         if command_line.branch:

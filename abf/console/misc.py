@@ -478,7 +478,7 @@ def fetch_files(models, yaml_path, file_names=None):
         except AbfApiException, ex:
             print(_('error: ') + str(ex))
 
-def upload_files(models, min_size, path=None, remove_files=True):
+def upload_files(models, min_size, path=None, remove_files=True, upload_all=False):
     log.debug('Uploading files for directory ' + str(path))
     spec_path = find_spec(path)
     dir_path = os.path.dirname(spec_path)
@@ -501,11 +501,19 @@ def upload_files(models, min_size, path=None, remove_files=True):
             yaml_file_changed = True
             yaml_data['sources'] = {}
         yaml_files = yaml_data['sources']
-    try:
-        sources = get_project_data(spec_path)['sources']
-    except Exception, ex:
-        log.error(ex)
-        return 1
+    if upload_all:
+        sources = []
+        number = 0
+        for name in os.listdir(path):
+            if os.path.isfile(path + "/" + name):
+                sources.append((name, number))
+                number += 1
+    else:
+        try:
+            sources = get_project_data(spec_path)['sources']
+        except Exception, ex:
+            log.error(ex)
+            return 1
     for src, num in sources:
         is_url = False
         if '://' in src:
