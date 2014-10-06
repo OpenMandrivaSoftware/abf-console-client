@@ -207,7 +207,7 @@ def parse_command_line():
     # mock-urpm
     parser_mock_urpm = subparsers.add_parser('mock-urpm', help=_('Build a project locally using mock-urpm.'), epilog=_('No checkouts will be made,'
                                                                     'the current git repository state will be used'))
-    parser_mock_urpm.add_argument('-c', '--config', action='store', help=_('A config template to use. Specify owne of the config names '
+    parser_mock_urpm.add_argument('-c', '--config', action='store', help=_('A config template to use. Specify one of the config names '
         'from %s. Directory path should be omitted. If no config specified, "default.cfg" will be used') % configs_dir)
     parser_mock_urpm.set_defaults(func=localbuild_mock_urpm)
 
@@ -343,8 +343,7 @@ def info_single():
 def fix_default_config():
     if not os.path.exists('/etc/abf/mock-urpm/configs/default.cfg'):
         if os.getuid() != 0:
-            print(_("To set up a default configuration file, symbolic link in " +\
-                    "/etc/abf/mock-urpm/configs have to be created. I need sudo rights to do it."))
+            print(_("To set up a default configuration file, symbolic link in /etc/abf/mock-urpm/configs have to be created. I need sudo rights to do it."))
             exit(1)
 
         files = os.listdir('/etc/abf/mock-urpm/configs')
@@ -375,7 +374,7 @@ def run_mock_urpm(binary=True):
     if not os.path.exists(config_path):
         log.error(_("Config file %s can not be found.") % config_path)
         if os.path.basename(config_path) == 'default.cfg':
-            log.error(_("You should create this file or a symbolic link to another config in order to execute 'abf mock-urpm' withow --config"))
+            log.error(_("You should create this file or a symbolic link to another config in order to execute 'abf mock-urpm' without --config"))
         exit(1)
     config_opts = {'plugins': [], 'scm_opts': {}}
     config_opts['plugin_conf'] = {'ccache_opts': {}, 'root_cache_opts': {}, 'bind_mount_opts': {'dirs': []}, 'tmpfs_opts': {}, 'selinux_opts': {}}
