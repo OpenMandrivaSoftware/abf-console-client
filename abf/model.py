@@ -68,7 +68,7 @@ class Model(object):
             for field in self.__class__.required_fields:
                 if field not in self.params_dict:
                     raise Exception(_("One of the fields required for %(name)s model was not specified: %(field)s") %
-                                (self.__class__.__name__, field))
+                                {'name': self.__class__.__name__, 'field': field})
         else:
             log.debug(_('Creating a stub for %(name)s %(id)s') % {'name': self.__class__.__name__, 'id': self.init_data['id']})
             self.load()
@@ -340,7 +340,7 @@ class Group(Model):
 
 class Project(Model):
     required_fields = ['id', 'name', 'created_at', 'updated_at', 'visibility', 'description', 'ancestry', 'has_issues',
-            'has_wiki', 'default_branch', 'is_package', 'owner', 'repositories', 'owner_type']
+            'has_wiki', 'default_branch', 'is_package', 'owner', 'repositories', 'owner_type', 'maintainer']
     filter_dict = { 'id': '*', 'name': '*', 'page': '1' }
 
 
@@ -427,12 +427,34 @@ class Project(Model):
                 projects_info = [i for i in projects_info if str(Project.filter_dict[value]) in str(i.params_dict[value]) ]
         return projects_info
 
+    @staticmethod
+    def update(models, project, name, description, visibility, is_package, default_branch,
+		has_issues, has_wiki, publish_i686_into_x86_64):
+        DATA = {
+            'id': project.id,
+            'name': name,
+            'description': description,
+            'visibility': visibility,
+            'is_package': is_package,
+            'default_branch': default_branch,
+            'has_issues': has_issues,
+            'has_wiki': has_wiki,
+            'publish_i686_into_x86_64': publish_i686_into_x86_64,
+            }
+
+        log.debug(_('Updating project settings: ') + str(DATA))
+        try:
+            result = models.jsn.update_project({'project': DATA}, project.id)
+        except BadRequestError, ex:
+            log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
+            exit(1)
+        log.info(_("Successfully updated settings of project %s.") % (project.name))
+
 class BuildList(Model):
     required_fields = ['id', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
-#    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'auto_publish', 'extra_repositories',
     'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'extra_repositories',
     'commit_hash', 'duration', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build', 'log_url', 'chroot_tree']
-#    'commit_hash', 'duration', 'owner', 'owner_type', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build']
 
     status_by_id = {
         0: 'build complete',
@@ -531,7 +553,9 @@ class BuildList(Model):
 			arches, skip_personal,
 			cached_chroot,
 			save_chroot,
-			auto_create_container):
+			auto_create_container,
+			include_testing_subrepo,
+			use_extra_tests):
         DATA = {
             'project_id':               project.id,
             'commit_hash':              commit_hash,
@@ -545,7 +569,9 @@ class BuildList(Model):
             'save_buildroot':		save_chroot,
             'arch_id':                  None,
             'include_repos':            [],
-            'extra_repositories':       []
+            'extra_repositories':       [],
+            'include_testing_subrepository': include_testing_subrepo,
+            'use_extra_tests':		use_extra_tests
         }
         build_platforms = {}
 
@@ -567,7 +593,6 @@ class BuildList(Model):
                 DATA['arch_id'] = arch.id
                 log.debug(_('Sending the build task: ') + str(DATA))
                 try:
-                    #continue
                     result = models.jsn.new_build_task({'build_list': DATA})
                 except BadRequestError, ex:
                     log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '

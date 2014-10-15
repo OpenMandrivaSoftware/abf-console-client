@@ -351,6 +351,10 @@ class AbfJson(object):
         URL = "/api/v1/projects/%d/pull_requests.json" % p_id
         return self.get_url_contents(URL, GET=None, POST=data)
 
+    def update_project(self, data, p_id):
+        URL = "/api/v1/projects/%d.json" % p_id
+        return self.get_url_contents(URL, GET=None, PUT=data)
+
     def remove_project_from_repo(self, data, repo_id):
         URL = "/api/v1/repositories/%d/remove_project.json" % repo_id
         return self.get_url_contents(URL, GET=None, DELETE=data)

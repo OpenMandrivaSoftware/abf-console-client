@@ -143,6 +143,21 @@ def parse_command_line():
     parser_store.add_argument('path', action='store', help=_('Path to file'))
     parser_store.set_defaults(func=store)
 
+    # update
+    parser_update = subparsers.add_parser('update', help=_('Update project settings.'))
+    parser_update.add_argument('-p', '--project', action='store',  help=_('Project to show information for (if needed). Format: '
+        '"[group/]name". If no group specified, default group will be used.'))
+    parser_update.add_argument('--name', nargs='?', action='store', help=_('New project name.'))
+    parser_update.add_argument('--desc', nargs='?', action='store', help=_('Project description.'))
+    parser_update.add_argument('--visibility', nargs='?', action='store', help=_('Project visibility. Please specify "open" or "hidden".'))
+    parser_update.add_argument('--is_pkg', nargs='?', action='store', help=_('Is project a package. Please specify "true" or "false".'))
+    parser_update.add_argument('--branch', nargs='?', action='store', help=_('Default branch for the project Git repository.'))
+    parser_update.add_argument('--issues', nargs='?', action='store', help=_('Should project issue tracker be enabled. Please specify "true" or "false".'))
+    parser_update.add_argument('--wiki', nargs='?', action='store', help=_('Should project wiki be enabled. Please specify "true" or "false".'))
+#    parser_update.add_argument('maintainer', type=int, nargs='?', action='store', help=_('Identifier of project maintainer.'))
+    parser_update.add_argument('--biarch', nargs='?', action='store', help=_('Enable/disable publishing 32bit packages into 64bit repository. Please specify "true" or "false".'))
+    parser_update.set_defaults(func=update)
+
     # fetch
     parser_fetch = subparsers.add_parser('fetch', help=_('Download all the files listed in .abf.yml or file with given hash from File-Store to local directory.'))
     parser_fetch.add_argument('filehash',  nargs='*', action='store', help=_('Download file with given hash'))
@@ -199,6 +214,8 @@ def parse_command_line():
     parser_build.add_argument('--auto-publish-status', action='store', choices=BuildList.auto_publish_statuses, help=_('enable automatic publishing. Default is "%s".') %
                     (BuildList.auto_publish_statuses[0]))
     parser_build.add_argument('--skip-personal', action='store_true', help=_('do not use personal repository to resolve dependencies.'))
+    parser_build.add_argument('--testing', action='store_true', help=_('Include "testing" subrepository.'))
+    parser_build.add_argument('--no-extra-tests', action='store_true', help=_('Do not launch comprehensive tests.'))
     parser_build.add_argument('--auto-create-container', action='store_true', help=_('enable automatic creation of container'))
     parser_build.add_argument('--cached-chroot', action='store_true', help=_('use cached chroot for the build'))
     parser_build.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
@@ -493,8 +510,6 @@ def alias():
             exit(1)
         cfg['alias'].pop(al_name)
         log.info('Done')
-
-
 
 def localbuild_rpmbuild():
     log.debug(_('RPMBUILD started'))
@@ -1126,6 +1141,11 @@ def build():
     if auto_create_container is None:
         auto_create_container = True
 
+    if command_line.no_extra_tests is None:
+        use_extra_tests = True
+    else:
+        use_extra_tests = False
+
     if command_line.auto_publish and not command_line.auto_publish_status:
         command_line.auto_publish_status = 'default'
 
@@ -1142,7 +1162,9 @@ def build():
         command_line.skip_personal,
         command_line.cached_chroot,
         command_line.save_chroot,
-        auto_create_container
+        auto_create_container,
+        command_line.testing,
+        use_extra_tests
     )
     ids = ','.join([str(i) for i in build_ids])
     projects_cfg['main']['last_build_ids'] = ids
@@ -1276,6 +1298,69 @@ def locate():
         elif command_line.action == 'update-recursive':
             path = command_line.directory or os.getcwd()
             _update_location_recursive(path)
+
+def get_true_false(value, key):
+    if value.lower() == "true":
+        return True
+    if value.lower() == "false":
+        return False
+    print(_("Please specify 'true' or 'false' for %s") % key)
+    exit(1)
+
+def update():
+    log.debug(_('UPDATE started'))
+
+    # get project
+    proj = get_project(models, must_exist=True, name=command_line.project)
+
+    if command_line.name is None:
+        name = proj.name
+    else:
+        name = get_true_false(command_line.name, 'name')
+
+    if command_line.desc is None:
+        description = proj.description
+    else:
+        description = command_line.desc
+
+    if command_line.visibility is None:
+        visibility = proj.visibility
+    else:
+        visibility = command_line.visibility
+
+    if command_line.is_pkg is None:
+        is_package = proj.is_package
+    else:
+        is_package = get_true_false(command_line.is_pkg, 'is_pkg')
+
+    if command_line.branch is None:
+        default_branch = proj.default_branch
+    else:
+        default_branch = command_line.branch
+
+    if command_line.issues is None:
+        has_issues = proj.has_issues
+    else:
+        has_issues = get_true_false(command_line.issues, 'issues')
+
+    if command_line.wiki is None:
+        has_wiki = proj.has_wiki
+    else:
+        has_wiki = get_true_false(command_line.wiki, 'wiki')
+
+#    if command_line.maintainer is None:
+#        maintainer_id = proj.maintainer['id']
+#    else:
+#        maintainer_id = command_line.maintainer
+
+    if command_line.biarch is None:
+        print "AAA"
+        publish_i686_into_x86_64 = proj.publish_i686_into_x86_64
+    else:
+        publish_i686_into_x86_64 = get_true_false(command_line.biarch, "biarch")
+
+    Project.update(models, proj, name, description, visibility, is_package, default_branch,
+                    has_issues, has_wiki, publish_i686_into_x86_64)
 
 def show():
     log.debug(_('SHOW started'))
