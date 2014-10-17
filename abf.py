@@ -2,6 +2,8 @@
 # -*- coding: UTF-8 -*-
 
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 import argparse
 from argparse import RawDescriptionHelpFormatter
 import os
