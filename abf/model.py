@@ -486,6 +486,14 @@ class BuildList(Model):
     status_by_name = dict([(status_by_id[x], x) for x in status_by_id])
     final_statuses = [1, 2, 3, 4, 666, 5000, 6000, 8000, 9000, 12000, 14000]
 
+    container_status_by_id = {
+        4000: 'waiting for request for publishing container',
+        6000: 'container has been published',
+        7000: 'container is being published',
+        8000: 'publishing error'
+    }
+    container_status_by_name = dict([(container_status_by_id[x], x) for x in container_status_by_id])
+
     def get_init_data(self, ID):
         ID = str(ID)
         log.debug(_('Reading buildlist ') + str(ID))
@@ -534,9 +542,11 @@ class BuildList(Model):
         if self.params_dict['status'] in BuildList.final_statuses:
             self.cacher = lt_cache
 
+        self.params_dict['container_status_string'] = BuildList.container_status_by_id[self.params_dict['container_status']]
+
 
     def __repr__(self):
-        return '%s (%s/%s:%s - %s)' % (self.id, self.owner.uname, self.project.name,
+        return '%s (%s:%s - %s)' % (self.id, self.project.fullname,
                 self.arch.name, self.status_string)
 
     update_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
