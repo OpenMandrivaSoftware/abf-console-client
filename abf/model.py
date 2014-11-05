@@ -565,7 +565,8 @@ class BuildList(Model):
 			save_chroot,
 			auto_create_container,
 			include_testing_subrepo,
-			use_extra_tests):
+			use_extra_tests,
+			extra_build_lists):
         DATA = {
             'project_id':               project.id,
             'commit_hash':              commit_hash,
@@ -580,6 +581,7 @@ class BuildList(Model):
             'arch_id':                  None,
             'include_repos':            [],
             'extra_repositories':       [],
+            'extra_build_lists':        extra_build_lists,
             'include_testing_subrepository': include_testing_subrepo,
             'use_extra_tests':		use_extra_tests
         }

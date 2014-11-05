@@ -212,6 +212,7 @@ def parse_command_line():
     parser_build.add_argument('-r', '--repository', action='append', help=_('repositories to build with ([platform/]repository). '
         'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
         ' If no repositories were specified at all, use the "main" repository from save-to platform.'))
+    parser_build.add_argument('-l', '--build-list', action='append', help=_('build list whose container should be used during the build. Can be specified more than once.'))
     parser_build.add_argument('--auto-publish', action='store_true', help=_('deprecated synonym for --auto-publish-status=default.'))
     parser_build.add_argument('--auto-publish-status', action='store', choices=BuildList.auto_publish_statuses, help=_('enable automatic publishing. Default is "%s".') %
                     (BuildList.auto_publish_statuses[0]))
@@ -225,6 +226,42 @@ def parse_command_line():
                     (BuildList.update_types[0]) )
     parser_build.add_argument('--skip-spec-check', action='store_true', help=_('Do not check spec file.' ))
     parser_build.set_defaults(func=build)
+
+    # chain-build
+    parser_chain_build = subparsers.add_parser('chain_build', help=_('Initiate a chain of build tasks on ABF.'), formatter_class=RawDescriptionHelpFormatter)
+    parser_chain_build.add_argument('project', nargs='+', action='store', help=_('Project name ([group/]project). If no group '
+        'specified, it is assumed to be your default group. You can specify several projects to be build one after another. '
+        'You can also group projects with ":" to indicate that they can be built in parallel. For example, '
+        '"abd chain_build a b:c d" will build project "a", then (after "a" is built) will launch builds of "b" and "c" '
+        'in parallel and after both of these projects are built, the build of "d" will be initiated. '
+        'If automated publishing is set, then console client waits for every build to be published before starting the next build in the chain. '
+        'If automated container creation is set, then console client waits for container to be ready and when the next build is started, containers '
+        'from all previous builds are used as extra repositories.'))
+    parser_chain_build.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
+    parser_chain_build.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
+    parser_chain_build.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
+    parser_chain_build.add_argument('-u', '--timeout', action='store', help=_('number of seconds to sleep between successive checks of build status.'))
+    parser_chain_build.add_argument('-s', '--save-to-repository', action='store', help=_('repository to save results to '
+        '([platform/]repository). If no platform part specified, it is assumed to be "<default_group>_personal". '
+        'If this option is not specified at all, "<default_group>_personal/main" will be used.'))
+    parser_chain_build.add_argument('-a', '--arch', action='append', help=_('architectures to build, '
+                        'can be set more than once. If not set - use all the available architectures.'))
+    parser_chain_build.add_argument('-r', '--repository', action='append', help=_('repositories to build with ([platform/]repository). '
+        'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
+        ' If no repositories were specified at all, use the "main" repository from save-to platform.'))
+    parser_chain_build.add_argument('-l', '--build-list', action='append', help=_('build list whose container should be used during the build. Can be specified more than once.'))
+    parser_chain_build.add_argument('--auto-publish', action='store_true', help=_('deprecated synonym for --auto-publish-status=default.'))
+    parser_chain_build.add_argument('--auto-publish-status', action='store', choices=BuildList.auto_publish_statuses, help=_('enable automatic publishing. Default is "%s".') %
+                    (BuildList.auto_publish_statuses[0]))
+    parser_chain_build.add_argument('--skip-personal', action='store_true', help=_('do not use personal repository to resolve dependencies.'))
+    parser_chain_build.add_argument('--testing', action='store_true', help=_('Include "testing" subrepository.'))
+    parser_chain_build.add_argument('--no-extra-tests', action='store_true', help=_('Do not launch comprehensive tests.'))
+    parser_chain_build.add_argument('--auto-create-container', action='store_true', help=_('enable automatic creation of container'))
+    parser_chain_build.add_argument('--cached-chroot', action='store_true', help=_('use cached chroot for the build'))
+    parser_chain_build.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
+    parser_chain_build.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
+                    (BuildList.update_types[0]) )
+    parser_chain_build.set_defaults(func=chain_build)
 
     # mock-urpm
     parser_mock_urpm = subparsers.add_parser('mock-urpm', help=_('Build a project locally using mock-urpm.'), epilog=_('No checkouts will be made,'
@@ -911,7 +948,61 @@ def remove_project_from_repository():
     proj = get_project(models, must_exist=True, name=command_line.project)
     ProjectCreator.remove_project_from_repo(models, repo_id, proj.id)
 
-def build():
+def chain_build():
+    log.debug(_('CHAIN_BUILD started'))
+
+    if command_line.timeout:
+        timeout = command_line.timeout
+    else:
+        timeout = 60
+
+    # Force printing of short status of the running builds
+    command_line.short = True
+
+    if not command_line.build_list:
+        command_line.build_list = []
+
+    for pr_set in command_line.project:
+        build_ids = []
+        if pr_set.find(":") < 0:
+            log.debug(_('Launching build of %s') % pr_set)
+            command_line.project = pr_set
+            build_ids = build(return_ids=True)
+
+        else:
+            projects = pr_set.split(":")
+            for p in projects:
+                log.debug(_('Launching build of %s') % p)
+                command_line.project = p
+                new_build_ids = build(return_ids=True)
+                build_ids.extend(new_build_ids)
+
+        task_running = True
+        while task_running:
+            task_running = False
+            for build_id in build_ids:
+                command_line.ID = [str(build_id)]
+                stat = status(return_status=True)
+                if stat[0][0] in ["build error", "publishing error", "publishing rejected", "build is canceling", "tests failed", "[testing] Publishing error", "unpermitted architecture"]:
+                    print(_("One of the tasks failed, aborting chain build"))
+                    exit(1)
+                elif stat[0][0] in ["build pending", "rerun tests", "rerunning tests", "build started", "build is being published", "[testing] Build is being published'"]:
+                    task_running = True
+                elif stat[0][0] == "build complete":
+                    if stat[0][1] == "container is being published":
+                        task_running = True
+                    elif stat[0][1] == "publishing error":
+                        print(_("Container creation failed for build %d, aborting chain build") % build_id)
+                        exit(1)
+                    elif stat[0][1] == "waiting for request for publishing container":
+                        print(_("WARNING: Build %d was not published and container was not created") % build_id)
+                    else:
+                        command_line.build_list.append(str(build_id))
+
+            time.sleep(timeout)
+
+
+def build(return_ids=False):
     log.debug(_('BUILD started'))
 
     if command_line.project and not (command_line.branch or command_line.tag or command_line.commit):
@@ -1151,6 +1242,11 @@ def build():
     if command_line.auto_publish and not command_line.auto_publish_status:
         command_line.auto_publish_status = 'default'
 
+    extra_build_lists = []
+    if command_line.build_list:
+        for b in command_line.build_list:
+            extra_build_lists.append(int(b))
+
     build_ids = BuildList.new_build_task(
         models,
         proj,
@@ -1166,11 +1262,15 @@ def build():
         command_line.save_chroot,
         auto_create_container,
         command_line.testing,
-        use_extra_tests
+        use_extra_tests,
+        extra_build_lists
     )
     ids = ','.join([str(i) for i in build_ids])
     projects_cfg['main']['last_build_ids'] = ids
     projects_cfg[str(proj)]['last_build_ids'] = ids
+
+    if return_ids:
+        return build_ids
 
 def publish():
     log.debug('PUBLISH started')
@@ -1195,9 +1295,10 @@ def _print_build_status(models, ID):
         print repr(bl)
     else:
         print '%-20s%s' %(_('Buildlist ID:'), bl.id)
-#        print '%-20s%s' %(_('Owner:', bl.owner.uname)
         print '%-20s%s' %(_('Project:'), bl.project.fullname)
         print '%-20s%s' %(_('Status:'), bl.status_string)
+        print '%-20s%s' %(_('Container path:'), bl.container_path)
+        print '%-20s%s' %(_('Container status:'), bl.container_status_string)
         print '%-20s%s' %(_('Build for platform:'), bl.build_for_platform)
         print '%-20s%s' %(_('Save to repository:'), bl.save_to_repository)
         print '%-20s%s' %(_('Build repositories:'), bl.include_repos)
@@ -1210,7 +1311,10 @@ def _print_build_status(models, ID):
             print '%-20s%s' %(_('Chroot Tree:'), bl.chroot_tree)
         print ''
 
-def status():
+    return [bl.status_string, bl.container_status_string]
+
+
+def status(return_status=False):
     log.debug(_('STATUS started'))
     ids = []
     if command_line.ID:
@@ -1226,14 +1330,18 @@ def status():
                 exit(1)
             ids += projects_cfg['main']['last_build_ids'].split(',')
     ids = list(set(ids))
+    stats = []
     for i in ids:
         try:
             i = int(i)
         except:
             log.error(_('"%s" is not a number') % i)
             continue
-        _print_build_status(models, i)
+        stat = _print_build_status(models, i)
+        stats.append(stat)
 
+    if return_status:
+        return stats
 
 
 def _update_location(path=None, silent=True):
