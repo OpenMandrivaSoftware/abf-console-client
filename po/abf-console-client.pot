@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-05 14:14+0400\n"
+"POT-Creation-Date: 2014-11-06 16:15+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -187,7 +187,7 @@ msgstr ""
 msgid "ABF Console Client"
 msgstr ""
 
-#: ../abf.py:108 ../abf.py:365
+#: ../abf.py:108 ../abf.py:369
 msgid "be verbose, display even debug messages"
 msgstr ""
 
@@ -387,32 +387,32 @@ msgid ""
 "repository directory - resolve a project name from it."
 msgstr ""
 
-#: ../abf.py:204 ../abf.py:240
+#: ../abf.py:204 ../abf.py:244
 msgid "branch to build."
 msgstr ""
 
-#: ../abf.py:205 ../abf.py:241
+#: ../abf.py:205 ../abf.py:245
 msgid "tag to build."
 msgstr ""
 
-#: ../abf.py:206 ../abf.py:242
+#: ../abf.py:206 ../abf.py:246
 msgid "commit sha hash to build."
 msgstr ""
 
-#: ../abf.py:207 ../abf.py:244
+#: ../abf.py:207 ../abf.py:248
 msgid ""
 "repository to save results to ([platform/]repository). If no platform part "
 "specified, it is assumed to be \"<default_group>_personal\". If this option "
 "is not specified at all, \"<default_group>_personal/main\" will be used."
 msgstr ""
 
-#: ../abf.py:210 ../abf.py:247
+#: ../abf.py:210 ../abf.py:251
 msgid ""
 "architectures to build, can be set more than once. If not set - use all the "
 "available architectures."
 msgstr ""
 
-#: ../abf.py:212 ../abf.py:249
+#: ../abf.py:212 ../abf.py:253
 msgid ""
 "repositories to build with ([platform/]repository). Can be set more than "
 "once. If no platform part specified, it is assumed to be your "
@@ -420,46 +420,46 @@ msgid ""
 "the \"main\" repository from save-to platform."
 msgstr ""
 
-#: ../abf.py:215 ../abf.py:252
+#: ../abf.py:215 ../abf.py:256
 msgid ""
 "build list whose container should be used during the build. Can be specified "
 "more than once."
 msgstr ""
 
-#: ../abf.py:216 ../abf.py:253
+#: ../abf.py:216 ../abf.py:257
 msgid "deprecated synonym for --auto-publish-status=default."
 msgstr ""
 
-#: ../abf.py:217 ../abf.py:254
+#: ../abf.py:217 ../abf.py:258
 #, python-format
 msgid "enable automatic publishing. Default is \"%s\"."
 msgstr ""
 
-#: ../abf.py:219 ../abf.py:256
+#: ../abf.py:219 ../abf.py:260
 msgid "do not use personal repository to resolve dependencies."
 msgstr ""
 
-#: ../abf.py:220 ../abf.py:257
+#: ../abf.py:220 ../abf.py:261
 msgid "Include \"testing\" subrepository."
 msgstr ""
 
-#: ../abf.py:221 ../abf.py:258
+#: ../abf.py:221 ../abf.py:262
 msgid "Do not launch comprehensive tests."
 msgstr ""
 
-#: ../abf.py:222 ../abf.py:259
+#: ../abf.py:222 ../abf.py:263
 msgid "enable automatic creation of container"
 msgstr ""
 
-#: ../abf.py:223 ../abf.py:260
+#: ../abf.py:223 ../abf.py:264
 msgid "use cached chroot for the build"
 msgstr ""
 
-#: ../abf.py:224 ../abf.py:261
+#: ../abf.py:224 ../abf.py:265
 msgid "save build chroot in case of failure"
 msgstr ""
 
-#: ../abf.py:225 ../abf.py:262
+#: ../abf.py:225 ../abf.py:266
 #, python-format
 msgid "Update type. Default is \"%s\"."
 msgstr ""
@@ -475,9 +475,9 @@ msgstr ""
 #: ../abf.py:232
 msgid ""
 "Project name ([group/]project). If no group specified, it is assumed to be "
-"your default group. You can specify several projects to be build one after "
+"your default group. You can specify several projects to be built one after "
 "another. You can also group projects with \":\" to indicate that they can be "
-"built in parallel. For example, \"abd chain_build a b:c d\" will build "
+"built in parallel. For example, \"abf chain_build a b:c d\" will build "
 "project \"a\", then (after \"a\" is built) will launch builds of \"b\" and "
 "\"c\" in parallel and after both of these projects are built, the build of "
 "\"d\" will be initiated. If automated publishing is set, then console client "
@@ -487,135 +487,145 @@ msgid ""
 "all previous builds are used as extra repositories."
 msgstr ""
 
-#: ../abf.py:243
+#: ../abf.py:240
+msgid ""
+"File with project names. You can omit project names in command line and "
+"provide a file with project names instead. The file will be read line by "
+"line. All projects specified at the same line will be built in parallel; the "
+"next line will be processed only after all the build from the previous line "
+"are completed successfully. Project name in a line can be separated by colon "
+"(\":\") or by space symbols."
+msgstr ""
+
+#: ../abf.py:247
 msgid "number of seconds to sleep between successive checks of build status."
 msgstr ""
 
-#: ../abf.py:267
+#: ../abf.py:271
 msgid "Build a project locally using mock-urpm."
 msgstr ""
 
-#: ../abf.py:267 ../abf.py:274
+#: ../abf.py:271 ../abf.py:278
 msgid "No checkouts will be made,the current git repository state will be used"
 msgstr ""
 
-#: ../abf.py:269
+#: ../abf.py:273
 #, python-format
 msgid ""
 "A config template to use. Specify one of the config names from %s. Directory "
 "path should be omitted. If no config specified, \"default.cfg\" will be used"
 msgstr ""
 
-#: ../abf.py:274
+#: ../abf.py:278
 msgid "Build a project locally using rpmbuild."
 msgstr ""
 
-#: ../abf.py:276
+#: ../abf.py:280
 msgid "Build src.rpm (s), rpm (b) or both (a)"
 msgstr ""
 
-#: ../abf.py:280
+#: ../abf.py:284
 msgid "Publish the task that have already been built."
 msgstr ""
 
-#: ../abf.py:281
+#: ../abf.py:285
 msgid "The IDs of tasks to publish."
 msgstr ""
 
-#: ../abf.py:285
+#: ../abf.py:289
 msgid "Copy all the files from SRC_BRANCH to DST_BRANCH"
 msgstr ""
 
-#: ../abf.py:286
+#: ../abf.py:290
 msgid "source branch"
 msgstr ""
 
-#: ../abf.py:287
+#: ../abf.py:291
 msgid ""
 "destination branch. If not specified, it's assumed to be the current branch"
 msgstr ""
 
-#: ../abf.py:288
+#: ../abf.py:292
 msgid ""
 "Create a tar.gz from the src_branch and put this archive and spec file to "
 "dst_branch"
 msgstr ""
 
-#: ../abf.py:292
+#: ../abf.py:296
 msgid "Send a pull request from SRC_BRANCH to DST_BRANCH"
 msgstr ""
 
-#: ../abf.py:293
+#: ../abf.py:297
 msgid "source ref or branch"
 msgstr ""
 
-#: ../abf.py:294
+#: ../abf.py:298
 msgid "destination ref or branch"
 msgstr ""
 
-#: ../abf.py:295
+#: ../abf.py:299
 msgid "Request title"
 msgstr ""
 
-#: ../abf.py:296
+#: ../abf.py:300
 msgid "Request body"
 msgstr ""
 
-#: ../abf.py:297 ../abf.py:317 ../abf.py:323
+#: ../abf.py:301 ../abf.py:321 ../abf.py:327
 msgid "project name (group/project)."
 msgstr ""
 
-#: ../abf.py:301
+#: ../abf.py:305
 msgid "Fork existing project"
 msgstr ""
 
-#: ../abf.py:302
+#: ../abf.py:306
 msgid "project to fork (group/project)"
 msgstr ""
 
-#: ../abf.py:303
+#: ../abf.py:307
 msgid "target project group and name (group/project)"
 msgstr ""
 
-#: ../abf.py:307
+#: ../abf.py:311
 msgid "Create project from SRPM"
 msgstr ""
 
-#: ../abf.py:308
+#: ../abf.py:312
 msgid "srpm file"
 msgstr ""
 
-#: ../abf.py:309
+#: ../abf.py:313
 msgid "who will own the project; default_owner is used by default"
 msgstr ""
 
-#: ../abf.py:310
+#: ../abf.py:314
 msgid "create additional branch; can be set more than once."
 msgstr ""
 
-#: ../abf.py:311
+#: ../abf.py:315
 msgid ""
 "Do not automatically create branch set as default in user config (if it is "
 "set to smth different from \"master\")."
 msgstr ""
 
-#: ../abf.py:315
+#: ../abf.py:319
 msgid "Add project to specified repository"
 msgstr ""
 
-#: ../abf.py:316 ../abf.py:322
+#: ../abf.py:320 ../abf.py:326
 msgid "target repository ([platform/]repository)"
 msgstr ""
 
-#: ../abf.py:321
+#: ../abf.py:325
 msgid "Remove project from specified repository"
 msgstr ""
 
-#: ../abf.py:327
+#: ../abf.py:331
 msgid "get a build-task status"
 msgstr ""
 
-#: ../abf.py:327
+#: ../abf.py:331
 msgid ""
 "If a project specified  or you are in a git repository - try to get the IDs "
 "from the last build task sent for this project. If you are not in a git "
@@ -623,53 +633,53 @@ msgid ""
 "from the last build you've done with console client."
 msgstr ""
 
-#: ../abf.py:331
+#: ../abf.py:335
 msgid "build list ID"
 msgstr ""
 
-#: ../abf.py:332
+#: ../abf.py:336
 msgid "Project. If last IDs for this project can be found - use them"
 msgstr ""
 
-#: ../abf.py:333
+#: ../abf.py:337
 msgid "Show one-line information including id, project, arch and status"
 msgstr ""
 
-#: ../abf.py:338
+#: ../abf.py:342
 msgid ""
 "Analyze spec file and show missing and unnecessary files from the current "
 "git repository directory."
 msgstr ""
 
-#: ../abf.py:340
+#: ../abf.py:344
 msgid "automatically remove all the unnecessary files"
 msgstr ""
 
-#: ../abf.py:344
+#: ../abf.py:348
 msgid "Search for something on ABF."
 msgstr ""
 
-#: ../abf.py:344
+#: ../abf.py:348
 msgid "NOTE: only first 100 results of any request will be shown"
 msgstr ""
 
-#: ../abf.py:346
+#: ../abf.py:350
 msgid "what to search for"
 msgstr ""
 
-#: ../abf.py:347
+#: ../abf.py:351
 msgid "a string to search for"
 msgstr ""
 
-#: ../abf.py:353
+#: ../abf.py:357
 msgid "get information about single instance"
 msgstr ""
 
-#: ../abf.py:355
+#: ../abf.py:359
 msgid "type of the instance"
 msgstr ""
 
-#: ../abf.py:356
+#: ../abf.py:360
 #, python-format
 msgid ""
 "The filter may be specified by defining multiple pairs <type>."
@@ -680,441 +690,447 @@ msgid ""
 "projects -f platforms.name=rosa2012lts page=*"
 msgstr ""
 
-#: ../abf.py:357
+#: ../abf.py:361
 msgid "output format "
 msgstr ""
 
-#: ../abf.py:361
+#: ../abf.py:365
 msgid "Execute a set of internal datamodel tests"
 msgstr ""
 
-#: ../abf.py:374
+#: ../abf.py:378
 #, python-format
 msgid ""
 "Filter can be specified with the following parameters:\n"
 " %s"
 msgstr ""
 
-#: ../abf.py:384
+#: ../abf.py:388
 #, python-format
 msgid "Filter setup for instance %s "
 msgstr ""
 
-#: ../abf.py:387
+#: ../abf.py:391
 #, python-format
 msgid ""
 "Output format can be specified with the following parameters:\n"
 " %s"
 msgstr ""
 
-#: ../abf.py:389
+#: ../abf.py:393
 #, python-format
 msgid "Using default query format: %s"
 msgstr ""
 
-#: ../abf.py:399
+#: ../abf.py:403
 #, python-format
 msgid "Parameter %s not available:"
 msgstr ""
 
-#: ../abf.py:405
+#: ../abf.py:409
 msgid ""
 "To set up a default configuration file, symbolic link in /etc/abf/mock-urpm/"
 "configs have to be created. I need sudo rights to do it."
 msgstr ""
 
-#: ../abf.py:409
+#: ../abf.py:413
 msgid "Avaliable configurations: "
 msgstr ""
 
-#: ../abf.py:422
+#: ../abf.py:426
 #, python-format
 msgid "\"%s\" is not a valid configuration."
 msgstr ""
 
-#: ../abf.py:423
+#: ../abf.py:427
 msgid "Select one (it will be remembered): "
 msgstr ""
 
-#: ../abf.py:434
+#: ../abf.py:438
 #, python-format
 msgid "Config file %s can not be found."
 msgstr ""
 
-#: ../abf.py:436
+#: ../abf.py:440
 msgid ""
 "You should create this file or a symbolic link to another config in order to "
 "execute 'abf mock-urpm' without --config"
 msgstr ""
 
-#: ../abf.py:443
+#: ../abf.py:447
 #, python-format
 msgid "Could not read the contents of '%(path)s': %(exception)s"
 msgstr ""
 
-#: ../abf.py:463 ../abf.py:568
+#: ../abf.py:467 ../abf.py:572
 #, python-format
 msgid "Can not locate a spec file in %s"
 msgstr ""
 
-#: ../abf.py:469 ../abf.py:493
+#: ../abf.py:473 ../abf.py:497
 msgid "Executing mock-urpm..."
 msgstr ""
 
-#: ../abf.py:473
+#: ../abf.py:477
 #, python-format
 msgid "Can not execute mock-urpm (%s). Maybe it is not installed?"
 msgstr ""
 
-#: ../abf.py:480
+#: ../abf.py:484
 #, python-format
 msgid "Could not find a single src.rpm file in %s"
 msgstr ""
 
-#: ../abf.py:488
+#: ../abf.py:492
 #, python-format
 msgid ""
 "\n"
 "SRPM: %s\n"
 msgstr ""
 
-#: ../abf.py:503 ../abf.py:595
+#: ../abf.py:507 ../abf.py:599
 msgid "RPM: "
 msgstr ""
 
-#: ../abf.py:520
+#: ../abf.py:524
 msgid "No aliases found"
 msgstr ""
 
-#: ../abf.py:526
+#: ../abf.py:530
 msgid ""
 "Not enough options. Use it like \"abf alias add <alias_name> opt1 "
 "[opt2 ...]\""
 msgstr ""
 
-#: ../abf.py:530
+#: ../abf.py:534
 msgid "Do not use \" \" or \"=\" for alias name!"
 msgstr ""
 
-#: ../abf.py:539
+#: ../abf.py:543
 #, python-format
 msgid "Alias \"%s\" already exists and will be overwritten."
 msgstr ""
 
-#: ../abf.py:544
+#: ../abf.py:548
 msgid "Enter the alias name!"
 msgstr ""
 
-#: ../abf.py:548
+#: ../abf.py:552
 #, python-format
 msgid "Alias \"%s\" not found"
 msgstr ""
 
-#: ../abf.py:554
+#: ../abf.py:558
 msgid "RPMBUILD started"
 msgstr ""
 
-#: ../abf.py:574
+#: ../abf.py:578
 msgid "Executing rpmbuild..."
 msgstr ""
 
-#: ../abf.py:578
+#: ../abf.py:582
 #, python-format
 msgid "Can not execute rpmbuild (%s). Maybe it is not installed?"
 msgstr ""
 
-#: ../abf.py:580
+#: ../abf.py:584
 msgid "Moving files to current directory..."
 msgstr ""
 
-#: ../abf.py:593
+#: ../abf.py:597
 msgid "SRPM: "
 msgstr ""
 
-#: ../abf.py:607
+#: ../abf.py:611
 msgid "SEARCH started"
 msgstr ""
 
-#: ../abf.py:619
+#: ../abf.py:623
 msgid "The project format is \"[owner_name/]project_name\""
 msgstr ""
 
-#: ../abf.py:623
+#: ../abf.py:627
 msgid "The project group is assumed to be "
 msgstr ""
 
-#: ../abf.py:632
+#: ../abf.py:636
 msgid ""
 "You are not in a git repository directory. Specify the project name please!"
 msgstr ""
 
-#: ../abf.py:645
+#: ../abf.py:649
 #, python-format
 msgid "The project %(owner)s/%(project)s does not exist!"
 msgstr ""
 
-#: ../abf.py:648
+#: ../abf.py:652
 #, python-format
 msgid "You do not have acces to the project %(owner)s/%(project)s!"
 msgstr ""
 
-#: ../abf.py:651
+#: ../abf.py:655
 #, python-format
 msgid "Project: %s"
 msgstr ""
 
-#: ../abf.py:663
+#: ../abf.py:667
 msgid "Platform is assumed to be "
 msgstr ""
 
-#: ../abf.py:665
+#: ../abf.py:669
 msgid "repository argument format: [platform/]repository"
 msgstr ""
 
-#: ../abf.py:686
+#: ../abf.py:690
 msgid "GET started"
 msgstr ""
 
-#: ../abf.py:690 ../abf.py:856
+#: ../abf.py:694 ../abf.py:860
 msgid ""
 "Specify a project name as \"group_name/project_name\" or just \"project_name"
 "\""
 msgstr ""
 
-#: ../abf.py:710
+#: ../abf.py:714
 msgid "Branch "
 msgstr ""
 
-#: ../abf.py:716
+#: ../abf.py:720
 msgid "PUT started"
 msgstr ""
 
-#: ../abf.py:721 ../abf.py:764
+#: ../abf.py:725 ../abf.py:768
 msgid "You have to be in a git repository directory"
 msgstr ""
 
-#: ../abf.py:729
+#: ../abf.py:733
 #, python-format
 msgid "Incorrect \"--minimal-file-size\" value: %s"
 msgstr ""
 
-#: ../abf.py:733
+#: ../abf.py:737
 msgid "There were errors while uploading, stopping."
 msgstr ""
 
-#: ../abf.py:749
+#: ../abf.py:753
 msgid "Commited."
 msgstr ""
 
-#: ../abf.py:752
+#: ../abf.py:756
 msgid "Pushed"
 msgstr ""
 
-#: ../abf.py:755
+#: ../abf.py:759
 msgid "FETCH started"
 msgstr ""
 
-#: ../abf.py:758
+#: ../abf.py:762
 msgid "Fetching file with hash "
 msgstr ""
 
-#: ../abf.py:768
+#: ../abf.py:772
 #, python-format
 msgid "File \"%s\" can not be found"
 msgstr ""
 
-#: ../abf.py:773
+#: ../abf.py:777
 #, python-format
 msgid ""
 "Invalid yml file %(filename)s!\n"
 "Problem in line %(line)d column %(column)d: %(problem)s"
 msgstr ""
 
-#: ../abf.py:775
+#: ../abf.py:779
 #, python-format
 msgid ""
 "Invalid yml file %(filename)s!\n"
 "%(exception)s"
 msgstr ""
 
-#: ../abf.py:778
+#: ../abf.py:782
 msgid "STORE started"
 msgstr ""
 
-#: ../abf.py:781
+#: ../abf.py:785
 #, python-format
 msgid "File \"%s\" does not exist!"
 msgstr ""
 
-#: ../abf.py:784
+#: ../abf.py:788
 #, python-format
 msgid "\"%s\" is not a regular file!"
 msgstr ""
 
-#: ../abf.py:791
+#: ../abf.py:795
 msgid "COPY started"
 msgstr ""
 
-#: ../abf.py:795
+#: ../abf.py:799
 msgid "You are not in a git directory"
 msgstr ""
 
-#: ../abf.py:797
+#: ../abf.py:801
 msgid "Current branch is "
 msgstr ""
 
-#: ../abf.py:804
+#: ../abf.py:808
 msgid "Source and destination branches shold be different branches!"
 msgstr ""
 
-#: ../abf.py:808
+#: ../abf.py:812
 msgid "Repository root folder is "
 msgstr ""
 
-#: ../abf.py:835
+#: ../abf.py:839
 #, python-format
 msgid "Checking out the initial branch (%s)"
 msgstr ""
 
-#: ../abf.py:842
+#: ../abf.py:846
 msgid "PULL REQUEST started"
 msgstr ""
 
-#: ../abf.py:849
+#: ../abf.py:853
 msgid "FORK PROJECT started"
 msgstr ""
 
-#: ../abf.py:875
+#: ../abf.py:879
 #, python-format
 msgid "No group named '%s', will fork to you personal platform"
 msgstr ""
 
-#: ../abf.py:879
+#: ../abf.py:883
 msgid "Incorrect target group"
 msgstr ""
 
-#: ../abf.py:886
+#: ../abf.py:890
 msgid "CREATE PROJECT started"
 msgstr ""
 
-#: ../abf.py:901
+#: ../abf.py:905
 msgid "Incorrect owner data"
 msgstr ""
 
-#: ../abf.py:934
+#: ../abf.py:938
 msgid "Failed to get information from SRPM"
 msgstr ""
 
-#: ../abf.py:938
+#: ../abf.py:942
 msgid "ADD PROJECT TO REPO started"
 msgstr ""
 
-#: ../abf.py:945
+#: ../abf.py:949
 msgid "REMOVE PROJECT FROM REPO started"
 msgstr ""
 
-#: ../abf.py:952
+#: ../abf.py:956
 msgid "CHAIN_BUILD started"
 msgstr ""
 
-#: ../abf.py:968 ../abf.py:975
+#: ../abf.py:971
+msgid ""
+"You can't specify '-i' option and project names in command line at the same "
+"time."
+msgstr ""
+
+#: ../abf.py:988 ../abf.py:995
 #, python-format
 msgid "Launching build of %s"
 msgstr ""
 
-#: ../abf.py:987
+#: ../abf.py:1012
 msgid "One of the tasks failed, aborting chain build"
 msgstr ""
 
-#: ../abf.py:995
+#: ../abf.py:1020
 #, python-format
 msgid "Container creation failed for build %d, aborting chain build"
 msgstr ""
 
-#: ../abf.py:998
+#: ../abf.py:1023
 #, python-format
 msgid "WARNING: Build %d was not published and container was not created"
 msgstr ""
 
-#: ../abf.py:1006
+#: ../abf.py:1035
 msgid "BUILD started"
 msgstr ""
 
-#: ../abf.py:1009
+#: ../abf.py:1038
 msgid ""
 "You've specified a project name without branch, tag or commit (-b, -t or -c)"
 msgstr ""
 
-#: ../abf.py:1018
+#: ../abf.py:1047
 msgid ""
 "You should specify ONLY ONE of the following options: branch, tag or commit."
 msgstr ""
 
-#: ../abf.py:1033
+#: ../abf.py:1062
 #, python-format
 msgid "The project %s is not a package and can not be built."
 msgstr ""
 
-#: ../abf.py:1051
+#: ../abf.py:1080
 msgid "You've specified a project without a branch."
 msgstr ""
 
-#: ../abf.py:1059
+#: ../abf.py:1088
 #, python-format
 msgid "Could not resolve hash for branch '%s'"
 msgstr ""
 
-#: ../abf.py:1066
+#: ../abf.py:1095
 #, python-format
 msgid "Could not resolve a platform to save to from the branch name \"%s\"."
 msgstr ""
 
-#: ../abf.py:1073
+#: ../abf.py:1102
 #, python-format
 msgid "A list of options which could be resolved automatically: %s"
 msgstr ""
 
-#: ../abf.py:1082
+#: ../abf.py:1111
 msgid ""
 "Git branch, tag or commit can not be resolved automatically. Specify it by -"
 "b, -t or -c."
 msgstr ""
 
-#: ../abf.py:1095
+#: ../abf.py:1124
 #, python-format
 msgid "Could not resolve hash for %(ref_type)s '%(to_resolve)s'"
 msgstr ""
 
-#: ../abf.py:1099
+#: ../abf.py:1128
 msgid "Autoresolved options were rejected."
 msgstr ""
 
-#: ../abf.py:1100
+#: ../abf.py:1129
 #, python-format
 msgid "Git commit hash: %s"
 msgstr ""
 
-#: ../abf.py:1119
+#: ../abf.py:1148
 #, python-format
 msgid "Save-to platform is assumed to be %s"
 msgstr ""
 
-#: ../abf.py:1125
+#: ../abf.py:1154
 msgid "Save-to repository can not be resolved automatically. Specify it (-s)."
 msgstr ""
 
-#: ../abf.py:1128
+#: ../abf.py:1157
 msgid "save-to-repository option format: [platform/]repository"
 msgstr ""
 
-#: ../abf.py:1141
+#: ../abf.py:1170
 #, python-format
 msgid ""
 "Can not build for platform %(platform)s. Select one of the following:\n"
 "%(all_platforms)s"
 msgstr ""
 
-#: ../abf.py:1150
+#: ../abf.py:1179
 #, python-format
 msgid ""
 "Incorrect save-to repository %(platform)s/%(repo)s.\n"
@@ -1122,20 +1138,20 @@ msgid ""
 "%(all_repos)s"
 msgstr ""
 
-#: ../abf.py:1154
+#: ../abf.py:1183
 msgid "Save-to repository: "
 msgstr ""
 
-#: ../abf.py:1169
+#: ../abf.py:1198
 #, python-format
 msgid "Platform for selected repository %(repo)s is assumed to be %(plat)s"
 msgstr ""
 
-#: ../abf.py:1171
+#: ../abf.py:1200
 msgid "'repository' option format: [platform/]repository"
 msgstr ""
 
-#: ../abf.py:1175
+#: ../abf.py:1204
 #, python-format
 msgid ""
 "Can not use build repositories from platform %(platform)s!\n"
@@ -1143,7 +1159,7 @@ msgid ""
 "%(all_plats)s"
 msgstr ""
 
-#: ../abf.py:1188
+#: ../abf.py:1217
 #, python-format
 msgid ""
 "Platform %(plat)s does not have repository %(repo)s!\n"
@@ -1151,168 +1167,168 @@ msgid ""
 "%(all_repos)s"
 msgstr ""
 
-#: ../abf.py:1196
+#: ../abf.py:1225
 msgid ""
 "Could not resolve repositories to build with. Please specify it (-r option)"
 msgstr ""
 
-#: ../abf.py:1202
+#: ../abf.py:1231
 msgid "Repositories to build with are assumed to be: "
 msgstr ""
 
-#: ../abf.py:1205
+#: ../abf.py:1234
 msgid "You have to specify the repository(s) to build with (-r option)"
 msgstr ""
 
-#: ../abf.py:1208
+#: ../abf.py:1237
 msgid "Build repositories: "
 msgstr ""
 
-#: ../abf.py:1217
+#: ../abf.py:1246
 #, python-format
 msgid "Invalid architecture: %s"
 msgstr ""
 
-#: ../abf.py:1229
+#: ../abf.py:1258
 msgid "Arches are assumed to be "
 msgstr ""
 
-#: ../abf.py:1231
+#: ../abf.py:1260
 #, python-format
 msgid "Architectures: %s"
 msgstr ""
 
-#: ../abf.py:1281
+#: ../abf.py:1310
 #, python-format
 msgid "The status of build task %(id)s is \"%(status)s\", can not published!"
 msgstr ""
 
-#: ../abf.py:1285
+#: ../abf.py:1314
 #, python-format
 msgid "Could not publish task %(id)s: %(exception)s"
 msgstr ""
 
-#: ../abf.py:1292
+#: ../abf.py:1321
 #, python-format
 msgid "Can not read buildlist %(id)s: %(exception)s"
 msgstr ""
 
-#: ../abf.py:1297
+#: ../abf.py:1326
 msgid "Buildlist ID:"
 msgstr ""
 
-#: ../abf.py:1298
+#: ../abf.py:1327
 msgid "Project:"
 msgstr ""
 
-#: ../abf.py:1299
+#: ../abf.py:1328
 msgid "Status:"
 msgstr ""
 
-#: ../abf.py:1300
+#: ../abf.py:1329
 msgid "Container path:"
 msgstr ""
 
-#: ../abf.py:1301
+#: ../abf.py:1330
 msgid "Container status:"
 msgstr ""
 
-#: ../abf.py:1302
+#: ../abf.py:1331
 msgid "Build for platform:"
 msgstr ""
 
-#: ../abf.py:1303
+#: ../abf.py:1332
 msgid "Save to repository:"
 msgstr ""
 
-#: ../abf.py:1304
+#: ../abf.py:1333
 msgid "Build repositories:"
 msgstr ""
 
-#: ../abf.py:1305
+#: ../abf.py:1334
 msgid "Extra repositories:"
 msgstr ""
 
-#: ../abf.py:1306
+#: ../abf.py:1335
 msgid "Architecture:"
 msgstr ""
 
-#: ../abf.py:1307
+#: ../abf.py:1336
 msgid "Created at:"
 msgstr ""
 
-#: ../abf.py:1308
+#: ../abf.py:1337
 msgid "Updated at:"
 msgstr ""
 
-#: ../abf.py:1309
+#: ../abf.py:1338
 msgid "LOG Url:"
 msgstr ""
 
-#: ../abf.py:1311
+#: ../abf.py:1340
 msgid "Chroot Tree:"
 msgstr ""
 
-#: ../abf.py:1318
+#: ../abf.py:1347
 msgid "STATUS started"
 msgstr ""
 
-#: ../abf.py:1329
+#: ../abf.py:1358
 msgid "Can not find last build IDs. Specify a project name or ID"
 msgstr ""
 
-#: ../abf.py:1338
+#: ../abf.py:1367
 #, python-format
 msgid "\"%s\" is not a number"
 msgstr ""
 
-#: ../abf.py:1351
+#: ../abf.py:1380
 #, python-format
 msgid "Updating project location for %s"
 msgstr ""
 
-#: ../abf.py:1356
+#: ../abf.py:1385
 #, python-format
 msgid "Project %(proj)s has been located in %(path)s"
 msgstr ""
 
-#: ../abf.py:1378
+#: ../abf.py:1407
 msgid "LOCATE started"
 msgstr ""
 
-#: ../abf.py:1382
+#: ../abf.py:1411
 msgid ""
 "To show a project location, you have to specify a project name ('-p' option)"
 msgstr ""
 
-#: ../abf.py:1387
+#: ../abf.py:1416
 msgid "error: the project format is \"[owner_name/]project_name\""
 msgstr ""
 
-#: ../abf.py:1395
+#: ../abf.py:1424
 #, python-format
 msgid "error: project %s can not be located"
 msgstr ""
 
-#: ../abf.py:1399
+#: ../abf.py:1428
 #, python-format
 msgid "error: project is not located in \"%s\" anymore"
 msgstr ""
 
-#: ../abf.py:1417
+#: ../abf.py:1446
 #, python-format
 msgid "Please specify 'true' or 'false' for %s"
 msgstr ""
 
-#: ../abf.py:1421
+#: ../abf.py:1450
 msgid "UPDATE started"
 msgstr ""
 
-#: ../abf.py:1476
+#: ../abf.py:1505
 msgid "SHOW started"
 msgstr ""
 
-#: ../abf.py:1506
+#: ../abf.py:1535
 msgid "CLEAN started"
 msgstr ""
 

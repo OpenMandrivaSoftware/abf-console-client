@@ -580,7 +580,7 @@ msgstr ""
 
 #: ../abf.py:240
 msgid ""
-"File with project names. You can ommit project names in command line and "
+"File with project names. You can omit project names in command line and "
 "provide a file with project names instead. The file will be read line by "
 "line. All projects specified at the same line will be built in parallel; the "
 "next line will be processed only after all the build from the previous line "
