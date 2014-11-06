@@ -17,6 +17,11 @@ __abf_get()
   __abf_opts "--branch --verbose --help"
 }
 
+__abf_create()
+{
+  __abf_opts "--branch --no-def-branch --verbose --help"
+}
+
 __abf_put()
 {
   __abf_opts "--verbose --help --message --minimal-file-size --do-not-remove-files"
@@ -64,7 +69,7 @@ __abf_rpmbuild()
 
 __abf_build()
 {
-  __abf_opts "--branch --tag --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --auto-publish --update-type --skip-spec-check --auto-create-container"
+  __abf_opts "--branch --build --tag --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --auto-publish --update-type --skip-spec-check --auto-create-container --no-extra-tests --cached-chroot --save-chroot --testing"
   update_types="security bugfix enhancement recommended newpackage"
   auto_publish_status="none default testing"
   if [ ${prev} == -r ] || [ ${prev} == --repository ] ; then
@@ -76,7 +81,6 @@ __abf_build()
       next=0
       for i in ${COMP_WORDS[@]}
       do
-        
         if [[ $next == 1 ]] ; then
             proj=$i;
             next=0;
@@ -84,7 +88,6 @@ __abf_build()
         if [[ "$i" == "-p" || "$i" == "--project" ]] ; then
             next=1;
         fi;
-
       done
 
       if [ -n "${proj}" ] ; then
@@ -92,19 +95,28 @@ __abf_build()
       fi
       return 0
   fi
-  
+
   if [ ${prev} == --update-type ] ; then
-      
       COMPREPLY=( $(compgen -W "${update_types}" -- "${cur}") )
       return 0
   fi
 
   if [ ${prev} == --auto-publish-status ] ; then
-      
       COMPREPLY=( $(compgen -W "${auto_publish_status}" -- "${cur}") )
       return 0
   fi
 
+}
+
+__abf_chain_build()
+{
+  __abf_opts "--branch --build --tag --infile --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --auto-publish --skip-spec-check --auto-create-container --no-extra-tests --cached-chroot --testing"
+  auto_publish_status="none default testing"
+
+  if [ ${prev} == --auto-publish-status ] ; then
+      COMPREPLY=( $(compgen -W "${auto_publish_status}" -- "${cur}") )
+      return 0
+  fi
 }
 
 __abf_publish()
@@ -115,8 +127,7 @@ __abf_publish()
 __abf_copy()
 {
   __abf_opts "--pack --verbose --help"
-  
-  
+
   if [[ ${cur} != -* ]] ; then
       branches=`git branch --no-color | sed 's/^..//' | xargs echo`
       COMPREPLY=( $(compgen -W "${branches}" -- "${cur}") )
@@ -181,24 +192,24 @@ __abf_alias()
       COMPREPLY=( $(compgen -W "${types}" -- "${cur}") )
       return 0
   fi
-  
+
 }
 
 
 __abf() 
 {
     local opts modes
-    modes="help get put show build publish status locate search test fetch mock-urpm rpmbuild clean copy create store alias add remove fork"
+    modes="help get put show build chain_build publish status locate search test fetch mock-urpm rpmbuild clean copy create store alias add remove fork"
     COMPREPLY=()
     mode="${COMP_WORDS[1]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     cur="${COMP_WORDS[COMP_CWORD]}"
-    
+
     if [ "$COMP_CWORD" == "1" ] || ( [ "$COMP_CWORD" == "2" ] && [ "$mode" == "help" ] ); then
         COMPREPLY=( $(compgen -W "${modes}" -- ${cur}) )
         return 0
     fi
-    
+
     for i in ${modes}
     do
         if [[ $i == $mode ]] ; then
@@ -206,7 +217,7 @@ __abf()
             eval __abf_${j};
         fi
     done
-   
+
 }
 
 
