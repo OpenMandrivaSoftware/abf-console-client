@@ -229,14 +229,15 @@ def parse_command_line():
 
     # chain-build
     parser_chain_build = subparsers.add_parser('chain_build', help=_('Initiate a chain of build tasks on ABF.'), formatter_class=RawDescriptionHelpFormatter)
-    parser_chain_build.add_argument('project', nargs='+', action='store', help=_('Project name ([group/]project). If no group '
-        'specified, it is assumed to be your default group. You can specify several projects to be build one after another. '
+    parser_chain_build.add_argument('project', nargs='*', action='store', help=_('Project name ([group/]project). If no group '
+        'specified, it is assumed to be your default group. You can specify several projects to be built one after another. '
         'You can also group projects with ":" to indicate that they can be built in parallel. For example, '
-        '"abd chain_build a b:c d" will build project "a", then (after "a" is built) will launch builds of "b" and "c" '
-        'in parallel and after both of these projects are built, the build of "d" will be initiated. '
-        'If automated publishing is set, then console client waits for every build to be published before starting the next build in the chain. '
-        'If automated container creation is set, then console client waits for container to be ready and when the next build is started, containers '
-        'from all previous builds are used as extra repositories.'))
+        '"abf chain_build a b:c d" will build project "a", then (after "a" is built) will launch builds of "b" and "c" '
+        'in parallel and after both of these projects are built, the build of "d" will be initiated. '))
+    parser_chain_build.add_argument('-i', '--infile', action='store', help=_('File with project names. You can ommit project names in command line '
+        'and provide a file with project names instead. The file will be read line by line. All projects specified at the same line '
+        'will be built in parallel; the next line will be processed only after all the build from the previous line are completed successfully. '
+        'Project name in a line can be separated by colon (":") or by space symbols.'))
     parser_chain_build.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
     parser_chain_build.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
     parser_chain_build.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
@@ -962,6 +963,22 @@ def chain_build():
     if not command_line.build_list:
         command_line.build_list = []
 
+    if command_line.infile:
+        if command_line.project:
+            print(_("You can't specify '-i' option and project names in command line at the same time."))
+            exit(1)
+        else:
+            command_line.project = []
+            f = open(command_line.infile, "r")
+            # We allow project names in file to be separated not only by colons, but by spaces and mix of spaces around colons
+            # Let's unify this and opnly leave colon as a separator
+            regex_colon = re.compile(r"\s*:\s*")
+            regex_spaces = re.compile(r"(\S)\s+(\S)")
+            for line in f:
+                line = regex_colon.sub(":", line)
+                line = regex_spaces.sub(r"\1:\2", line)
+                command_line.project.append(line.rstrip())
+
     for pr_set in command_line.project:
         build_ids = []
         if pr_set.find(":") < 0:
@@ -978,9 +995,14 @@ def chain_build():
                 build_ids.extend(new_build_ids)
 
         task_running = True
+        success_builds = []
+
         while task_running:
             task_running = False
             for build_id in build_ids:
+                if build_id in success_builds:
+                    continue
+
                 command_line.ID = [str(build_id)]
                 stat = status(return_status=True)
                 if stat[0][0] in ["build error", "publishing error", "publishing rejected", "build is canceling", "tests failed", "[testing] Publishing error", "unpermitted architecture"]:
@@ -998,6 +1020,10 @@ def chain_build():
                         print(_("WARNING: Build %d was not published and container was not created") % build_id)
                     else:
                         command_line.build_list.append(str(build_id))
+                        success_builds.append(build_id)
+                else:
+                    success_builds.append(build_id)
+
 
             time.sleep(timeout)
 
