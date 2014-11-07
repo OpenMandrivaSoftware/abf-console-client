@@ -190,7 +190,7 @@ class Config(dict):
             self['user']['default_group'] = res or self['user']['login']
 
         if 'default_build_platform' not in self['user']:
-            def_bp = 'rosa2012.1'
+            def_bp = 'rosa2014.1'
             res = ask_user('Default platform [%s]: ' % def_bp, can_be_empty=True)
             self['user']['default_build_platform'] = res or def_bp
 
