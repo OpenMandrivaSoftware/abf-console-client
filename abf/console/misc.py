@@ -554,7 +554,7 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
         if src not in yaml_files or sha_hash != yaml_files[src]:
             log.debug(_('Hash for file %s has been updated') % src)
             # try to remove previous versions
-            re_src = re.compile('^([\w\d\-\.]+)-([\d\.]+)\.(tar\.gz|tar.xz|tgz|zip|tar\.bz2)$')
+            re_src = re.compile('^([\w\d\-\.]+)-([\d\.]+)\.(tar\.gz|tar.xz|gem|tgz|zip|tar\.bz2)$')
             res = re_src.match(src)
             if res:
                 src_gr = res.groups()
