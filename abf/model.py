@@ -429,7 +429,7 @@ class Project(Model):
 
     @staticmethod
     def update(models, project, name, description, visibility, is_package, default_branch,
-		has_issues, has_wiki, publish_i686_into_x86_64):
+		has_issues, has_wiki, publish_i686_into_x86_64, maintainer_id):
         DATA = {
             'id': project.id,
             'name': name,
@@ -440,6 +440,7 @@ class Project(Model):
             'has_issues': has_issues,
             'has_wiki': has_wiki,
             'publish_i686_into_x86_64': publish_i686_into_x86_64,
+            'maintainer_id': maintainer_id,
             }
 
         log.debug(_('Updating project settings: ') + str(DATA))

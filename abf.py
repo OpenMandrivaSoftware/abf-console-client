@@ -153,6 +153,7 @@ def parse_command_line():
     parser_update.add_argument('--desc', nargs='?', action='store', help=_('Project description.'))
     parser_update.add_argument('--visibility', nargs='?', action='store', help=_('Project visibility. Please specify "open" or "hidden".'))
     parser_update.add_argument('--is_pkg', nargs='?', action='store', help=_('Is project a package. Please specify "true" or "false".'))
+    parser_update.add_argument('--maintainer', nargs='?', action='store', help=_('Project maintainer. You can specify either maintainer id or login.'))
     parser_update.add_argument('--branch', nargs='?', action='store', help=_('Default branch for the project Git repository.'))
     parser_update.add_argument('--issues', nargs='?', action='store', help=_('Should project issue tracker be enabled. Please specify "true" or "false".'))
     parser_update.add_argument('--wiki', nargs='?', action='store', help=_('Should project wiki be enabled. Please specify "true" or "false".'))
@@ -655,6 +656,16 @@ def get_project(models, must_exist=True, name=None):
     log.debug(_('Project: %s') % proj)
     return proj
 
+def get_maintainer_id(models, name):
+    user_id = 0
+    try:
+        user_data = models.jsn.get_user_id(name)
+        user_id = user_data['user']['id']
+    except:
+        log.error(_('Failed to get ID for user ') + name)
+        exit(1)
+
+    return user_id
 
 def split_repo_name(fullname):
     items = fullname.split('/')
@@ -1487,19 +1498,18 @@ def update():
     else:
         has_wiki = get_true_false(command_line.wiki, 'wiki')
 
-#    if command_line.maintainer is None:
-#        maintainer_id = proj.maintainer['id']
-#    else:
-#        maintainer_id = command_line.maintainer
+    if command_line.maintainer is None:
+        maintainer_id = proj.maintainer['id']
+    else:
+        maintainer_id = get_maintainer_id(models, command_line.maintainer)
 
     if command_line.biarch is None:
-        print "AAA"
         publish_i686_into_x86_64 = proj.publish_i686_into_x86_64
     else:
         publish_i686_into_x86_64 = get_true_false(command_line.biarch, "biarch")
 
     Project.update(models, proj, name, description, visibility, is_package, default_branch,
-                    has_issues, has_wiki, publish_i686_into_x86_64)
+                    has_issues, has_wiki, publish_i686_into_x86_64, maintainer_id)
 
 def show():
     log.debug(_('SHOW started'))

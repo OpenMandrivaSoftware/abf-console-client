@@ -313,6 +313,10 @@ class AbfJson(object):
         URL = "/api/v1/platforms/%d.json" % pl_id
         return self.get_url_contents(URL)
 
+    def get_user_id(self, username):
+        URL = "/api/v1/users/%s.json" % username
+        return self.get_url_contents(URL)
+
     def get_build_platforms(self):
         URL = "/api/v1/platforms/platforms_for_build.json"
         return self.get_url_contents(URL)
