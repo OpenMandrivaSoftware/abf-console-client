@@ -644,7 +644,7 @@ class PullRequest(Model):
                 self.from_ref)
 
     @staticmethod
-    def new_pull_request(models, project, title, body, to_ref, from_ref):
+    def new_pull_request(models, project, dest_project, title, body, to_ref, from_ref):
         DATA = {
             'from_project_id': project.id,
             'title': title,
@@ -656,12 +656,12 @@ class PullRequest(Model):
         log.debug(_('Sending pull request: ') + str(DATA))
         try:
             #continue
-            result = models.jsn.new_pull_request({'pull_request': DATA}, project.id)
+            result = models.jsn.new_pull_request({'pull_request': DATA}, dest_project.id)
         except BadRequestError, ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
-        log.info(_("Pull request for %(proj)s from %(from)s to %(to)s has been sent.") % {'proj': project, 'from': from_ref, 'to': to_ref})
+        log.info(_("Pull request from %(proj)s/%(from)s to %(dest_proj)s/%(to)s has been sent.") % {'proj': project, 'from': from_ref, 'to': to_ref, 'dest_proj': dest_project})
 
 class ProjectCreator(Model):
     required_fields = ['name', 'description', 'owner']

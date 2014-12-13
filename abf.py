@@ -21,7 +21,6 @@ gettext.install('abf-console-client')
 from abf.console.config import Config, mkdirs
 from abf.console.log import Log
 cfg = Config()
-projects_cfg = Config(conf_path='~/.abf_projects', main_conf=False)
 log = Log('abf')
 
 from abf.console.misc import *
@@ -104,6 +103,7 @@ def apply_aliases():
 
 def parse_command_line():
     global command_line
+
     parser = argparse.ArgumentParser(description=_('ABF Console Client'))
     parser.add_argument('-v', '--verbose', action='store_true', help=_('be verbose, display even debug messages'))
     parser.add_argument('-c', '--clear-cache', action='store_true', help=_('clear cached information about repositories, platforms, projects, etc.'))
@@ -225,7 +225,8 @@ def parse_command_line():
     parser_build.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
     parser_build.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
                     (BuildList.update_types[0]) )
-    parser_build.add_argument('--skip-spec-check', action='store_true', help=_('Do not check spec file.' ))
+    parser_build.add_argument('--skip-spec-check', action='store_true', help=_('Do not check spec file.'))
+    parser_build.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project buils.'))
     parser_build.set_defaults(func=build)
 
     # chain-build
@@ -266,6 +267,7 @@ def parse_command_line():
     parser_chain_build.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
     parser_chain_build.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
                     (BuildList.update_types[0]) )
+    parser_chain_build.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project buils.'))
     parser_chain_build.set_defaults(func=chain_build)
 
     # mock-urpm
@@ -299,7 +301,8 @@ def parse_command_line():
     parser_pull.add_argument('to_ref', action='store', help=_('destination ref or branch'))
     parser_pull.add_argument('title', action='store', help=_('Request title'))
     parser_pull.add_argument('body', action='store', help=_('Request body'))
-    parser_pull.add_argument('-p', '--project', action='store', help=_('project name (group/project).'))
+    parser_pull.add_argument('-p', '--project', action='store', help=_('Source project name (group/project).'))
+    parser_pull.add_argument('-d', '--dest', action='store', help=_('Destination project name (group/project). If not specified, the source project is used (this can be used to send requests from one project branch to another).'))
     parser_pull.set_defaults(func=pull_request)
 
     # fork project
@@ -725,7 +728,8 @@ def get():
             log.info(_("Branch " + default_branch + " is missing, will use HEAD"))
         os.chdir("..")
 
-    projects_cfg[proj]['location'] = os.path.join(os.getcwd(), project_name)
+    if 'projects_cfg' in globals():
+        projects_cfg[proj]['location'] = os.path.join(os.getcwd(), project_name)
 
 def put():
     log.debug(_('PUT started'))
@@ -857,8 +861,12 @@ def pull_request():
     log.debug(_('PULL REQUEST started'))
 
     proj = get_project(models, must_exist=True, name=command_line.project)
+    if command_line.dest:
+        dest_proj = get_project(models, must_exist=True, name=command_line.dest)
+    else:
+        dest_proj = get_project(models, must_exist=True, name=command_line.project)
 
-    PullRequest.new_pull_request(models, proj, command_line.title, command_line.body, command_line.to_ref, command_line.from_ref)
+    PullRequest.new_pull_request(models, proj, dest_proj, command_line.title, command_line.body, command_line.to_ref, command_line.from_ref)
 
 def fork_project():
     log.debug(_('FORK PROJECT started'))
@@ -1306,8 +1314,9 @@ def build(return_ids=False):
         extra_build_lists
     )
     ids = ','.join([str(i) for i in build_ids])
-    projects_cfg['main']['last_build_ids'] = ids
-    projects_cfg[str(proj)]['last_build_ids'] = ids
+    if 'projects_cfg' in globals():
+        projects_cfg['main']['last_build_ids'] = ids
+        projects_cfg[str(proj)]['last_build_ids'] = ids
 
     if return_ids:
         return build_ids
@@ -1548,8 +1557,22 @@ def clean():
 
 
 if __name__ == '__main__':
+    global projects_cfg
+
     apply_aliases()
     parse_command_line()
+
+    if not hasattr(command_line, "skip_proj_cfg_update"):
+        command_line.skip_proj_cfg_update = False
+
+    # These commands don't read or update projects file, so don't even read it
+    # if one of these commands is launched
+    commands_wo_cache = ['help','alias','put','store','fetch','show','mock-urpm','rpmbuild','publish','copy','pullrequest','fork','create','add','remove','search','info']
+    if command_line.func.__name__ in commands_wo_cache:
+        command_line.skip_proj_cfg_update = True
+
+    if command_line.skip_proj_cfg_update is False:
+        projects_cfg = Config(conf_path='~/.abf_projects', main_conf=False)
 
     if command_line.verbose:
         Log.set_verbose()
