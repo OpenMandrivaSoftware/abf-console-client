@@ -226,7 +226,7 @@ def parse_command_line():
     parser_build.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
                     (BuildList.update_types[0]) )
     parser_build.add_argument('--skip-spec-check', action='store_true', help=_('Do not check spec file.'))
-    parser_build.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project buils.'))
+    parser_build.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
     parser_build.set_defaults(func=build)
 
     # chain-build
@@ -267,7 +267,7 @@ def parse_command_line():
     parser_chain_build.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
     parser_chain_build.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
                     (BuildList.update_types[0]) )
-    parser_chain_build.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project buils.'))
+    parser_chain_build.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
     parser_chain_build.set_defaults(func=chain_build)
 
     # mock-urpm

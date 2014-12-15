@@ -552,8 +552,8 @@ msgid "Do not check spec file."
 msgstr "Не проверять spec-файл на корректность."
 
 #: ../abf.py:229 ../abf.py:270
-msgid "Do not update cache with information about project buils."
-msgstr ""
+msgid "Do not update cache with information about project builds."
+msgstr "Не обновлять кэш с информацией о проектах."
 
 #: ../abf.py:233
 msgid "Initiate a chain of build tasks on ABF."

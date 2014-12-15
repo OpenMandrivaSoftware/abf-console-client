@@ -474,7 +474,7 @@ msgid "Do not check spec file."
 msgstr ""
 
 #: ../abf.py:229 ../abf.py:270
-msgid "Do not update cache with information about project buils."
+msgid "Do not update cache with information about project builds."
 msgstr ""
 
 #: ../abf.py:233
