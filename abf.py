@@ -1,6 +1,9 @@
 #!/usr/bin/python -tt
 # -*- coding: UTF-8 -*-
 
+import warnings
+warnings.filterwarnings('ignore','Module argparse was already imported')
+
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
