@@ -331,6 +331,20 @@ class AbfJson(object):
         URL = "/api/v1/build_lists/%d.json" % bl_id
         return self.get_url_contents(URL)
 
+    def get_list_buildlists(self, prj_id, filter_query, page):
+        prj_id = int(prj_id)
+        URL = "/api/v1/build_lists.json"
+        GET = {'page': page, 'per_page': 10}
+        GET.update(filter_query)
+        return self.get_url_contents(URL, GET=GET)
+
+    def get_project_buildlists(self, prj_id, filter_query, page):
+        prj_id = int(prj_id)
+        URL = "/api/v1/projects/%d/build_lists.json" % prj_id
+        GET = {'page': page, 'per_page': 10}
+        GET.update(filter_query)
+        return self.get_url_contents(URL, GET=GET)
+
     def get_project_by_id(self, p_id):
         p_id = int(p_id)
         URL = "/api/v1/projects/%d.json" % p_id

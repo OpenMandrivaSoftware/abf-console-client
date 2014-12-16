@@ -172,8 +172,8 @@ def parse_command_line():
 
     # show
     parser_show = subparsers.add_parser('show', help=_('show some general information. Bash autocomplete uses it.'))
-    show_choices = ['build-repos', 'build-platforms', 'save-to-repos', 'save-to-platforms']
-    parser_show.add_argument('type', action='store', choices=show_choices,help=_('The type of information to show'))
+    show_choices = ['buildlists', 'build-repos', 'build-platforms', 'save-to-repos', 'save-to-platforms']
+    parser_show.add_argument('type', action='store', nargs='?', choices=show_choices,help=_('The type of information to show'))
     parser_show.add_argument('-p', '--project', action='store',  help=_('Project to show information for (if needed). Format: '
         '"[group/]name". If no group specified, default group will be used.'))
     parser_show.set_defaults(func=show)
@@ -1525,10 +1525,21 @@ def update():
 
 def show():
     log.debug(_('SHOW started'))
-    Log.set_silent()
+    #Log.set_silent()
     t = command_line.type
 
-    if t in ['build-platforms', 'build-repos']:
+    if t is None:
+        proj = get_project(models, must_exist=True, name=command_line.project)
+        for i in proj.required_fields:
+             print (_("%s: %s") % (i, getattr(proj, i)))
+    elif t == 'buildlists':
+        proj = get_project(models, must_exist=True, name=command_line.project)
+        res = models.jsn.get_project_buildlists(proj.id, '' ,1)
+        for bl in res['build_lists']:
+            buildlist = BuildList(models, bl['id'])
+            print buildlist
+
+    elif t in ['build-platforms', 'build-repos']:
         build_platforms = Platform.get_build_platforms(models)
         platform_names = []
         repo_names = []
@@ -1538,9 +1549,9 @@ def show():
             for repo in plat.repositories:
                 repo_names.append(str(repo))
         out = (t == 'build-platforms' and platform_names) or (t == 'build-repos' and repo_names)
+        print ' '.join(out)
 
-    if t in ['save-to-platforms', 'save-to-repos']:
-        proj = get_project(models, must_exist=True, name=command_line.project)
+    elif t in ['save-to-platforms', 'save-to-repos']:
         repos = proj.repositories
         platform_names = []
         repo_names = []
@@ -1549,8 +1560,7 @@ def show():
             repo_names.append(str(repo))
         platform_names = list(set(platform_names))
         out = (t == 'save-to-platforms' and platform_names) or (t == 'save-to-repos' and repo_names)
-    print ' '.join(out)
-
+        print ' '.join(out)
 
 
 def clean():

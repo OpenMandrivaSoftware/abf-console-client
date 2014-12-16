@@ -339,8 +339,8 @@ class Group(Model):
         return self.uname
 
 class Project(Model):
-    required_fields = ['id', 'name', 'created_at', 'updated_at', 'visibility', 'description', 'ancestry', 'has_issues',
-            'has_wiki', 'default_branch', 'is_package', 'owner', 'repositories', 'owner_type', 'maintainer']
+    required_fields = ['id', 'name', 'fullname', 'git_url', 'created_at', 'updated_at', 'visibility', 'description', 'ancestry', 'has_issues',
+            'has_wiki', 'default_branch', 'is_package', 'owner', 'repositories', 'owner_type', 'maintainer', 'project_statistics',]
     filter_dict = { 'id': '*', 'name': '*', 'page': '1' }
 
 
@@ -375,7 +375,14 @@ class Project(Model):
                 self.params_dict['owner'] = User(self.models, init_data=self.init_data['owner'])
             elif self.params_dict['owner_type'] == 'Group':
                 self.params_dict['owner'] = Group(self.models, init_data=self.init_data['owner'])
-
+        if 'ancestry' in self.init_data:
+            ancestry = self.params_dict['ancestry']
+            if ancestry:
+                self.params_dict['ancestry'] = []
+                items = ancestry.split('/')
+                for item in items:
+                    anc_proj=self.models.jsn.get_project_by_id(item)
+                    self.params_dict['ancestry'].append(anc_proj['project']['fullname'])
         if 'created_at' in self.init_data:
             self.params_dict['created_at'] = datetime.fromtimestamp(float(self.init_data['created_at']))
         if 'updated_at' in self.init_data:
