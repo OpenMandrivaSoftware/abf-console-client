@@ -1552,6 +1552,7 @@ def show():
         print ' '.join(out)
 
     elif t in ['save-to-platforms', 'save-to-repos']:
+        proj = get_project(models, must_exist=True, name=command_line.project)
         repos = proj.repositories
         platform_names = []
         repo_names = []
