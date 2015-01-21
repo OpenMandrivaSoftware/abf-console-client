@@ -157,7 +157,7 @@ msgstr "Добавляем проект в репозиторий: "
 #: ../abf/model.py:712
 #, python-format
 msgid "The project %(project)d has been added to repository %(repo)d."
-msgstr "Проек %(project)d был успешно добавлен в репозиторий %(repo)d."
+msgstr "Проект %(project)d был успешно добавлен в репозиторий %(repo)d."
 
 #: ../abf/model.py:722
 msgid "Removing project from repository: "
