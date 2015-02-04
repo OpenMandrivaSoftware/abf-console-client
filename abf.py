@@ -314,6 +314,12 @@ def parse_command_line():
     parser_pull.add_argument('target_project', action='store', nargs='?', help=_('target project group and name (group/project)'))
     parser_pull.set_defaults(func=fork_project)
 
+    # alias project
+    parser_pull = subparsers.add_parser('alias', help=_('Create alias of existing project'))
+    parser_pull.add_argument('source_project', action='store', help=_('project to fork (group/project)'))
+    parser_pull.add_argument('target_project', action='store', nargs='?', help=_('target project group and name (group/project)'))
+    parser_pull.set_defaults(func=alias_project)
+
     # create project from SRPM
     parser_pull = subparsers.add_parser('create', help=_('Create project from SRPM'))
     parser_pull.add_argument('srpm', action='store', help=_('srpm file'))
@@ -877,16 +883,9 @@ def fork_project():
     source_proj = get_project(models, must_exist=True, name=command_line.source_project)
 
     if command_line.target_project:
-        tmp = command_line.target_project.split('/')
-        if len(tmp) > 2:
-            log.error(_('Specify a project name as "group_name/project_name" or just "project_name"'))
-            exit(1)
-        elif len(tmp) == 1:
-            target_name = tmp[0]
-            target_group = default_group
-        elif len(tmp) == 2:
-            target_group = tmp[0]
-            target_name = tmp[1]
+        tmp = get_project_name_only(True, command_line.target_project)
+        target_group = tmp[0]
+        target_name = tmp[1]
     else:
         target_group = default_group
         target_name = source_proj.name
@@ -898,7 +897,7 @@ def fork_project():
         owner_id = owner_group[0].id
     elif owner_user:
         # ABF doesn't seem to accept forks to platforms of other users
-        print(_("No group named '%s', will fork to you personal platform") % target_group)
+        print(_("No group named '%s', will fork to your personal platform") % target_group)
 #        owner_id = owner_user[0].id
         owner_id = 0
     else:
@@ -906,6 +905,35 @@ def fork_project():
         return 1
 
     ProjectCreator.fork_project(models, source_proj.id, owner_id, target_name)
+
+def alias_project():
+    log.debug(_('ALIAS PROJECT started'))
+
+    source_proj = get_project(models, must_exist=True, name=command_line.source_project)
+
+    if command_line.target_project:
+        tmp = get_project_name_only(True, command_line.target_project)
+        target_group = tmp[0]
+        target_name = tmp[1]
+    else:
+        target_group = default_group
+        target_name = source_proj.name
+
+    owner_group = Group.search(models, target_group)
+    owner_user = User.search(models, target_group)
+
+    if owner_group:
+        owner_id = owner_group[0].id
+    elif owner_user:
+        # ABF doesn't seem to accept forks to platforms of other users
+        print(_("No group named '%s', will create alias in your personal platform") % target_group)
+#        owner_id = owner_user[0].id
+        owner_id = 0
+    else:
+        print(_("Incorrect target group"))
+        return 1
+
+    ProjectCreator.alias_project(models, source_proj.id, owner_id, target_name)
 
 
 def create():

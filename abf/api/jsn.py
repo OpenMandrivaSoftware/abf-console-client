@@ -381,6 +381,10 @@ class AbfJson(object):
         URL = "/api/v1/projects/%d/fork.json" % proj_id
         return self.get_url_contents(URL, GET=None, POST=data)
 
+    def alias_project(self, data, proj_id):
+        URL = "/api/v1/projects/%d/alias.json" % proj_id
+        return self.get_url_contents(URL, GET=None, POST=data)
+
     def add_project_to_repo(self, data, repo_id):
         URL = "/api/v1/repositories/%d/add_project.json" % repo_id
         return self.get_url_contents(URL, GET=None, POST=None, PUT=data)
