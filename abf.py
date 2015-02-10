@@ -130,6 +130,7 @@ def parse_command_line():
     parser_get.add_argument('project', action='store', help=_('project name. ([group/]project). If no group specified, '
             'it\'s assumed to be your default group.'))
     parser_get.add_argument('-b', '--branch', action='store', help=_('branch to checkout'))
+    parser_get.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
     parser_get.set_defaults(func=get)
 
     # put
