@@ -170,6 +170,12 @@ def parse_command_line():
     parser_fetch.add_argument('-o', '--only', action='append', help=_('Limit the list of downloaded files to this file name(s). This option can be specified more than once.'))
     parser_fetch.set_defaults(func=fetch)
 
+    # remote
+    parser_remote = subparsers.add_parser('remote', help=_('Add remote Git repository and fetch it.'))
+    parser_remote.add_argument('remote_group', action='store', help=_('ABF group to fetch from. This value will be also used as the name of remote repository.'))
+    parser_remote.add_argument('remote_name', nargs='?', action='store', help=_('Project to fetch (by default the same project name is used as the current one).'))
+    parser_remote.set_defaults(func=remote)
+
     # show
     parser_show = subparsers.add_parser('show', help=_('show some general information. Bash autocomplete uses it.'))
     show_choices = ['buildlists', 'build-repos', 'build-platforms', 'save-to-repos', 'save-to-platforms']
@@ -801,6 +807,28 @@ def fetch():
         log.error(_('Invalid yml file %(filename)s!\nProblem in line %(line)d column %(column)d: %(problem)s') % {'filename': path, 'line': ex.problem_mark.line, 'column': ex.problem_mark.column, 'problem': ex.problem})
     except yaml.composer.ComposerError, ex:
         log.error(_('Invalid yml file %(filename)s!\n%(exception)s') % {'filename': path, 'exception': ex})
+
+def remote():
+    log.debug(_('REMOTE started'))
+
+    path = get_root_git_dir()
+    if not path:
+        log.error(_("You have to be in a git repository directory"))
+        exit(1)
+    owner_name, project_name = get_project_name()
+    if project_name is None:
+        log.error(_("Fail to detect project name"))
+        exit(1)
+
+    remote_group = command_line.remote_group
+    if command_line.remote_name:
+        project_name = command_line.remote_name
+
+    uri = "%s/%s.git" % (cfg['user']['git_uri'], remote_group + "/" + project_name)
+    cmd = ['git', 'remote', 'add', remote_group, uri]
+    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+    cmd = ['git', 'fetch', remote_group]
+    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
 
 def store():
     log.debug(_('STORE started'))
