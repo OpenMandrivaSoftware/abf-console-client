@@ -758,6 +758,41 @@ class ProjectCreator(Model):
             exit(1)
         log.info(_("The project has been forked."))
 
+    @staticmethod
+    def alias_project(models, proj_id, owner_id, target_name):
+        if owner_id > 0:
+            DATA = {
+                'fork_name': target_name,
+                'group_id': owner_id,
+                }
+        else:
+            DATA = {
+                'fork_name': target_name,
+                }
+
+        log.debug(_('Creating alias for a project: ') + str(DATA))
+        try:
+            result = models.jsn.alias_project(DATA, proj_id)
+        except BadRequestError, ex:
+            log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
+            exit(1)
+        log.info(_("The project alias has been created."))
+
+    @staticmethod
+    def destroy_project(models, proj_id):
+        DATA = {
+            'id': proj_id,
+            }
+        log.debug(_('Destroying project: ') + str(proj_id))
+        try:
+            result = models.jsn.destroy_project(DATA, proj_id)
+        except BadRequestError, ex:
+            log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
+            exit(1)
+        log.info(_("The project has been destroyed."))
+
 class Models(object):
     _instance = {}
     def __new__(cls, abf_url, file_store_url, login, password, *args, **kwargs):
