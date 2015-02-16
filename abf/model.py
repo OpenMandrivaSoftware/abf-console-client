@@ -793,6 +793,7 @@ class ProjectCreator(Model):
             exit(1)
         log.info(_("The project has been destroyed."))
 
+
 class Models(object):
     _instance = {}
     def __new__(cls, abf_url, file_store_url, login, password, *args, **kwargs):

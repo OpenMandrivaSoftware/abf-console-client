@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-13 22:06+0400\n"
+"POT-Creation-Date: 2015-02-13 23:46+0400\n"
 "PO-Revision-Date: 2014-09-29 17:14+0400\n"
 "Last-Translator: Denis Silakov <denis.silakov@rosalab.ru>\n"
 "Language-Team: Russian\n"
@@ -84,13 +84,13 @@ msgstr "Чтение данных о проекте "
 msgid "Invalid key: "
 msgstr "Неверный ключ: "
 
-#: ../abf/model.py:446
+#: ../abf/model.py:453
 msgid "Updating project settings: "
 msgstr "Обновляем настройки проекта: "
 
-#: ../abf/model.py:450 ../abf/model.py:611 ../abf/model.py:630
-#: ../abf/model.py:661 ../abf/model.py:694 ../abf/model.py:709
-#: ../abf/model.py:726 ../abf/model.py:749
+#: ../abf/model.py:457 ../abf/model.py:618 ../abf/model.py:637
+#: ../abf/model.py:668 ../abf/model.py:701 ../abf/model.py:716
+#: ../abf/model.py:733 ../abf/model.py:756 ../abf/model.py:777
 #, python-format
 msgid ""
 "Sorry, but something went wrong and request I've sent to ABF is bad. Please, "
@@ -103,20 +103,20 @@ msgstr ""
 "аргументов, с которыми был запущен клиент, и данные запроса:\n"
 "%s"
 
-#: ../abf/model.py:453
+#: ../abf/model.py:460
 #, python-format
 msgid "Successfully updated settings of project %s."
 msgstr "Настройки проекта %s успешно обновлены."
 
-#: ../abf/model.py:500
+#: ../abf/model.py:507
 msgid "Reading buildlist "
 msgstr "Чтение данных о сборочном листе "
 
-#: ../abf/model.py:607
+#: ../abf/model.py:614
 msgid "Sending the build task: "
 msgstr "Чтение данных о сборочном задании "
 
-#: ../abf/model.py:614
+#: ../abf/model.py:621
 #, python-format
 msgid ""
 "Task %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has been sent. Build task id "
@@ -125,99 +125,108 @@ msgstr ""
 "Сборочное задание %(proj)s|%(plat)s|%(save_repo)s|%(arch)s успешно запущено. "
 "Идентификатор задания - %(id)s"
 
-#: ../abf/model.py:621
+#: ../abf/model.py:628
 #, python-format
 msgid "Publishing the project %s..."
 msgstr "Публикуется проект %s..."
 
-#: ../abf/model.py:656
+#: ../abf/model.py:663
 msgid "Sending pull request: "
 msgstr "Посылается запрос на изменение (pull request): "
 
-#: ../abf/model.py:664
+#: ../abf/model.py:671
 #, python-format
 msgid ""
 "Pull request from %(proj)s/%(from)s to %(dest_proj)s/%(to)s has been sent."
 msgstr ""
-"Запрос на изменений для проекта %(dest_proj)s/%(to)s из %(proj)s/%(from)s успешно создан."
+"Запрос на изменений для проекта %(dest_proj)s/%(to)s из %(proj)s/%(from)s "
+"успешно создан."
 
-#: ../abf/model.py:690
+#: ../abf/model.py:697
 msgid "Creating project: "
 msgstr "Создается проект: "
 
-#: ../abf/model.py:697
+#: ../abf/model.py:704
 #, python-format
 msgid "The project %(name)s for owner %(owner)d has been created."
 msgstr "Проект %(name)s для владельца %(owner)d успешно создан."
 
-#: ../abf/model.py:705
+#: ../abf/model.py:712
 msgid "Adding project to repository: "
 msgstr "Добавляем проект в репозиторий: "
 
-#: ../abf/model.py:712
+#: ../abf/model.py:719
 #, python-format
 msgid "The project %(project)d has been added to repository %(repo)d."
-msgstr "Проек %(project)d был успешно добавлен в репозиторий %(repo)d."
+msgstr "Проект %(project)d был успешно добавлен в репозиторий %(repo)d."
 
-#: ../abf/model.py:722
+#: ../abf/model.py:729
 msgid "Removing project from repository: "
 msgstr "Удаляем проект из репозитория: "
 
-#: ../abf/model.py:729
+#: ../abf/model.py:736
 msgid "The project has been removed from repository."
 msgstr "Проект был успешно удален из репозитория."
 
-#: ../abf/model.py:745
+#: ../abf/model.py:752
 msgid "Forking project: "
 msgstr "Клонируем проект: "
 
-#: ../abf/model.py:752
+#: ../abf/model.py:759
 msgid "The project has been forked."
 msgstr "Проект был успешно склонирован."
 
-#: ../abf/model.py:768
+#: ../abf/model.py:773
+msgid "Creating alias for a project: "
+msgstr "Создается алиас для проекта: "
+
+#: ../abf/model.py:780
+msgid "The project alias has been created."
+msgstr "Алиас для проекта был успешно создан."
+
+#: ../abf/model.py:796
 msgid "Initializing models for "
 msgstr "Инициализируем модели для "
 
-#: ../abf.py:44
+#: ../abf.py:47
 msgid "TEST started"
 msgstr "Запускается задача TEST"
 
-#: ../abf.py:81
+#: ../abf.py:84
 msgid "Datamodel seems to work fine"
 msgstr "Модель данных функционирует корректно"
 
-#: ../abf.py:107
+#: ../abf.py:110
 msgid "ABF Console Client"
 msgstr "Консольный клиент ABF"
 
-#: ../abf.py:108 ../abf.py:373
+#: ../abf.py:111 ../abf.py:389
 msgid "be verbose, display even debug messages"
 msgstr "подробный режим, выводить отладочные сообщения"
 
-#: ../abf.py:109
+#: ../abf.py:112
 msgid "clear cached information about repositories, platforms, projects, etc."
 msgstr ""
 "очистить кэшированную информацию о репозиториях, платформах, проектах и "
 "прочем"
 
-#: ../abf.py:110
+#: ../abf.py:113
 msgid "Do not display info messages"
 msgstr "Не показывать информационные сообщения"
 
-#: ../abf.py:114
+#: ../abf.py:117
 msgid "show a help for command"
 msgstr "показать справку для команды"
 
-#: ../abf.py:115
+#: ../abf.py:118
 msgid "a command to show help for"
 msgstr "команда, для которой надо показать справку"
 
-#: ../abf.py:119
+#: ../abf.py:122
 msgid "Manage aliases"
 msgstr "Управление синонимами"
 
-#: ../abf.py:122
+#: ../abf.py:125
 msgid ""
 "name and alias (not quoted, e. g. \"abf alias add sg search groups\") for "
 "adding, only name for removing."
@@ -225,11 +234,11 @@ msgstr ""
 "имя и тело синонима без кавычек (например, \"abf alias add sg search groups"
 "\") для добавления, только имя для удаления."
 
-#: ../abf.py:126
+#: ../abf.py:129
 msgid "clone a project from ABF"
 msgstr "клонировать проект с ABF"
 
-#: ../abf.py:127
+#: ../abf.py:130
 msgid ""
 "project name. ([group/]project). If no group specified, it's assumed to be "
 "your default group."
@@ -237,11 +246,15 @@ msgstr ""
 "имя проекта ([группа/]проект). Если группа не указана, используется группа "
 "по умолчанию из настроек консольного клиента."
 
-#: ../abf.py:129
+#: ../abf.py:132
 msgid "branch to checkout"
 msgstr "ветка, на которую надо переключиться"
 
-#: ../abf.py:133
+#: ../abf.py:133 ../abf.py:239 ../abf.py:280
+msgid "Do not update cache with information about project builds."
+msgstr "Не обновлять кэш с информацией о проектах."
+
+#: ../abf.py:137
 msgid ""
 "Upload large binary files to File-Store and update (or create) .abf.yml "
 "file. Can also commit and push changes."
@@ -250,7 +263,7 @@ msgstr ""
 "файл .abf.yml. При использовании оции -m, также зафиксировать все имеющиеся "
 "в Git-репозитории изменения и отправить их на сервер."
 
-#: ../abf.py:134
+#: ../abf.py:138
 msgid ""
 "With this option specified, \"git add --all\", \"git commit -m MSG\" and "
 "\"git push\" will be executed."
@@ -258,20 +271,20 @@ msgstr ""
 "При указании этой опции, будут выполнены команды \"git add --all\", \"git "
 "commit -m MSG\" и \"git push\"."
 
-#: ../abf.py:135
+#: ../abf.py:139
 msgid "The minimal file size to upload to File-Store. Default is 0B."
 msgstr ""
 "Минимальный размер файла для загрузки в файловое хранилище. По умолчанию - "
 "0B."
 
-#: ../abf.py:137
+#: ../abf.py:141
 msgid ""
 "By default files are being removed on uploading. Override this behavior."
 msgstr ""
 "По умолчанию файлы удаляются из текущей директории после загрузки в файловое "
 "хранилище. Эта опция отменяет такое поведение."
 
-#: ../abf.py:138
+#: ../abf.py:142
 msgid ""
 "By default, console client analyzes spec file and tries to detect which "
 "files located in the current folder are really used by the project and "
@@ -280,10 +293,10 @@ msgid ""
 msgstr ""
 "По умолчанию, консольный клиент анализирует spec-файл и загружает в файловое "
 "хранилище только те файлы, которые в нем используются. Если указать эту "
-"опцию, то в файловое хранилище будут загружены все бинарные файлы из "
-"текущей директории."
+"опцию, то в файловое хранилище будут загружены все бинарные файлы из текущей "
+"директории."
 
-#: ../abf.py:144
+#: ../abf.py:148
 msgid ""
 "Upload a given file to File-Store. Prints a sha1 hash or error message (with "
 "non-zero return code)."
@@ -291,15 +304,15 @@ msgstr ""
 "Загрузить указанный файл в файловое хранилище. В случае успеха, вывести хэш-"
 "сумму (sha1) загруженного файла."
 
-#: ../abf.py:145
+#: ../abf.py:149
 msgid "Path to file"
 msgstr "Путь к файлу"
 
-#: ../abf.py:149
+#: ../abf.py:153
 msgid "Update project settings."
 msgstr "Изменить настройки проекта."
 
-#: ../abf.py:150 ../abf.py:174 ../abf.py:184
+#: ../abf.py:154 ../abf.py:184 ../abf.py:194
 msgid ""
 "Project to show information for (if needed). Format: \"[group/]name\". If no "
 "group specified, default group will be used."
@@ -307,31 +320,31 @@ msgstr ""
 "Проект, для которого необходимо показать информацию. Формат: \"[группа/]имя"
 "\". Если группа не указана, используется значение по умоллчанию из настроек."
 
-#: ../abf.py:152
+#: ../abf.py:156
 msgid "New project name."
 msgstr "Новое имя проекта."
 
-#: ../abf.py:153
+#: ../abf.py:157
 msgid "Project description."
 msgstr "Версия проекта."
 
-#: ../abf.py:154
+#: ../abf.py:158
 msgid "Project visibility. Please specify \"open\" or \"hidden\"."
 msgstr "Видимость (доступность) проекта. Укажите \"open\" или \"hidden\"."
 
-#: ../abf.py:155
+#: ../abf.py:159
 msgid "Is project a package. Please specify \"true\" or \"false\"."
 msgstr "Является ли проект пакетом. Укажите \"true\" или \"false\"."
 
-#: ../abf.py:156
+#: ../abf.py:160
 msgid "Project maintainer. You can specify either maintainer id or login."
 msgstr "Мэйнтейнер проекта. Можно указать имя либо идентификатор в ABF."
 
-#: ../abf.py:157
+#: ../abf.py:161
 msgid "Default branch for the project Git repository."
 msgstr "Ветка по умолчанию для Git-репозитория проекта."
 
-#: ../abf.py:158
+#: ../abf.py:162
 msgid ""
 "Should project issue tracker be enabled. Please specify \"true\" or \"false"
 "\"."
@@ -339,11 +352,11 @@ msgstr ""
 "Следует ли включить трекер задач для проекта. Укажите \"true\" или \"false\"."
 "\"."
 
-#: ../abf.py:159
+#: ../abf.py:163
 msgid "Should project wiki be enabled. Please specify \"true\" or \"false\"."
 msgstr "Следует ли включить вики для проекта. Укажите \"true\" или \"false\"."
 
-#: ../abf.py:161
+#: ../abf.py:165
 msgid ""
 "Enable/disable publishing 32bit packages into 64bit repository. Please "
 "specify \"true\" or \"false\"."
@@ -351,7 +364,7 @@ msgstr ""
 "Включить публикацию 32битных пакетов в 64битный репозиторий. Укажите \"true"
 "\" или \"false\"."
 
-#: ../abf.py:165
+#: ../abf.py:169
 msgid ""
 "Download all the files listed in .abf.yml or file with given hash from File-"
 "Store to local directory."
@@ -359,11 +372,11 @@ msgstr ""
 "Загрузить все файлы, указанные в .abf.yml, или файл с заданной хэш-суммой из "
 "файлового хранилища в текущую директорию."
 
-#: ../abf.py:166
+#: ../abf.py:170
 msgid "Download file with given hash"
 msgstr "Скачать файл с заданной хэш-суммой"
 
-#: ../abf.py:167
+#: ../abf.py:171
 msgid ""
 "Limit the list of downloaded files to this file name(s). This option can be "
 "specified more than once."
@@ -371,17 +384,37 @@ msgstr ""
 "Загржать только файлы с именами, указанных в этой опции. Опция может быть "
 "использована несколтко раз."
 
-#: ../abf.py:171
+#: ../abf.py:175
+msgid "Add remote Git repository and fetch it."
+msgstr "Добить удаленный Git-репозиторий и получить его содержимое."
+
+#: ../abf.py:176
+msgid ""
+"ABF group to fetch from. This value will be also used as the name of remote "
+"repository."
+msgstr ""
+"Группа, к которой принадлежит удаленный репозиторий. Это же имя будет "
+"использовано как имя-алиас репозитория."
+
+#: ../abf.py:177
+msgid ""
+"Project to fetch (by default the same project name is used as the current "
+"one)."
+msgstr ""
+"Имя удаленного репозитория на ABF. По умолчанию используется такое же имя, "
+"как у проекта ,в директори которого вы находитесь."
+
+#: ../abf.py:181
 msgid "show some general information. Bash autocomplete uses it."
 msgstr ""
 "отображение общей информации. Используется механизмами автодополнения "
 "командной оболочки."
 
-#: ../abf.py:173 ../abf.py:183
+#: ../abf.py:183 ../abf.py:193
 msgid "The type of information to show"
 msgstr "Тип информации для отображения"
 
-#: ../abf.py:179
+#: ../abf.py:189
 msgid ""
 "tool can remember the project location and use it for some reasons (abfcd, "
 "etc.)."
@@ -390,7 +423,7 @@ msgstr ""
 "различных целей (например, для перехода в директорию проекта с помощью "
 "abfcd)."
 
-#: ../abf.py:180
+#: ../abf.py:190
 msgid ""
 "Every interaction with git repository (build, get, put, etc.) updates the "
 "cached location of the project (overriding an existing one if needed). For "
@@ -402,7 +435,7 @@ msgstr ""
 "при необходимости).Вы можете перейти в директорию любого проекта, для "
 "которого сохраено местооложения, с помощью команды \"abfcf <имя_проекта>\"."
 
-#: ../abf.py:186
+#: ../abf.py:196
 msgid ""
 "Directory to update locations for. It should be a git repository for \"update"
 "\" and any directory for \"update-recursive\". If not specified - the "
@@ -413,11 +446,11 @@ msgstr ""
 "\"update\" и произвольная директория в случае команды \"update-recirsive\". "
 "Если этот параметр не указан, используется текущая директория. "
 
-#: ../abf.py:191
+#: ../abf.py:201
 msgid "Initiate a build task on ABF."
 msgstr "Запустить сборочное задание на ABF"
 
-#: ../abf.py:192
+#: ../abf.py:202
 msgid ""
 "NOTES:\n"
 "API takes git commit hash to build. So client have to resolve it.\n"
@@ -445,7 +478,7 @@ msgstr ""
 "Git-репозитория проекта, то будет использован последний коммит текущей ветки "
 "этого проекта.\n"
 
-#: ../abf.py:202
+#: ../abf.py:212
 msgid ""
 "project name ([group/]project). If no group specified, it is assumed to be "
 "your default group. If the option is not specified and you are in a git "
@@ -456,19 +489,19 @@ msgstr ""
 "директории Git-репозитория, то программа попробует автоматически определить "
 "значение для опции."
 
-#: ../abf.py:205 ../abf.py:246
+#: ../abf.py:215 ../abf.py:256
 msgid "branch to build."
 msgstr "ветка, которую надо использвовать для сборки."
 
-#: ../abf.py:206 ../abf.py:247
+#: ../abf.py:216 ../abf.py:257
 msgid "tag to build."
 msgstr "тэг, который надо использвовать для сборки."
 
-#: ../abf.py:207 ../abf.py:248
+#: ../abf.py:217 ../abf.py:258
 msgid "commit sha hash to build."
 msgstr "sha-хэш коммита, который надо использвовать для сборки."
 
-#: ../abf.py:208 ../abf.py:250
+#: ../abf.py:218 ../abf.py:260
 msgid ""
 "repository to save results to ([platform/]repository). If no platform part "
 "specified, it is assumed to be \"<default_group>_personal\". If this option "
@@ -479,7 +512,7 @@ msgstr ""
 "\"<группа_по_умолчанию>_personal\". Если опция не указана совсем, "
 "используется значение \"<группа_по_умолчанию>_personal/main\""
 
-#: ../abf.py:211 ../abf.py:253
+#: ../abf.py:221 ../abf.py:263
 msgid ""
 "architectures to build, can be set more than once. If not set - use all the "
 "available architectures."
@@ -488,7 +521,7 @@ msgstr ""
 "несолько раз. Есл опция не указана, сборка запускается для всех архитектур "
 "целевой платформы."
 
-#: ../abf.py:213 ../abf.py:255
+#: ../abf.py:223 ../abf.py:265
 msgid ""
 "repositories to build with ([platform/]repository). Can be set more than "
 "once. If no platform part specified, it is assumed to be your "
@@ -501,7 +534,7 @@ msgstr ""
 "при запуске сборки не указано ни одного реозитория, используется только "
 "репозиторий \"main\" целевой платформы."
 
-#: ../abf.py:216 ../abf.py:258
+#: ../abf.py:226 ../abf.py:268
 msgid ""
 "build list whose container should be used during the build. Can be specified "
 "more than once."
@@ -509,57 +542,53 @@ msgstr ""
 "подключить контейнеры указанного сборочного задания. Опция может быть "
 "указана более одного раза."
 
-#: ../abf.py:217 ../abf.py:259
+#: ../abf.py:227 ../abf.py:269
 msgid "deprecated synonym for --auto-publish-status=default."
 msgstr "устаревший синоним для --auto-publish-status=default."
 
-#: ../abf.py:218 ../abf.py:260
+#: ../abf.py:228 ../abf.py:270
 #, python-format
 msgid "enable automatic publishing. Default is \"%s\"."
 msgstr "включить автоматическую публикацию. Значение по умолчанию: \"%s\"."
 
-#: ../abf.py:220 ../abf.py:262
+#: ../abf.py:230 ../abf.py:272
 msgid "do not use personal repository to resolve dependencies."
 msgstr "не использовать персональный репозиторий для разрешения зависимостей."
 
-#: ../abf.py:221 ../abf.py:263
+#: ../abf.py:231 ../abf.py:273
 msgid "Include \"testing\" subrepository."
 msgstr "Подключить репозиторий 'testing'."
 
-#: ../abf.py:222 ../abf.py:264
+#: ../abf.py:232 ../abf.py:274
 msgid "Do not launch comprehensive tests."
 msgstr "Не запускать дополнительные тесты."
 
-#: ../abf.py:223 ../abf.py:265
+#: ../abf.py:233 ../abf.py:275
 msgid "enable automatic creation of container"
 msgstr "включить автоматическое создание контейнера"
 
-#: ../abf.py:224 ../abf.py:266
+#: ../abf.py:234 ../abf.py:276
 msgid "use cached chroot for the build"
 msgstr "использовать для сборки кэшированное окружение"
 
-#: ../abf.py:225 ../abf.py:267
+#: ../abf.py:235 ../abf.py:277
 msgid "save build chroot in case of failure"
 msgstr "сохранить сборочное окружение в случае ошибки сборки"
 
-#: ../abf.py:226 ../abf.py:268
+#: ../abf.py:236 ../abf.py:278
 #, python-format
 msgid "Update type. Default is \"%s\"."
 msgstr "Тип обновления По умолчанию используется \"%s\"."
 
-#: ../abf.py:228
+#: ../abf.py:238
 msgid "Do not check spec file."
 msgstr "Не проверять spec-файл на корректность."
 
-#: ../abf.py:229 ../abf.py:270
-msgid "Do not update cache with information about project builds."
-msgstr "Не обновлять кэш с информацией о проектах."
-
-#: ../abf.py:233
+#: ../abf.py:243
 msgid "Initiate a chain of build tasks on ABF."
 msgstr "Запустить цепочку сборочных заданий на ABF"
 
-#: ../abf.py:234
+#: ../abf.py:244
 msgid ""
 "Project name ([group/]project). If no group specified, it is assumed to be "
 "your default group. You can specify several projects to be built one after "
@@ -587,7 +616,7 @@ msgstr ""
 "создание контейнеров, то запуск для сборок очередного звена будут "
 "подключаться контейнеры всех сборок всех предыдущих звеньев."
 
-#: ../abf.py:242
+#: ../abf.py:252
 msgid ""
 "File with project names. You can omit project names in command line and "
 "provide a file with project names instead. The file will be read line by "
@@ -602,21 +631,21 @@ msgstr ""
 "одной строчке, будут запускаться параллельно. Имена проектов в строке можно "
 "отделять друг от друга двоеточием либо пробелами."
 
-#: ../abf.py:249
+#: ../abf.py:259
 msgid "number of seconds to sleep between successive checks of build status."
 msgstr ""
 "число секунд, которые необходимо выждать перед очередной проверкой статуса "
 "сборок."
 
-#: ../abf.py:274
+#: ../abf.py:284
 msgid "Build a project locally using mock-urpm."
 msgstr "Собрать проект локально с использованием mock-urpm."
 
-#: ../abf.py:274 ../abf.py:281
+#: ../abf.py:284 ../abf.py:291
 msgid "No checkouts will be made,the current git repository state will be used"
 msgstr "Для сборки используется текузее состояние Git-репозитория"
 
-#: ../abf.py:276
+#: ../abf.py:286
 #, python-format
 msgid ""
 "A config template to use. Specify one of the config names from %s. Directory "
@@ -626,36 +655,36 @@ msgstr ""
 "один из файлов из директории %s. Путь к директории указывать не надо. Если "
 "файл не указан, используется \"default.cfg\""
 
-#: ../abf.py:281
+#: ../abf.py:291
 msgid "Build a project locally using rpmbuild."
 msgstr "Собрать проект локально с использованием rpmbuild."
 
-#: ../abf.py:283
+#: ../abf.py:293
 msgid "Build src.rpm (s), rpm (b) or both (a)"
 msgstr "Собрать src.rpm (s), rpm (b) или оба вида пакетов (a) "
 
-#: ../abf.py:287
+#: ../abf.py:297
 msgid "Publish the task that have already been built."
 msgstr "Опубликовать успешно собранное сборочное задание."
 
-#: ../abf.py:288
+#: ../abf.py:298
 msgid "The IDs of tasks to publish."
 msgstr "Идентификаторы (ID) сборочных заданий для публикации."
 
-#: ../abf.py:292
+#: ../abf.py:302
 msgid "Copy all the files from SRC_BRANCH to DST_BRANCH"
 msgstr "Копировать все файлы из SRC_BRANCH в DST_BRANCH"
 
-#: ../abf.py:293
+#: ../abf.py:303
 msgid "source branch"
 msgstr "ветка-источник"
 
-#: ../abf.py:294
+#: ../abf.py:304
 msgid ""
 "destination branch. If not specified, it's assumed to be the current branch"
 msgstr "ветка-приемник. Если не указана, используется текущая ветка"
 
-#: ../abf.py:295
+#: ../abf.py:305
 msgid ""
 "Create a tar.gz from the src_branch and put this archive and spec file to "
 "dst_branch"
@@ -663,73 +692,77 @@ msgstr ""
 "Создать архив в формате tar.gz из ветки src_branch и положить этот архив "
 "вместе со spec-файлом в ветку dst_ranch"
 
-#: ../abf.py:299
+#: ../abf.py:309
 msgid "Send a pull request from SRC_BRANCH to DST_BRANCH"
 msgstr ""
 "Отправить запрос на изменение (pull request) из SRC_BRANCH в DST_BRANCH"
 
-#: ../abf.py:300
+#: ../abf.py:310
 msgid "source ref or branch"
 msgstr "ветка-источник"
 
-#: ../abf.py:301
+#: ../abf.py:311
 msgid "destination ref or branch"
 msgstr "ветка-приемник"
 
-#: ../abf.py:302
+#: ../abf.py:312
 msgid "Request title"
 msgstr "Краткое название запроса"
 
-#: ../abf.py:303
+#: ../abf.py:313
 msgid "Request body"
 msgstr "Описание изменений"
 
-#: ../abf.py:304
+#: ../abf.py:314
 msgid "Source project name (group/project)."
 msgstr "Имя проекта-источника (группа/проект)."
 
-#: ../abf.py:305
+#: ../abf.py:315
 msgid ""
 "Destination project name (group/project). If not specified, the source "
 "project is used (this can be used to send requests from one project branch "
 "to another)."
 msgstr ""
 "Имя проекта-приемника (владелец/проект). Если не указано, используется "
-"проект-источник (что может быть использовано для переносов изменений "
-"из одной ветки проекта в другую)."
+"проект-источник (что может быть использовано для переносов изменений из "
+"одной ветки проекта в другую)."
 
-#: ../abf.py:309
+#: ../abf.py:319
 msgid "Fork existing project"
 msgstr "Клонировать существующий проект"
 
-#: ../abf.py:310
+#: ../abf.py:320 ../abf.py:326
 msgid "project to fork (group/project)"
 msgstr "проект для клонирования (группа/проект)."
 
-#: ../abf.py:311
+#: ../abf.py:321 ../abf.py:327
 msgid "target project group and name (group/project)"
 msgstr "группа и имя нового проекта (группа/проект)"
 
-#: ../abf.py:315
+#: ../abf.py:325
+msgid "Create alias of existing project"
+msgstr "Создать алиас для существующего проекта"
+
+#: ../abf.py:331
 msgid "Create project from SRPM"
 msgstr "Создать проект из SRPM"
 
-#: ../abf.py:316
+#: ../abf.py:332
 msgid "srpm file"
 msgstr "файл srpm"
 
-#: ../abf.py:317
+#: ../abf.py:333
 msgid "who will own the project; default_owner is used by default"
 msgstr ""
 "кто будет владельцем проекта; по умолчанию используется значение "
 "default_owner"
 
-#: ../abf.py:318
+#: ../abf.py:334
 msgid "create additional branch; can be set more than once."
 msgstr ""
 "создать дополнительную ветку; параметр может быть указан несколько раз."
 
-#: ../abf.py:319
+#: ../abf.py:335
 msgid ""
 "Do not automatically create branch set as default in user config (if it is "
 "set to smth different from \"master\")."
@@ -737,27 +770,27 @@ msgstr ""
 "Не создавать автоматически ветку, указанную как ветка по умолчанию в "
 "конфигурационном файле (только если эта ветка отлична от \"master\")."
 
-#: ../abf.py:323
+#: ../abf.py:339
 msgid "Add project to specified repository"
 msgstr "Добавить проект в указанный репозиторий"
 
-#: ../abf.py:324 ../abf.py:330
+#: ../abf.py:340 ../abf.py:346
 msgid "target repository ([platform/]repository)"
 msgstr "целевой репозиторий ([платформа/]репозиторий)"
 
-#: ../abf.py:325 ../abf.py:331
+#: ../abf.py:341 ../abf.py:347
 msgid "project name (group/project)."
 msgstr "имя проекта (группа/проект)."
 
-#: ../abf.py:329
+#: ../abf.py:345
 msgid "Remove project from specified repository"
 msgstr "Удалить проект из указанного репозитория"
 
-#: ../abf.py:335
+#: ../abf.py:351
 msgid "get a build-task status"
 msgstr "получить статус сборочного задания"
 
-#: ../abf.py:335
+#: ../abf.py:351
 msgid ""
 "If a project specified  or you are in a git repository - try to get the IDs "
 "from the last build task sent for this project. If you are not in a git "
@@ -769,23 +802,23 @@ msgstr ""
 "для этого проекта. В противном случае, будут использованы идентификаторы "
 "последних сборочных  заданий, запущенных с помощью консольного клиента."
 
-#: ../abf.py:339
+#: ../abf.py:355
 msgid "build list ID"
 msgstr "идентификатор (ID) сборочного задания"
 
-#: ../abf.py:340
+#: ../abf.py:356
 msgid "Project. If last IDs for this project can be found - use them"
 msgstr ""
 "Проект. Если для этого проекта есть сохраненные идентификаторы сборочных "
 "заданий, использовать их"
 
-#: ../abf.py:341
+#: ../abf.py:357
 msgid "Show one-line information including id, project, arch and status"
 msgstr ""
 "Показать краткую информацию (в одну строку) - идентификатор, проект, "
 "архитектуру и статус"
 
-#: ../abf.py:346
+#: ../abf.py:362
 msgid ""
 "Analyze spec file and show missing and unnecessary files from the current "
 "git repository directory."
@@ -793,35 +826,35 @@ msgstr ""
 "Проанализировать spec-файл и сообщить об отсутсвующих и неиспользуемых "
 "файлах в Git-репозитории"
 
-#: ../abf.py:348
+#: ../abf.py:364
 msgid "automatically remove all the unnecessary files"
 msgstr "автоматически удалять все неиспользуемые файлы"
 
-#: ../abf.py:352
+#: ../abf.py:368
 msgid "Search for something on ABF."
 msgstr "Поиск среди сущностей ABF"
 
-#: ../abf.py:352
+#: ../abf.py:368
 msgid "NOTE: only first 100 results of any request will be shown"
 msgstr "ВНИМАНИЕ: отображаются только первые 100 результатов"
 
-#: ../abf.py:354
+#: ../abf.py:370
 msgid "what to search for"
 msgstr "какую сущность искать"
 
-#: ../abf.py:355
+#: ../abf.py:371
 msgid "a string to search for"
 msgstr "строка, которую надо искать"
 
-#: ../abf.py:361
+#: ../abf.py:377
 msgid "get information about single instance"
 msgstr "получить информацию о конкретной сущности"
 
-#: ../abf.py:363
+#: ../abf.py:379
 msgid "type of the instance"
 msgstr "вид сущности"
 
-#: ../abf.py:364
+#: ../abf.py:380
 #, python-format
 msgid ""
 "The filter may be specified by defining multiple pairs <type>."
@@ -838,15 +871,15 @@ msgstr ""
 "роли которой можно указать символ '*' для вывода всех значений. Например: "
 "abf info projects -f platforms.name=rosa2012lts page=*"
 
-#: ../abf.py:365
+#: ../abf.py:381
 msgid "output format "
 msgstr "формат вывода"
 
-#: ../abf.py:369
+#: ../abf.py:385
 msgid "Execute a set of internal datamodel tests"
 msgstr "Запустить набор внутренних тестов для модели данных"
 
-#: ../abf.py:382
+#: ../abf.py:398
 #, python-format
 msgid ""
 "Filter can be specified with the following parameters:\n"
@@ -855,12 +888,12 @@ msgstr ""
 "Фильтр может быть использован со следующими параметрами:\n"
 " %s"
 
-#: ../abf.py:392
+#: ../abf.py:408
 #, python-format
 msgid "Filter setup for instance %s "
 msgstr "Настройка фильтра для сущности %s "
 
-#: ../abf.py:395
+#: ../abf.py:411
 #, python-format
 msgid ""
 "Output format can be specified with the following parameters:\n"
@@ -869,17 +902,17 @@ msgstr ""
 "Формат вывода может быть задан с помощью следующих параметров:\n"
 " %s"
 
-#: ../abf.py:397
+#: ../abf.py:413
 #, python-format
 msgid "Using default query format: %s"
 msgstr "Используется формат запроса по умолчанию: %s"
 
-#: ../abf.py:407
+#: ../abf.py:423
 #, python-format
 msgid "Parameter %s not available:"
 msgstr "Параметр %s недоступен: "
 
-#: ../abf.py:413
+#: ../abf.py:429
 msgid ""
 "To set up a default configuration file, symbolic link in /etc/abf/mock-urpm/"
 "configs have to be created. I need sudo rights to do it."
@@ -887,25 +920,25 @@ msgstr ""
 "Чтобы настроить конфигурационный файл, необходимо создать символьную ссылку "
 "в /etc/abf/mock-urpm/. Для этого необходимы права root."
 
-#: ../abf.py:417
+#: ../abf.py:433
 msgid "Avaliable configurations: "
 msgstr "Досутпные конфигурации: "
 
-#: ../abf.py:430
+#: ../abf.py:446
 #, python-format
 msgid "\"%s\" is not a valid configuration."
 msgstr "\"%s\" не является корректной конфигурацией."
 
-#: ../abf.py:431
+#: ../abf.py:447
 msgid "Select one (it will be remembered): "
 msgstr "Выберите одно из значений (выбор будет запомнен): "
 
-#: ../abf.py:442
+#: ../abf.py:458
 #, python-format
 msgid "Config file %s can not be found."
 msgstr "Не могу найти конфигурационный файл %s."
 
-#: ../abf.py:444
+#: ../abf.py:460
 msgid ""
 "You should create this file or a symbolic link to another config in order to "
 "execute 'abf mock-urpm' without --config"
@@ -913,31 +946,31 @@ msgstr ""
 "Вы должны создать такой файл или ссылку, чтобы запускать 'abf mock-urpm' без "
 "указания опции --config"
 
-#: ../abf.py:451
+#: ../abf.py:467
 #, python-format
 msgid "Could not read the contents of '%(path)s': %(exception)s"
 msgstr "Не могу прочитать содержимое '%(path)s': %(exception)s"
 
-#: ../abf.py:471 ../abf.py:576
+#: ../abf.py:487 ../abf.py:592
 #, python-format
 msgid "Can not locate a spec file in %s"
 msgstr "Не могу найти spec-файл в %s"
 
-#: ../abf.py:477 ../abf.py:501
+#: ../abf.py:493 ../abf.py:517
 msgid "Executing mock-urpm..."
 msgstr "Запускается mock-urpm"
 
-#: ../abf.py:481
+#: ../abf.py:497
 #, python-format
 msgid "Can not execute mock-urpm (%s). Maybe it is not installed?"
 msgstr "Не могу запустить mock-urpm (%s). Возможно, он не установлен?"
 
-#: ../abf.py:488
+#: ../abf.py:504
 #, python-format
 msgid "Could not find a single src.rpm file in %s"
 msgstr "Не могу найти файл src.rpm в %s для обработки"
 
-#: ../abf.py:496
+#: ../abf.py:512
 #, python-format
 msgid ""
 "\n"
@@ -946,15 +979,15 @@ msgstr ""
 "\n"
 "SRPM: %s\n"
 
-#: ../abf.py:511 ../abf.py:603
+#: ../abf.py:527 ../abf.py:619
 msgid "RPM: "
 msgstr "RPM: "
 
-#: ../abf.py:528
+#: ../abf.py:544
 msgid "No aliases found"
 msgstr "Синонимов не найлено"
 
-#: ../abf.py:534
+#: ../abf.py:550
 msgid ""
 "Not enough options. Use it like \"abf alias add <alias_name> opt1 "
 "[opt2 ...]\""
@@ -962,96 +995,96 @@ msgstr ""
 "Недостаточно опций. Формат использования команды: \"abf alias add "
 "<alias_name> opt1 [opt2 ...]\""
 
-#: ../abf.py:538
+#: ../abf.py:554
 msgid "Do not use \" \" or \"=\" for alias name!"
 msgstr "Не используйте \" \" или \"=\" для названий синонимов!"
 
-#: ../abf.py:547
+#: ../abf.py:563
 #, python-format
 msgid "Alias \"%s\" already exists and will be overwritten."
 msgstr "Синоним \"%s\" уже существует и будет перезаписан."
 
-#: ../abf.py:552
+#: ../abf.py:568
 msgid "Enter the alias name!"
 msgstr "Введите название синонима!"
 
-#: ../abf.py:556
+#: ../abf.py:572
 #, python-format
 msgid "Alias \"%s\" not found"
 msgstr "Синоним \"%s\" не найден"
 
-#: ../abf.py:562
+#: ../abf.py:578
 msgid "RPMBUILD started"
 msgstr "Начинаем выполнять задачу RPMBUILD"
 
-#: ../abf.py:582
+#: ../abf.py:598
 msgid "Executing rpmbuild..."
 msgstr "Запускается rpmbuild"
 
-#: ../abf.py:586
+#: ../abf.py:602
 #, python-format
 msgid "Can not execute rpmbuild (%s). Maybe it is not installed?"
 msgstr "Не могу запустить rpmbuild (%s). Возможно, он не установлен?"
 
-#: ../abf.py:588
+#: ../abf.py:604
 msgid "Moving files to current directory..."
 msgstr "Перемещаем файлы в текущую директорию..."
 
-#: ../abf.py:601
+#: ../abf.py:617
 msgid "SRPM: "
 msgstr "SRPM: "
 
-#: ../abf.py:615
+#: ../abf.py:631
 msgid "SEARCH started"
 msgstr "Начинаем выполнять задачу SEARCH"
 
-#: ../abf.py:627
+#: ../abf.py:643
 msgid "The project format is \"[owner_name/]project_name\""
 msgstr "Проект должен быть указан в формате \"[владелец/]название\""
 
-#: ../abf.py:631
+#: ../abf.py:647
 msgid "The project group is assumed to be "
 msgstr "Будет использована группа: "
 
-#: ../abf.py:640
+#: ../abf.py:656
 msgid ""
 "You are not in a git repository directory. Specify the project name please!"
 msgstr ""
 "Вы не находитесь внутри директории Git-репозитория. Пожалуйста, укажите имя "
 "проекта!"
 
-#: ../abf.py:653
+#: ../abf.py:669
 #, python-format
 msgid "The project %(owner)s/%(project)s does not exist!"
 msgstr "Проект %(owner)s/%(project)s не существует!"
 
-#: ../abf.py:656
+#: ../abf.py:672
 #, python-format
 msgid "You do not have acces to the project %(owner)s/%(project)s!"
 msgstr "У вас нет доступа к проекту %(owner)s/%(project)s!"
 
-#: ../abf.py:659
+#: ../abf.py:675
 #, python-format
 msgid "Project: %s"
 msgstr "Проект: %s"
 
-#: ../abf.py:668
+#: ../abf.py:684
 msgid "Failed to get ID for user "
 msgstr "Не удалось получить идентификатор пользователя "
 
-#: ../abf.py:681
+#: ../abf.py:697
 msgid "Platform is assumed to be "
 msgstr "Будет использована платформа: "
 
-#: ../abf.py:683
+#: ../abf.py:699
 msgid "repository argument format: [platform/]repository"
 msgstr "репозиторий должен быть указан в формате [платформа/]репозиторий"
 
-#: ../abf.py:704
+#: ../abf.py:720
 msgid "GET started"
 msgstr "Начинаем выполнять задачу GET"
 
-#: ../abf.py:708 ../abf.py:879
+#: ../abf.py:724
 msgid ""
 "Specify a project name as \"group_name/project_name\" or just \"project_name"
 "\""
@@ -1059,49 +1092,49 @@ msgstr ""
 "Укажите имя проекта в формате \"имя_группы/имя_проекта\" или просто "
 "\"имя_проекта\""
 
-#: ../abf.py:728
+#: ../abf.py:744
 msgid "Branch "
 msgstr "Ветка "
 
-#: ../abf.py:735
+#: ../abf.py:751
 msgid "PUT started"
 msgstr "Начинаем выполнять задачу PUT"
 
-#: ../abf.py:740 ../abf.py:783
+#: ../abf.py:756 ../abf.py:799 ../abf.py:817
 msgid "You have to be in a git repository directory"
 msgstr "Вы должны находиться в директории Git-репозитория"
 
-#: ../abf.py:748
+#: ../abf.py:764
 #, python-format
 msgid "Incorrect \"--minimal-file-size\" value: %s"
 msgstr "Нукорректное значение \"--minimal-file-size\": %s"
 
-#: ../abf.py:752
+#: ../abf.py:768
 msgid "There were errors while uploading, stopping."
 msgstr "При загрузке произошли ошибки, останавливаем работу."
 
-#: ../abf.py:768
+#: ../abf.py:784
 msgid "Commited."
 msgstr "Изменения зафиксированы."
 
-#: ../abf.py:771
+#: ../abf.py:787
 msgid "Pushed"
 msgstr "Изменения отправлены на сервер."
 
-#: ../abf.py:774
+#: ../abf.py:790
 msgid "FETCH started"
 msgstr "Начинаем выполнять задачу FETCH"
 
-#: ../abf.py:777
+#: ../abf.py:793
 msgid "Fetching file with hash "
 msgstr "Извлекаем файл с хэш-суммой "
 
-#: ../abf.py:787
+#: ../abf.py:803
 #, python-format
 msgid "File \"%s\" can not be found"
 msgstr "Файл \"%s\" не найден"
 
-#: ../abf.py:792
+#: ../abf.py:808
 #, python-format
 msgid ""
 "Invalid yml file %(filename)s!\n"
@@ -1110,7 +1143,7 @@ msgstr ""
 "Некорректный yml-файл %(filename)s!\n"
 "Проблема в строке %(line)d, колонке %(column)d: %(problem)s"
 
-#: ../abf.py:794
+#: ../abf.py:810
 #, python-format
 msgid ""
 "Invalid yml file %(filename)s!\n"
@@ -1119,87 +1152,105 @@ msgstr ""
 "Некорректный yml-файл %(filename)s!\n"
 "%(exception)s"
 
-#: ../abf.py:797
+#: ../abf.py:813
+msgid "REMOTE started"
+msgstr "Начинаем выполнять задачу REMOTE"
+
+#: ../abf.py:821
+msgid "Fail to detect project name"
+msgstr "Не удалось определить имя проекта."
+
+#: ../abf.py:835
 msgid "STORE started"
 msgstr "Начинаем выполнять задачу STORE"
 
-#: ../abf.py:800
+#: ../abf.py:838
 #, python-format
 msgid "File \"%s\" does not exist!"
 msgstr "Файл \"%s\" не существует!"
 
-#: ../abf.py:803
+#: ../abf.py:841
 #, python-format
 msgid "\"%s\" is not a regular file!"
 msgstr "\"%s\" не является обычным файлом!"
 
-#: ../abf.py:810
+#: ../abf.py:848
 msgid "COPY started"
 msgstr "Начинаем выполнять задачу COPY"
 
-#: ../abf.py:814
+#: ../abf.py:852
 msgid "You are not in a git directory"
 msgstr "Вы находитесь вне директории Git-репозитория"
 
-#: ../abf.py:816
+#: ../abf.py:854
 msgid "Current branch is "
 msgstr "Текущая ветка: "
 
-#: ../abf.py:823
+#: ../abf.py:861
 msgid "Source and destination branches shold be different branches!"
 msgstr "Ветка-источник и ветка-приемник должны быть разными!"
 
-#: ../abf.py:827
+#: ../abf.py:865
 msgid "Repository root folder is "
 msgstr "Корневой каталог репозитория: "
 
-#: ../abf.py:854
+#: ../abf.py:892
 #, python-format
 msgid "Checking out the initial branch (%s)"
 msgstr "Переключаемся на исходную ветку (%s)"
 
-#: ../abf.py:861
+#: ../abf.py:899
 msgid "PULL REQUEST started"
 msgstr "Начинаем выполнять задачу PULL REQUEST"
 
-#: ../abf.py:872
+#: ../abf.py:910
 msgid "FORK PROJECT started"
 msgstr "Начинаем выполнять задачу FORK PROJECT"
 
-#: ../abf.py:898
+#: ../abf.py:929
 #, python-format
-msgid "No group named '%s', will fork to you personal platform"
+msgid "No group named '%s', will fork to your personal platform"
 msgstr "Группы %s не существует, клонируем в вашу персональную платформу"
 
-#: ../abf.py:902
+#: ../abf.py:933 ../abf.py:962
 msgid "Incorrect target group"
 msgstr "Некорректная группа"
 
-#: ../abf.py:909
+#: ../abf.py:939
+msgid "ALIAS PROJECT started"
+msgstr "Начинаем выполнять задачу ALIAS PROJECT"
+
+#: ../abf.py:958
+#, python-format
+msgid "No group named '%s', will create alias in your personal platform"
+msgstr ""
+"Группы %s не существует, алиас будет создан в вашей персональной платформу"
+
+#: ../abf.py:969
 msgid "CREATE PROJECT started"
 msgstr "Начинаем выполнять задачу CREATE PROJECT"
 
-#: ../abf.py:924
+#: ../abf.py:984
 msgid "Incorrect owner data"
 msgstr "Некорректные данные о владельце"
 
-#: ../abf.py:957
+#: ../abf.py:1017
 msgid "Failed to get information from SRPM"
 msgstr "Не удалось извлечь информацию из SRPM"
 
-#: ../abf.py:961
+#: ../abf.py:1021
 msgid "ADD PROJECT TO REPO started"
 msgstr "Начинаем выполнять задачу ADD PROJECT TO REPO"
 
-#: ../abf.py:968
+#: ../abf.py:1028
 msgid "REMOVE PROJECT FROM REPO started"
 msgstr "Начинаем выполнять задачу REMOVE PROJECT FROM REPO"
 
-#: ../abf.py:975
+#: ../abf.py:1035
 msgid "CHAIN_BUILD started"
 msgstr "Начинаем выполнять задачу CHAIN_BUILD"
 
-#: ../abf.py:990
+#: ../abf.py:1050
 msgid ""
 "You can't specify '-i' option and project names in command line at the same "
 "time."
@@ -1207,72 +1258,72 @@ msgstr ""
 "Нельзя одновременно указать опцию '-i' и задать имена проектов в командной "
 "строке."
 
-#: ../abf.py:1007 ../abf.py:1014
+#: ../abf.py:1067 ../abf.py:1074
 #, python-format
 msgid "Launching build of %s"
 msgstr "Запускаем сборку %s"
 
-#: ../abf.py:1031
+#: ../abf.py:1091
 msgid "One of the tasks failed, aborting chain build"
 msgstr "Одно из заданий завершилось неулачно, останавливаем цепочку"
 
-#: ../abf.py:1039
+#: ../abf.py:1099
 #, python-format
 msgid "Container creation failed for build %d, aborting chain build"
 msgstr ""
 "Создание контейнера для сборки %d завершилось неудачно, останавливаем цепочку"
 
-#: ../abf.py:1042
+#: ../abf.py:1102
 #, python-format
 msgid "WARNING: Build %d was not published and container was not created"
 msgstr ""
 "ПРЕДУПРЕЖДЕНИЕ: Сбокра %d не была опубликована и для нее не был создан "
 "контейнер"
 
-#: ../abf.py:1054
+#: ../abf.py:1114
 msgid "BUILD started"
 msgstr "Начинаем выполнять задачу BUILD "
 
-#: ../abf.py:1057
+#: ../abf.py:1117
 msgid ""
 "You've specified a project name without branch, tag or commit (-b, -t or -c)"
 msgstr "Вы указали имя проекта без ветки, тэга или коммита (-b, -t или -c)"
 
-#: ../abf.py:1066
+#: ../abf.py:1126
 msgid ""
 "You should specify ONLY ONE of the following options: branch, tag or commit."
 msgstr ""
 "Вы можете использовать только одну из опций 'branch' (-b), 'tag' (-t) или "
 "'commit' (-c)"
 
-#: ../abf.py:1081
+#: ../abf.py:1141
 #, python-format
 msgid "The project %s is not a package and can not be built."
 msgstr "Проект %s не является пакетом и не может быть собран."
 
-#: ../abf.py:1099
+#: ../abf.py:1159
 msgid "You've specified a project without a branch."
 msgstr "Вы указали проект без ветки"
 
-#: ../abf.py:1107
+#: ../abf.py:1167
 #, python-format
 msgid "Could not resolve hash for branch '%s'"
 msgstr "Не могу получить хэш для ветки '%s'"
 
-#: ../abf.py:1114
+#: ../abf.py:1174
 #, python-format
 msgid "Could not resolve a platform to save to from the branch name \"%s\"."
 msgstr ""
 "Не могу автоматически определить платформу, для которой надо собирать проект "
 "из ветки \"%s\"."
 
-#: ../abf.py:1121
+#: ../abf.py:1181
 #, python-format
 msgid "A list of options which could be resolved automatically: %s"
 msgstr ""
 "Список опций, значения для которых могут быть выставлены автоматически: %s"
 
-#: ../abf.py:1130
+#: ../abf.py:1190
 msgid ""
 "Git branch, tag or commit can not be resolved automatically. Specify it by -"
 "b, -t or -c."
@@ -1280,36 +1331,36 @@ msgstr ""
 "Не могу автоматически определить ветку, тэг или коммит Git. Укажите одно из "
 "этих значений с помощью опций -b, -t or -c."
 
-#: ../abf.py:1143
+#: ../abf.py:1203
 #, python-format
 msgid "Could not resolve hash for %(ref_type)s '%(to_resolve)s'"
 msgstr "Не могу получить хэш для %(ref_type)s '%(to_resolve)s'"
 
-#: ../abf.py:1147
+#: ../abf.py:1207
 msgid "Autoresolved options were rejected."
 msgstr "Опции, выбранные автоматически, использованы не будут."
 
-#: ../abf.py:1148
+#: ../abf.py:1208
 #, python-format
 msgid "Git commit hash: %s"
 msgstr "Хэш коммита в Git: %s"
 
-#: ../abf.py:1167
+#: ../abf.py:1227
 #, python-format
 msgid "Save-to platform is assumed to be %s"
 msgstr "Целевая платформа сборки: %s"
 
-#: ../abf.py:1173
+#: ../abf.py:1233
 msgid "Save-to repository can not be resolved automatically. Specify it (-s)."
 msgstr ""
 "Не могу автоматически определить целевой репозиторий сборки. Укажите его с "
 "помощью опции '-s'"
 
-#: ../abf.py:1176
+#: ../abf.py:1236
 msgid "save-to-repository option format: [platform/]repository"
 msgstr "формат опции save-to-repository: [платформа/]репозиторий"
 
-#: ../abf.py:1189
+#: ../abf.py:1249
 #, python-format
 msgid ""
 "Can not build for platform %(platform)s. Select one of the following:\n"
@@ -1319,7 +1370,7 @@ msgstr ""
 "следующих:\n"
 "%(all_platforms)s"
 
-#: ../abf.py:1198
+#: ../abf.py:1258
 #, python-format
 msgid ""
 "Incorrect save-to repository %(platform)s/%(repo)s.\n"
@@ -1330,20 +1381,20 @@ msgstr ""
 "Выберите один из следующих:\n"
 "%(all_repos)s"
 
-#: ../abf.py:1202
+#: ../abf.py:1262
 msgid "Save-to repository: "
 msgstr "Цулувой репозиторий сборки: "
 
-#: ../abf.py:1217
+#: ../abf.py:1277
 #, python-format
 msgid "Platform for selected repository %(repo)s is assumed to be %(plat)s"
 msgstr "Для репозитория %(repo)s выбрана платформа %(plat)s"
 
-#: ../abf.py:1219
+#: ../abf.py:1279
 msgid "'repository' option format: [platform/]repository"
 msgstr "формат значения опции 'repository': [платформа/]репозиторий"
 
-#: ../abf.py:1223
+#: ../abf.py:1283
 #, python-format
 msgid ""
 "Can not use build repositories from platform %(platform)s!\n"
@@ -1354,7 +1405,7 @@ msgstr ""
 "Выберите одну из следующих платформ:\n"
 "%(all_plats)s"
 
-#: ../abf.py:1236
+#: ../abf.py:1296
 #, python-format
 msgid ""
 "Platform %(plat)s does not have repository %(repo)s!\n"
@@ -1365,177 +1416,182 @@ msgstr ""
 "Выберите один из следующих:\n"
 "%(all_repos)s"
 
-#: ../abf.py:1244
+#: ../abf.py:1304
 msgid ""
 "Could not resolve repositories to build with. Please specify it (-r option)"
 msgstr ""
 "Не могу определить репозитории, которые надо подключить при сборке. "
 "Пожалуйста, укажите их с помощью опции '-r'"
 
-#: ../abf.py:1250
+#: ../abf.py:1310
 msgid "Repositories to build with are assumed to be: "
 msgstr "Выбраны репозитории, подключаемые для сборки: "
 
-#: ../abf.py:1253
+#: ../abf.py:1313
 msgid "You have to specify the repository(s) to build with (-r option)"
 msgstr ""
 "Вам необходимо вручную указать репозитории, которые надо подключить при "
 "сборке, с помощью опции '-r'."
 
-#: ../abf.py:1256
+#: ../abf.py:1316
 msgid "Build repositories: "
 msgstr "Репозитории, подключаемые при сборке: "
 
-#: ../abf.py:1265
+#: ../abf.py:1325
 #, python-format
 msgid "Invalid architecture: %s"
 msgstr "Некорректная архитектура: %s"
 
-#: ../abf.py:1277
+#: ../abf.py:1337
 msgid "Arches are assumed to be "
 msgstr "Выбраны архитектуры: "
 
-#: ../abf.py:1279
+#: ../abf.py:1339
 #, python-format
 msgid "Architectures: %s"
 msgstr "Архитектуры: %s"
 
-#: ../abf.py:1330
+#: ../abf.py:1390
 #, python-format
 msgid "The status of build task %(id)s is \"%(status)s\", can not published!"
 msgstr ""
 "Статус сборочного задания %(id)s - \"%(status)s\", не могу опубликовать!"
 
-#: ../abf.py:1334
+#: ../abf.py:1394
 #, python-format
 msgid "Could not publish task %(id)s: %(exception)s"
 msgstr "Не могу опубликовать задачу %(id)s: %(exception)s"
 
-#: ../abf.py:1341
+#: ../abf.py:1401
 #, python-format
 msgid "Can not read buildlist %(id)s: %(exception)s"
 msgstr "Не могу прочитать данные о сборочном листе %(id)s: %(exception)s"
 
-#: ../abf.py:1346
+#: ../abf.py:1406
 msgid "Buildlist ID:"
 msgstr "Идентификатор (ID) сборочного листа:"
 
-#: ../abf.py:1347
+#: ../abf.py:1407
 msgid "Project:"
 msgstr "Проект:"
 
-#: ../abf.py:1348
+#: ../abf.py:1408
 msgid "Status:"
 msgstr "Статус:"
 
-#: ../abf.py:1349
+#: ../abf.py:1409
 msgid "Container path:"
 msgstr "Путь к контейнеру:"
 
-#: ../abf.py:1350
+#: ../abf.py:1410
 msgid "Container status:"
 msgstr "Статус контейнера:"
 
-#: ../abf.py:1351
+#: ../abf.py:1411
 msgid "Build for platform:"
 msgstr "Собрать для платформы:"
 
-#: ../abf.py:1352
+#: ../abf.py:1412
 msgid "Save to repository:"
 msgstr "Сохранить в репозиторий:"
 
-#: ../abf.py:1353
+#: ../abf.py:1413
 msgid "Build repositories:"
 msgstr "При сборке подключить репозитории:"
 
-#: ../abf.py:1354
+#: ../abf.py:1414
 msgid "Extra repositories:"
 msgstr "Дополнительные репозитории:"
 
-#: ../abf.py:1355
+#: ../abf.py:1415
 msgid "Architecture:"
 msgstr "Архитектура:"
 
-#: ../abf.py:1356
+#: ../abf.py:1416
 msgid "Created at:"
 msgstr "Создан:"
 
-#: ../abf.py:1357
+#: ../abf.py:1417
 msgid "Updated at:"
 msgstr "последнее обновление статуса:"
 
-#: ../abf.py:1358
+#: ../abf.py:1418
 msgid "LOG Url:"
 msgstr "Журнал:"
 
-#: ../abf.py:1360
+#: ../abf.py:1420
 msgid "Chroot Tree:"
 msgstr "Листинг файлов сборочного окружения:"
 
-#: ../abf.py:1367
+#: ../abf.py:1427
 msgid "STATUS started"
 msgstr "Начинаем выполнять задачу STATUS"
 
-#: ../abf.py:1378
+#: ../abf.py:1438
 msgid "Can not find last build IDs. Specify a project name or ID"
 msgstr ""
 "Не могу определить идентификаторы последних сборочных заданий. Укажите "
 "идентификатор или имя проекта"
 
-#: ../abf.py:1387
+#: ../abf.py:1447
 #, python-format
 msgid "\"%s\" is not a number"
 msgstr "\"%s\" не является числом"
 
-#: ../abf.py:1400
+#: ../abf.py:1460
 #, python-format
 msgid "Updating project location for %s"
 msgstr "Обновляем метоположение проекта - %s"
 
-#: ../abf.py:1405
+#: ../abf.py:1465
 #, python-format
 msgid "Project %(proj)s has been located in %(path)s"
 msgstr "Проект %(proj)s найден в %(path)s"
 
-#: ../abf.py:1427
+#: ../abf.py:1487
 msgid "LOCATE started"
 msgstr "Начинаем выполнять задачу LOCATE"
 
-#: ../abf.py:1431
+#: ../abf.py:1491
 msgid ""
 "To show a project location, you have to specify a project name ('-p' option)"
 msgstr ""
 "Чтобы узнать местоположение проекта, необходимо указать имя проект (опция '-"
 "p')"
 
-#: ../abf.py:1436
+#: ../abf.py:1496
 msgid "error: the project format is \"[owner_name/]project_name\""
 msgstr "ошибка: формат проекта - \"[владелец/]имя\""
 
-#: ../abf.py:1444
+#: ../abf.py:1504
 #, python-format
 msgid "error: project %s can not be located"
 msgstr "ошибка: проект %s не может быть найден"
 
-#: ../abf.py:1448
+#: ../abf.py:1508
 #, python-format
 msgid "error: project is not located in \"%s\" anymore"
 msgstr "ошибка: в \"%s\" проекта больше нет"
 
-#: ../abf.py:1466
+#: ../abf.py:1526
 #, python-format
 msgid "Please specify 'true' or 'false' for %s"
 msgstr "Пожалуйста, укажите для %s значение 'true' или 'false'"
 
-#: ../abf.py:1470
+#: ../abf.py:1530
 msgid "UPDATE started"
 msgstr "Начинаем выполнять задачу UPDATE"
 
-#: ../abf.py:1524
+#: ../abf.py:1584
 msgid "SHOW started"
 msgstr "Начинаем выполнять задачу SHOW"
 
-#: ../abf.py:1554
+#: ../abf.py:1591
+#, python-format
+msgid "%s: %s"
+msgstr "%s: %s"
+
+#: ../abf.py:1625
 msgid "CLEAN started"
 msgstr "Начинаем выполнять задачу CLEAN"
 
