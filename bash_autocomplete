@@ -199,7 +199,7 @@ __abf_alias()
 __abf() 
 {
     local opts modes
-    modes="help get put show build chain_build publish status locate search test fetch mock-urpm rpmbuild clean copy create store alias add remove fork"
+    modes="help get put show build chain_build publish status locate search test fetch mock-urpm rpmbuild clean copy create store alias add remove fork destroy pullrequest info"
     COMPREPLY=()
     mode="${COMP_WORDS[1]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
