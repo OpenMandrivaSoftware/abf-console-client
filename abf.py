@@ -323,7 +323,7 @@ def parse_command_line():
     # alias project
     subparser = subparsers.add_parser('proj_alias', help=_('Create alias of existing project'))
     subparser.add_argument('source_project', action='store', help=_('project to fork (group/project)'))
-    subparser.add_argument('target_project', action='store', nargs='?', help=_('target project group and name (group/project)'))
+    subparser.add_argument('target_project', action='store', help=_('target project group and name (group/project)'))
     subparser.set_defaults(func=alias_project)
 
     # create project from SRPM
