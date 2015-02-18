@@ -161,7 +161,6 @@ def parse_command_line():
     subparser.add_argument('--branch', nargs='?', action='store', help=_('Default branch for the project Git repository.'))
     subparser.add_argument('--issues', nargs='?', action='store', help=_('Should project issue tracker be enabled. Please specify "true" or "false".'))
     subparser.add_argument('--wiki', nargs='?', action='store', help=_('Should project wiki be enabled. Please specify "true" or "false".'))
-#    subparser.add_argument('maintainer', type=int, nargs='?', action='store', help=_('Identifier of project maintainer.'))
     subparser.add_argument('--biarch', nargs='?', action='store', help=_('Enable/disable publishing 32bit packages into 64bit repository. Please specify "true" or "false".'))
     subparser.set_defaults(func=update)
 
