@@ -587,10 +587,13 @@ def localbuild_rpmbuild():
     if os.path.exists(src_dir):
         shutil.rmtree(src_dir)
     src = get_root_git_dir()
-    cmd = ['abf', 'fetch']
-    if command_line.verbose:
-        cmd.append('-v')
-    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+
+    if os.path.isfile(".abf.yml"):
+        cmd = ['abf', 'fetch']
+        if command_line.verbose:
+            cmd.append('-v')
+        execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+
     shutil.copytree(src, src_dir, symlinks=True)
 
     spec_path = find_spec(src_dir)
