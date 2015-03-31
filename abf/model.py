@@ -558,6 +558,7 @@ class BuildList(Model):
                 self.arch.name, self.status_string)
 
     update_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
+    external_nodes_vals = ['everything', 'owned']
     auto_publish_statuses = ['default', 'none', 'testing']
     @staticmethod
     def new_build_task(models,
@@ -574,7 +575,8 @@ class BuildList(Model):
 			auto_create_container,
 			include_testing_subrepo,
 			use_extra_tests,
-			extra_build_lists):
+			extra_build_lists,
+			external_nodes):
         DATA = {
             'project_id':               project.id,
             'commit_hash':              commit_hash,
@@ -584,14 +586,15 @@ class BuildList(Model):
             'auto_publish_status':      auto_publish_status,
             'project_version':          project_version,
             'auto_create_container':    auto_create_container,
-            'use_cached_chroot':	cached_chroot,
-            'save_buildroot':		save_chroot,
+            'use_cached_chroot':        cached_chroot,
+            'save_buildroot':           save_chroot,
             'arch_id':                  None,
             'include_repos':            [],
             'extra_repositories':       [],
             'extra_build_lists':        extra_build_lists,
             'include_testing_subrepository': include_testing_subrepo,
-            'use_extra_tests':		use_extra_tests
+            'use_extra_tests':          use_extra_tests,
+            'external_nodes':           external_nodes
         }
         build_platforms = {}
 

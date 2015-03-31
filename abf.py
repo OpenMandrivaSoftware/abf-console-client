@@ -234,6 +234,8 @@ def parse_command_line():
     subparser.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
     subparser.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
                     (BuildList.update_types[0]) )
+    subparser.add_argument('--external-nodes', action='store', choices=BuildList.external_nodes_vals, help=_('Use any external ABF node or own external ABF node. Default is "%s".') %
+                    (BuildList.external_nodes_vals[0]) )
     subparser.add_argument('--skip-spec-check', action='store_true', help=_('Do not check spec file.'))
     subparser.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
     subparser.set_defaults(func=build)
@@ -276,6 +278,8 @@ def parse_command_line():
     subparser.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
     subparser.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
                     (BuildList.update_types[0]) )
+    subparser.add_argument('--external-nodes', action='store', choices=BuildList.external_nodes_vals, help=_('Use any external ABF node or own external ABF node. Default is "%s".') %
+                    (BuildList.external_nodes_vals[0]) )
     subparser.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
     subparser.set_defaults(func=chain_build)
 
@@ -1386,7 +1390,9 @@ def build(return_ids=False):
         auto_create_container,
         command_line.testing,
         use_extra_tests,
-        extra_build_lists
+        extra_build_lists,
+        # TODO: Read external_nodes config value from user's profile
+        command_line.external_nodes or BuildList.external_nodes_vals[0]
     )
     ids = ','.join([str(i) for i in build_ids])
     if 'projects_cfg' in globals():
