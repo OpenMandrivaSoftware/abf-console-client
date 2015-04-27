@@ -198,6 +198,11 @@ class Config(dict):
             filestore_domain = self.ask_user_url('File-store URL [%s]: ' % Config.default_filestore_url, Config.default_filestore_url)
             self['main']['file_store_url'] = filestore_domain
 
+        if 'default_publish_status' not in self['main']:
+            def_status = 'default'
+            res = ask_user('Default publishing status for new builds [%s]: ' % def_status, can_be_empty=True)
+            self['main']['default_publish_status'] = res or def_status
+
         #configure logging
         self['formatters']['keys'] = 'verbose,simple'
         self['formatter_verbose']['format'] = '%(asctime)s %(levelname)-7s in %(filename)s:%(funcName)s:%(lineno)d: %(message)s'
