@@ -77,7 +77,7 @@ class Section(dict):
         try:
             res = self.config.get(self.section, key)
         except ConfigParser.NoOptionError, ex:
-            if key == 'default_branch':
+            if key in ['default_branch', 'default_publish_status']:
                 print(_('non-critical error in config "%(path)s": %(exception)s') % {'path': self.conf_path, 'exception': str(ex)})
                 return ''
             else:

@@ -32,6 +32,12 @@ from abf.model import *
 
 abf_url = cfg['main']['abf_url']
 file_store_url = cfg['main']['file_store_url']
+if cfg['main']['default_publish_status'] is not None:
+    if cfg['main']['default_publish_status'] in BuildList.auto_publish_statuses:
+        default_publish_status = cfg['main']['default_publish_status']
+    else:
+        print(_("Incorrect value of 'default_publish_status' in config file, ignoring. Possible valus are: ") + "'" + str.join("', '", BuildList.auto_publish_statuses) + "'")
+
 login = cfg['user']['login']
 password = cfg['user']['password']
 default_group = cfg['user']['default_group']
@@ -1365,6 +1371,9 @@ def build(return_ids=False):
         use_extra_tests = True
     else:
         use_extra_tests = False
+
+    if not command_line.auto_publish and not command_line.auto_publish_status:
+        command_line.auto_publish_status = default_publish_status
 
     if command_line.auto_publish and not command_line.auto_publish_status:
         command_line.auto_publish_status = 'default'
