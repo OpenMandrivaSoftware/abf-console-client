@@ -32,7 +32,7 @@ from abf.model import *
 
 abf_url = cfg['main']['abf_url']
 file_store_url = cfg['main']['file_store_url']
-if cfg['main']['default_publish_status'] is not None:
+if cfg['main']['default_publish_status'] != '':
     if cfg['main']['default_publish_status'] in BuildList.auto_publish_statuses:
         default_publish_status = cfg['main']['default_publish_status']
     else:
