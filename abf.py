@@ -1035,6 +1035,8 @@ def create():
             os.system("git checkout -b " + default_branch);
             os.system("git push origin " + default_branch);
 
+        os.system("abf update --maintainer " + login)
+
         # Go back to initial dir and delete temp folder
         os.chdir(curdir)
         shutil.rmtree(tempdir)
