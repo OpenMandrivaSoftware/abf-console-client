@@ -36,7 +36,11 @@ if cfg['main']['default_publish_status'] != '':
     if cfg['main']['default_publish_status'] in BuildList.auto_publish_statuses:
         default_publish_status = cfg['main']['default_publish_status']
     else:
+        default_publish_status = BuildList.auto_publish_statuses[0]
         print(_("Incorrect value of 'default_publish_status' in config file, ignoring. Possible valus are: ") + "'" + str.join("', '", BuildList.auto_publish_statuses) + "'")
+else:
+    default_publish_status = BuildList.auto_publish_statuses[0]
+    cfg['main']['default_publish_status'] = BuildList.auto_publish_statuses[0]
 
 login = cfg['user']['login']
 password = cfg['user']['password']
