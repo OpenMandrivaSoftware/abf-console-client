@@ -1035,7 +1035,10 @@ def create():
             os.system("git checkout -b " + default_branch);
             os.system("git push origin " + default_branch);
 
-        os.system("abf update --maintainer " + login)
+        # Supress output and errors for now, since only admins can set maintainers
+        set_maintainer = Popen(['abf', 'update', '--maintainer', login], stdout=PIPE, stderr=PIPE)
+        out, err = set_maintainer.communicate()
+#        os.system("abf update --maintainer " + login)
 
         # Go back to initial dir and delete temp folder
         os.chdir(curdir)
