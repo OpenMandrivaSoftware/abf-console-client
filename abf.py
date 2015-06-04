@@ -145,7 +145,9 @@ def parse_command_line():
 
     # put
     subparser = subparsers.add_parser('put', help=_('Upload large binary files to File-Store and update (or create) .abf.yml file. Can also commit and push changes.'))
-    subparser.add_argument('-m', '--message', action='store', help=_('With this option specified, "git add --all", "git commit -m MSG" and "git push" will be executed.'))
+    subparser.add_argument('-m', '--message', action='store', help=_('With this option specified, "git add" for every file, "git commit -m MSG" and "git push" will be executed.'))
+    subparser.add_argument('-f', '--add-folders', action='store_true', help=_('By default, the client does not add new folders to Git. This option will force it to add all new directories.'))
+    subparser.add_argument('-b', '--add-binaries', action='store_true', help=_('By default, the client does not add new binary files to Git. This option will force it to add all new binaries (unless they are uploaded to file store - see below).'))
     subparser.add_argument('-s', '--minimal-file-size', default='0', action='store', help=_('The minimal file size to upload to File-Store. '
             'Default is 0B.'))
     subparser.add_argument('-n', '--do-not-remove-files', action='store_true', help=_('By default files are being removed on uploading. Override this behavior.'))
@@ -800,8 +802,16 @@ def put():
     if not command_line.message:
         return
 
-    cmd = ['git', 'add', '--all']
-    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+    if not command_line.add_folders:
+        files = [f for f in os.listdir('.') if os.path.isfile(f)]
+        for f in files:
+            if not is_text_file(f) and not command_line.add_binaries:
+                continue
+            cmd = ['git', 'add', f]
+            execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+    else:
+        cmd = ['git', 'add', '--all']
+        execute_command(cmd, print_to_stdout=True, exit_on_error=True)
 
     if os.path.isfile(yaml_path):
         cmd = ['git', 'add', '-f', yaml_path]
