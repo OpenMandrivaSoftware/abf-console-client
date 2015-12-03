@@ -342,6 +342,14 @@ def parse_command_line():
     subparser.add_argument('target_project', action='store', help=_('target project group and name (group/project)'))
     subparser.set_defaults(func=alias_project)
 
+    # create empty project
+    subparser = subparsers.add_parser('create_empty', help=_('Create empty project'))
+    subparser.add_argument('name', action='store', help=_('project name'))
+    subparser.add_argument('owner', action='store', nargs='?', help=_('who will own the project; default_owner is used by default'))
+    subparser.add_argument('--description', action='store', help=_('project description'))
+    subparser.add_argument('--visibility', action='store', choices=['public', 'private'], default='public', help=_('project visibility'))
+    subparser.set_defaults(func=create_empty)
+
     # create project from SRPM
     subparser = subparsers.add_parser('create', help=_('Create project from SRPM'))
     subparser.add_argument('srpm', action='store', help=_('srpm file'))
@@ -1002,6 +1010,32 @@ def alias_project():
         return 1
 
     ProjectCreator.alias_project(models, source_proj.id, owner_id, target_name)
+
+
+def create_empty():
+    log.debug(_('CREATE EMPTY PROJECT started'))
+
+    if not command_line.owner:
+        command_line.owner = default_group
+
+    owner_group = Group.search(models, command_line.owner)
+    owner_user = User.search(models, command_line.owner)
+
+    if owner_group:
+        owner_id = owner_group[0].id
+        owner_type = "Group"
+    elif owner_user:
+        owner_id = owner_user[0].id
+        owner_type = "User"
+    else:
+        print(_("Incorrect owner data"))
+        return 1
+
+    description = ""
+    if command_line.description:
+        description = command_line.description
+
+    ProjectCreator.new_project(models, command_line.name, description, owner_id, owner_type, command_line.visibility)
 
 
 def create():

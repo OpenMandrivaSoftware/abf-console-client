@@ -705,12 +705,17 @@ class ProjectCreator(Model):
         return '%s (%s)' % (self.name, self.owner)
 
     @staticmethod
-    def new_project(models, name, description, owner_id, owner_type):
+    def new_project(models, name, description, owner_id, owner_type, visibility='public'):
+        # WebUI and API use different terms for visibility: Public/Private vs Open/Hidden
+        if visibility == "public":
+            vis = "open"
+        else:
+            vis = "hidden"
         DATA = {
             'name': name,
             'owner_id': owner_id,
             'owner_type': owner_type,
-            'visibility': 'open',
+            'visibility': vis,
             'description': description,
             'is_package': 'true',
             'default_branch': 'master',
