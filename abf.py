@@ -145,7 +145,7 @@ def parse_command_line():
 
     # put
     subparser = subparsers.add_parser('put', help=_('Upload large binary files to File-Store and update (or create) .abf.yml file. Can also commit and push changes.'))
-    subparser.add_argument('-m', '--message', required=True, action='store', help=_('With this option specified, "git add" for every file, "git commit -m MSG" and "git push" will be executed.'))
+    subparser.add_argument('-m', '--message', action='store', help=_('With this option specified, "git add" for every file, "git commit -m MSG" and "git push" will be executed.'))
     subparser.add_argument('-f', '--add-folders', action='store_true', help=_('By default, the client does not add new folders to Git. This option will force it to add all new directories.'))
     subparser.add_argument('-b', '--add-binaries', action='store_true', help=_('By default, the client does not add new binary files to Git. This option will force it to add all new binaries (unless they are uploaded to file store - see below).'))
     subparser.add_argument('-s', '--minimal-file-size', default='0', action='store', help=_('The minimal file size to upload to File-Store. '
