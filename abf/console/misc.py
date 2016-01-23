@@ -40,8 +40,10 @@ class ReturnCodeNotZero(Exception):
 
 def get_project_name(path=None):
     try:
-        # TODO: Force C locale?
-        output, ret_code = execute_command(['git', 'remote', 'show', 'origin', '-n'], cwd=path)
+        # Force C locale - we will analyze output of "git" command
+        e = os.environ.copy()
+        e["LC_ALL"] = "C"
+        output, ret_code = execute_command(['git', 'remote', 'show', 'origin', '-n'], cwd=path, env=e)
 
         for line in output.split('\n'):
             if line.startswith('  Fetch URL:') and 'abf' in line:
@@ -345,9 +347,11 @@ def pack_project(root_path):
 
 
 
-def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, print_to_stdout=False, exit_on_error=False):
+def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, print_to_stdout=False, exit_on_error=False, env=[]):
     output = ""
     start = time.time()
+    if not env:
+        env = os.environ
     try:
         child = None
         log.debug(_("Executing command: %s") % command)
@@ -358,6 +362,7 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
             stdin=open("/dev/null", "r"),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            env=env,
             cwd=cwd
             )
         # use select() to poll for output so we dont block
