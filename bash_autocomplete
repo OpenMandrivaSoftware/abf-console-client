@@ -69,8 +69,9 @@ __abf_rpmbuild()
 
 __abf_build()
 {
-  __abf_opts "--branch --build-list --tag --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --auto-publish --update-type --skip-spec-check --auto-create-container --no-extra-tests --cached-chroot --save-chroot --testing"
+  __abf_opts "--branch --build-list --tag --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --auto-publish --update-type --skip-spec-check --auto-create-container --no-extra-tests --cached-chroot --save-chroot --testing --external-nodes"
   update_types="security bugfix enhancement recommended newpackage"
+  external_nodes_vals="owned everything"
   auto_publish_status="none default testing"
   if [ ${prev} == -r ] || [ ${prev} == --repository ] ; then
       COMPREPLY=( $(compgen -W "`abf show build-repos`" -- "${cur}") )
@@ -98,6 +99,11 @@ __abf_build()
 
   if [ ${prev} == --update-type ] ; then
       COMPREPLY=( $(compgen -W "${update_types}" -- "${cur}") )
+      return 0
+  fi
+
+  if [ ${prev} == --external-nodes ] ; then
+      COMPREPLY=( $(compgen -W "${external_nodes_vals}" -- "${cur}") )
       return 0
   fi
 
@@ -199,7 +205,7 @@ __abf_alias()
 __abf() 
 {
     local opts modes
-    modes="help get put show build chain_build publish status locate search test fetch mock-urpm rpmbuild clean copy create store alias add remove fork"
+    modes="help get put show build chain_build publish status locate search test fetch mock-urpm rpmbuild clean copy create store alias add remove fork destroy pullrequest info"
     COMPREPLY=()
     mode="${COMP_WORDS[1]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"

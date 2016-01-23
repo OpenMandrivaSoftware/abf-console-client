@@ -32,6 +32,16 @@ from abf.model import *
 
 abf_url = cfg['main']['abf_url']
 file_store_url = cfg['main']['file_store_url']
+if cfg['main']['default_publish_status'] != '':
+    if cfg['main']['default_publish_status'] in BuildList.auto_publish_statuses:
+        default_publish_status = cfg['main']['default_publish_status']
+    else:
+        default_publish_status = BuildList.auto_publish_statuses[0]
+        print(_("Incorrect value of 'default_publish_status' in config file, ignoring. Possible valus are: ") + "'" + str.join("', '", BuildList.auto_publish_statuses) + "'")
+else:
+    default_publish_status = BuildList.auto_publish_statuses[0]
+    cfg['main']['default_publish_status'] = BuildList.auto_publish_statuses[0]
+
 login = cfg['user']['login']
 password = cfg['user']['password']
 default_group = cfg['user']['default_group']
@@ -114,91 +124,92 @@ def parse_command_line():
     subparsers = parser.add_subparsers(title='command')
 
     # help
-    parser_help = subparsers.add_parser('help', help=_('show a help for command'))
-    parser_help.add_argument('command', action='store', nargs='?', help=_('a command to show help for'))
-    parser_help.set_defaults(func=help)
+    subparser = subparsers.add_parser('help', help=_('show a help for command'))
+    subparser.add_argument('command', action='store', nargs='?', help=_('a command to show help for'))
+    subparser.set_defaults(func=help)
 
     # alias
-    parser_alias = subparsers.add_parser('alias', help=_('Manage aliases'))
+    subparser = subparsers.add_parser('alias', help=_('Manage aliases'))
     alias_commands = ['list', 'add', 'remove']
-    parser_alias.add_argument('command', action='store', choices=alias_commands)
-    parser_alias.add_argument('options', action='store', nargs='*', help=_('name and alias (not quoted, e. g. "abf alias add sg search groups") for adding, only name for removing.'))
-    parser_alias.set_defaults(func=alias)
+    subparser.add_argument('command', action='store', choices=alias_commands)
+    subparser.add_argument('options', action='store', nargs='*', help=_('name and alias (not quoted, e. g. "abf alias add sg search groups") for adding, only name for removing.'))
+    subparser.set_defaults(func=alias)
 
     # get
-    parser_get = subparsers.add_parser('get', help=_('clone a project from ABF'))
-    parser_get.add_argument('project', action='store', help=_('project name. ([group/]project). If no group specified, '
+    subparser = subparsers.add_parser('get', help=_('clone a project from ABF'))
+    subparser.add_argument('project', action='store', help=_('project name. ([group/]project). If no group specified, '
             'it\'s assumed to be your default group.'))
-    parser_get.add_argument('-b', '--branch', action='store', help=_('branch to checkout'))
-    parser_get.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
-    parser_get.set_defaults(func=get)
+    subparser.add_argument('-b', '--branch', action='store', help=_('branch to checkout'))
+    subparser.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
+    subparser.set_defaults(func=get)
 
     # put
-    parser_put = subparsers.add_parser('put', help=_('Upload large binary files to File-Store and update (or create) .abf.yml file. Can also commit and push changes.'))
-    parser_put.add_argument('-m', '--message', action='store', help=_('With this option specified, "git add --all", "git commit -m MSG" and "git push" will be executed.'))
-    parser_put.add_argument('-s', '--minimal-file-size', default='0', action='store', help=_('The minimal file size to upload to File-Store. '
+    subparser = subparsers.add_parser('put', help=_('Upload large binary files to File-Store and update (or create) .abf.yml file. Can also commit and push changes.'))
+    subparser.add_argument('-m', '--message', action='store', help=_('With this option specified, "git add" for every file, "git commit -m MSG" and "git push" will be executed.'))
+    subparser.add_argument('-f', '--add-folders', action='store_true', help=_('By default, the client does not add new folders to Git. This option will force it to add all new directories.'))
+    subparser.add_argument('-b', '--add-binaries', action='store_true', help=_('By default, the client does not add new binary files to Git. This option will force it to add all new binaries (unless they are uploaded to file store - see below).'))
+    subparser.add_argument('-s', '--minimal-file-size', default='0', action='store', help=_('The minimal file size to upload to File-Store. '
             'Default is 0B.'))
-    parser_put.add_argument('-n', '--do-not-remove-files', action='store_true', help=_('By default files are being removed on uploading. Override this behavior.'))
-    parser_put.add_argument('-a', '--upload-all', action='store_true', help=_('By default, console client analyzes spec file and tries to detect which files located in the '
+    subparser.add_argument('-n', '--do-not-remove-files', action='store_true', help=_('By default files are being removed on uploading. Override this behavior.'))
+    subparser.add_argument('-a', '--upload-all', action='store_true', help=_('By default, console client analyzes spec file and tries to detect which files located in the '
 										'current folder are really used by the project and uploads only these files to file store. '
 										'With this option, console client will upload all binary files located in the current folder.'))
-    parser_put.set_defaults(func=put)
+    subparser.set_defaults(func=put)
 
     # store
-    parser_store = subparsers.add_parser('store', help=_('Upload a given file to File-Store. Prints a sha1 hash or error message (with non-zero return code).'))
-    parser_store.add_argument('path', action='store', help=_('Path to file'))
-    parser_store.set_defaults(func=store)
+    subparser = subparsers.add_parser('store', help=_('Upload a given file to File-Store. Prints a sha1 hash or error message (with non-zero return code).'))
+    subparser.add_argument('path', action='store', help=_('Path to file'))
+    subparser.set_defaults(func=store)
 
     # update
-    parser_update = subparsers.add_parser('update', help=_('Update project settings.'))
-    parser_update.add_argument('-p', '--project', action='store',  help=_('Project to show information for (if needed). Format: '
+    subparser = subparsers.add_parser('update', help=_('Update project settings.'))
+    subparser.add_argument('-p', '--project', action='store',  help=_('Project to show information for (if needed). Format: '
         '"[group/]name". If no group specified, default group will be used.'))
-    parser_update.add_argument('--name', nargs='?', action='store', help=_('New project name.'))
-    parser_update.add_argument('--desc', nargs='?', action='store', help=_('Project description.'))
-    parser_update.add_argument('--visibility', nargs='?', action='store', help=_('Project visibility. Please specify "open" or "hidden".'))
-    parser_update.add_argument('--is_pkg', nargs='?', action='store', help=_('Is project a package. Please specify "true" or "false".'))
-    parser_update.add_argument('--maintainer', nargs='?', action='store', help=_('Project maintainer. You can specify either maintainer id or login.'))
-    parser_update.add_argument('--branch', nargs='?', action='store', help=_('Default branch for the project Git repository.'))
-    parser_update.add_argument('--issues', nargs='?', action='store', help=_('Should project issue tracker be enabled. Please specify "true" or "false".'))
-    parser_update.add_argument('--wiki', nargs='?', action='store', help=_('Should project wiki be enabled. Please specify "true" or "false".'))
-#    parser_update.add_argument('maintainer', type=int, nargs='?', action='store', help=_('Identifier of project maintainer.'))
-    parser_update.add_argument('--biarch', nargs='?', action='store', help=_('Enable/disable publishing 32bit packages into 64bit repository. Please specify "true" or "false".'))
-    parser_update.set_defaults(func=update)
+    subparser.add_argument('--name', nargs='?', action='store', help=_('New project name.'))
+    subparser.add_argument('--desc', nargs='?', action='store', help=_('Project description.'))
+    subparser.add_argument('--visibility', nargs='?', action='store', help=_('Project visibility. Please specify "open" or "hidden".'))
+    subparser.add_argument('--is_pkg', nargs='?', action='store', help=_('Is project a package. Please specify "true" or "false".'))
+    subparser.add_argument('--maintainer', nargs='?', action='store', help=_('Project maintainer. You can specify either maintainer id or login.'))
+    subparser.add_argument('--branch', nargs='?', action='store', help=_('Default branch for the project Git repository.'))
+    subparser.add_argument('--issues', nargs='?', action='store', help=_('Should project issue tracker be enabled. Please specify "true" or "false".'))
+    subparser.add_argument('--wiki', nargs='?', action='store', help=_('Should project wiki be enabled. Please specify "true" or "false".'))
+    subparser.add_argument('--biarch', nargs='?', action='store', help=_('Enable/disable publishing 32bit packages into 64bit repository. Please specify "true" or "false".'))
+    subparser.set_defaults(func=update)
 
     # fetch
-    parser_fetch = subparsers.add_parser('fetch', help=_('Download all the files listed in .abf.yml or file with given hash from File-Store to local directory.'))
-    parser_fetch.add_argument('filehash',  nargs='*', action='store', help=_('Download file with given hash'))
-    parser_fetch.add_argument('-o', '--only', action='append', help=_('Limit the list of downloaded files to this file name(s). This option can be specified more than once.'))
-    parser_fetch.set_defaults(func=fetch)
+    subparser = subparsers.add_parser('fetch', help=_('Download all the files listed in .abf.yml or file with given hash from File-Store to local directory.'))
+    subparser.add_argument('filehash',  nargs='*', action='store', help=_('Download file with given hash'))
+    subparser.add_argument('-o', '--only', action='append', help=_('Limit the list of downloaded files to this file name(s). This option can be specified more than once.'))
+    subparser.set_defaults(func=fetch)
 
     # remote
-    parser_remote = subparsers.add_parser('remote', help=_('Add remote Git repository and fetch it.'))
-    parser_remote.add_argument('remote_group', action='store', help=_('ABF group to fetch from. This value will be also used as the name of remote repository.'))
-    parser_remote.add_argument('remote_name', nargs='?', action='store', help=_('Project to fetch (by default the same project name is used as the current one).'))
-    parser_remote.set_defaults(func=remote)
+    subparser = subparsers.add_parser('remote', help=_('Add remote Git repository and fetch it.'))
+    subparser.add_argument('remote_group', action='store', help=_('ABF group to fetch from. This value will be also used as the name of remote repository.'))
+    subparser.add_argument('remote_name', nargs='?', action='store', help=_('Project to fetch (by default the same project name is used as the current one).'))
+    subparser.set_defaults(func=remote)
 
     # show
-    parser_show = subparsers.add_parser('show', help=_('show some general information. Bash autocomplete uses it.'))
+    subparser = subparsers.add_parser('show', help=_('show some general information. Bash autocomplete uses it.'))
     show_choices = ['buildlists', 'build-repos', 'build-platforms', 'save-to-repos', 'save-to-platforms']
-    parser_show.add_argument('type', action='store', nargs='?', choices=show_choices,help=_('The type of information to show'))
-    parser_show.add_argument('-p', '--project', action='store',  help=_('Project to show information for (if needed). Format: '
+    subparser.add_argument('type', action='store', nargs='?', choices=show_choices,help=_('The type of information to show'))
+    subparser.add_argument('-p', '--project', action='store',  help=_('Project to show information for (if needed). Format: '
         '"[group/]name". If no group specified, default group will be used.'))
-    parser_show.set_defaults(func=show)
+    subparser.set_defaults(func=show)
 
     # locate
-    parser_locate = subparsers.add_parser('locate', help=_('tool can remember the project location and use it for some reasons (abfcd, etc.).'),
+    subparser = subparsers.add_parser('locate', help=_('tool can remember the project location and use it for some reasons (abfcd, etc.).'),
     epilog=_('Every interaction with git repository (build, get, put, etc.) updates the cached location of the project (overriding '
     'an existing one if needed). For any cached project you can execute "abfcd <project>" and you will cd to the project directory.'))
     locate_choices = ['update', 'update-recursive']
-    parser_locate.add_argument('action', action='store', choices=locate_choices, nargs='?', help=_('The type of information to show'))
-    parser_locate.add_argument('-p', '--project', action='store',  help=_('Project to show information for (if needed). Format: '
+    subparser.add_argument('action', action='store', choices=locate_choices, nargs='?', help=_('The type of information to show'))
+    subparser.add_argument('-p', '--project', action='store',  help=_('Project to show information for (if needed). Format: '
         '"[group/]name". If no group specified, default group will be used.'))
-    parser_locate.add_argument('-d', '--directory', action='store',  help=_('Directory to update locations for. It should be a '
+    subparser.add_argument('-d', '--directory', action='store',  help=_('Directory to update locations for. It should be a '
             'git repository for "update" and any directory for "update-recursive". If not specified - the current directory will be used'))
-    parser_locate.set_defaults(func=locate)
+    subparser.set_defaults(func=locate)
 
     # build
-    parser_build = subparsers.add_parser('build', help=_('Initiate a build task on ABF.'), formatter_class=RawDescriptionHelpFormatter,
+    subparser = subparsers.add_parser('build', help=_('Initiate a build task on ABF.'), formatter_class=RawDescriptionHelpFormatter,
         epilog=_('NOTES:\n'
         'API takes git commit hash to build. So client have to resolve it.\n'
         '1) If you\'ve specified commit hash - it will be used "as is".\n'
@@ -209,39 +220,41 @@ def parse_command_line():
         '4) If you\'ve specified no git commit related options and you\'ve\n'
         'not specified a project name (you have to be in a git repository) -\n'
         'the top remote commit of your current branch will be used.\n'))
-    parser_build.add_argument('-p', '--project', action='store', help=_('project name ([group/]project). If no group '
+    subparser.add_argument('-p', '--project', action='store', help=_('project name ([group/]project). If no group '
         'specified, it is assumed to be your default group. If the option is not specified and you are in a git '
         'repository directory - resolve a project name from it.'))
-    parser_build.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
-    parser_build.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
-    parser_build.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
-    parser_build.add_argument('-s', '--save-to-repository', action='store', help=_('repository to save results to '
+    subparser.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
+    subparser.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
+    subparser.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
+    subparser.add_argument('-s', '--save-to-repository', action='store', help=_('repository to save results to '
         '([platform/]repository). If no platform part specified, it is assumed to be "<default_group>_personal". '
         'If this option is not specified at all, "<default_group>_personal/main" will be used.'))
-    parser_build.add_argument('-a', '--arch', action='append', help=_('architectures to build, '
+    subparser.add_argument('-a', '--arch', action='append', help=_('architectures to build, '
                         'can be set more than once. If not set - use all the available architectures.'))
-    parser_build.add_argument('-r', '--repository', action='append', help=_('repositories to build with ([platform/]repository). '
+    subparser.add_argument('-r', '--repository', action='append', help=_('repositories to build with ([platform/]repository). '
         'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
         ' If no repositories were specified at all, use the "main" repository from save-to platform.'))
-    parser_build.add_argument('-l', '--build-list', action='append', help=_('build list whose container should be used during the build. Can be specified more than once.'))
-    parser_build.add_argument('--auto-publish', action='store_true', help=_('deprecated synonym for --auto-publish-status=default.'))
-    parser_build.add_argument('--auto-publish-status', action='store', choices=BuildList.auto_publish_statuses, help=_('enable automatic publishing. Default is "%s".') %
+    subparser.add_argument('-l', '--build-list', action='append', help=_('build list whose container should be used during the build. Can be specified more than once.'))
+    subparser.add_argument('--auto-publish', action='store_true', help=_('deprecated synonym for --auto-publish-status=default.'))
+    subparser.add_argument('--auto-publish-status', action='store', choices=BuildList.auto_publish_statuses, help=_('enable automatic publishing. Default is "%s".') %
                     (BuildList.auto_publish_statuses[0]))
-    parser_build.add_argument('--skip-personal', action='store_true', help=_('do not use personal repository to resolve dependencies.'))
-    parser_build.add_argument('--testing', action='store_true', help=_('Include "testing" subrepository.'))
-    parser_build.add_argument('--no-extra-tests', action='store_true', help=_('Do not launch comprehensive tests.'))
-    parser_build.add_argument('--auto-create-container', action='store_true', help=_('enable automatic creation of container'))
-    parser_build.add_argument('--cached-chroot', action='store_true', help=_('use cached chroot for the build'))
-    parser_build.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
-    parser_build.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
+    subparser.add_argument('--skip-personal', action='store_true', help=_('do not use personal repository to resolve dependencies.'))
+    subparser.add_argument('--testing', action='store_true', help=_('Include "testing" subrepository.'))
+    subparser.add_argument('--no-extra-tests', action='store_true', help=_('Do not launch comprehensive tests.'))
+    subparser.add_argument('--auto-create-container', action='store_true', help=_('enable automatic creation of container'))
+    subparser.add_argument('--cached-chroot', action='store_true', help=_('use cached chroot for the build'))
+    subparser.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
+    subparser.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
                     (BuildList.update_types[0]) )
-    parser_build.add_argument('--skip-spec-check', action='store_true', help=_('Do not check spec file.'))
-    parser_build.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
-    parser_build.set_defaults(func=build)
+    subparser.add_argument('--external-nodes', action='store', choices=BuildList.external_nodes_vals, help=_('Use any external ABF node or own external ABF node. Default is "%s".') %
+                    (BuildList.external_nodes_vals[0]) )
+    subparser.add_argument('--skip-spec-check', action='store_true', help=_('Do not check spec file.'))
+    subparser.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
+    subparser.set_defaults(func=build)
 
     # chain-build
-    parser_chain_build = subparsers.add_parser('chain_build', help=_('Initiate a chain of build tasks on ABF.'), formatter_class=RawDescriptionHelpFormatter)
-    parser_chain_build.add_argument('project', nargs='*', action='store', help=_('Project name ([group/]project). If no group '
+    subparser = subparsers.add_parser('chain_build', help=_('Initiate a chain of build tasks on ABF.'), formatter_class=RawDescriptionHelpFormatter)
+    subparser.add_argument('project', nargs='*', action='store', help=_('Project name ([group/]project). If no group '
         'specified, it is assumed to be your default group. You can specify several projects to be built one after another. '
         'You can also group projects with ":" to indicate that they can be built in parallel. For example, '
         '"abf chain_build a b:c d" will build project "a", then (after "a" is built) will launch builds of "b" and "c" '
@@ -249,141 +262,157 @@ def parse_command_line():
         'If automated publishing is set, then console client waits for every build to be published before starting the next build in the chain. '
         'If automated container creation is set, then console client waits for container to be ready and when the next build is started, containers '
         'from all previous builds are used as extra repositories.' ))
-    parser_chain_build.add_argument('-i', '--infile', action='store', help=_('File with project names. You can omit project names in command line '
+    subparser.add_argument('-i', '--infile', action='store', help=_('File with project names. You can omit project names in command line '
         'and provide a file with project names instead. The file will be read line by line. All projects specified at the same line '
         'will be built in parallel; the next line will be processed only after all the build from the previous line are completed successfully. '
         'Project name in a line can be separated by colon (":") or by space symbols.'))
-    parser_chain_build.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
-    parser_chain_build.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
-    parser_chain_build.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
-    parser_chain_build.add_argument('-u', '--timeout', action='store', help=_('number of seconds to sleep between successive checks of build status.'))
-    parser_chain_build.add_argument('-s', '--save-to-repository', action='store', help=_('repository to save results to '
+    subparser.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
+    subparser.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
+    subparser.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
+    subparser.add_argument('-u', '--timeout', action='store', help=_('number of seconds to sleep between successive checks of build status.'))
+    subparser.add_argument('-s', '--save-to-repository', action='store', help=_('repository to save results to '
         '([platform/]repository). If no platform part specified, it is assumed to be "<default_group>_personal". '
         'If this option is not specified at all, "<default_group>_personal/main" will be used.'))
-    parser_chain_build.add_argument('-a', '--arch', action='append', help=_('architectures to build, '
+    subparser.add_argument('-a', '--arch', action='append', help=_('architectures to build, '
                         'can be set more than once. If not set - use all the available architectures.'))
-    parser_chain_build.add_argument('-r', '--repository', action='append', help=_('repositories to build with ([platform/]repository). '
+    subparser.add_argument('-r', '--repository', action='append', help=_('repositories to build with ([platform/]repository). '
         'Can be set more than once. If no platform part specified, it is assumed to be your "<default_build_platform>".'
         ' If no repositories were specified at all, use the "main" repository from save-to platform.'))
-    parser_chain_build.add_argument('-l', '--build-list', action='append', help=_('build list whose container should be used during the build. Can be specified more than once.'))
-    parser_chain_build.add_argument('--auto-publish', action='store_true', help=_('deprecated synonym for --auto-publish-status=default.'))
-    parser_chain_build.add_argument('--auto-publish-status', action='store', choices=BuildList.auto_publish_statuses, help=_('enable automatic publishing. Default is "%s".') %
+    subparser.add_argument('-l', '--build-list', action='append', help=_('build list whose container should be used during the build. Can be specified more than once.'))
+    subparser.add_argument('--auto-publish', action='store_true', help=_('deprecated synonym for --auto-publish-status=default.'))
+    subparser.add_argument('--auto-publish-status', action='store', choices=BuildList.auto_publish_statuses, help=_('enable automatic publishing. Default is "%s".') %
                     (BuildList.auto_publish_statuses[0]))
-    parser_chain_build.add_argument('--skip-personal', action='store_true', help=_('do not use personal repository to resolve dependencies.'))
-    parser_chain_build.add_argument('--testing', action='store_true', help=_('Include "testing" subrepository.'))
-    parser_chain_build.add_argument('--no-extra-tests', action='store_true', help=_('Do not launch comprehensive tests.'))
-    parser_chain_build.add_argument('--auto-create-container', action='store_true', help=_('enable automatic creation of container'))
-    parser_chain_build.add_argument('--cached-chroot', action='store_true', help=_('use cached chroot for the build'))
-    parser_chain_build.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
-    parser_chain_build.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
+    subparser.add_argument('--skip-personal', action='store_true', help=_('do not use personal repository to resolve dependencies.'))
+    subparser.add_argument('--testing', action='store_true', help=_('Include "testing" subrepository.'))
+    subparser.add_argument('--no-extra-tests', action='store_true', help=_('Do not launch comprehensive tests.'))
+    subparser.add_argument('--auto-create-container', action='store_true', help=_('enable automatic creation of container'))
+    subparser.add_argument('--cached-chroot', action='store_true', help=_('use cached chroot for the build'))
+    subparser.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
+    subparser.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
                     (BuildList.update_types[0]) )
-    parser_chain_build.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
-    parser_chain_build.set_defaults(func=chain_build)
+    subparser.add_argument('--external-nodes', action='store', choices=BuildList.external_nodes_vals, help=_('Use any external ABF node or own external ABF node. Default is "%s".') %
+                    (BuildList.external_nodes_vals[0]) )
+    subparser.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
+    subparser.set_defaults(func=chain_build)
 
     # mock-urpm
-    parser_mock_urpm = subparsers.add_parser('mock-urpm', help=_('Build a project locally using mock-urpm.'), epilog=_('No checkouts will be made,'
+    subparser = subparsers.add_parser('mock-urpm', help=_('Build a project locally using mock-urpm.'), epilog=_('No checkouts will be made,'
                                                                     'the current git repository state will be used'))
-    parser_mock_urpm.add_argument('-c', '--config', action='store', help=_('A config template to use. Specify one of the config names '
+    subparser.add_argument('-c', '--config', action='store', help=_('A config template to use. Specify one of the config names '
         'from %s. Directory path should be omitted. If no config specified, "default.cfg" will be used') % configs_dir)
-    parser_mock_urpm.set_defaults(func=localbuild_mock_urpm)
+    subparser.set_defaults(func=localbuild_mock_urpm)
 
     # rpmbuild
-    parser_rpmbuild = subparsers.add_parser('rpmbuild', help=_('Build a project locally using rpmbuild.'), epilog=_('No checkouts will be made,'
+    subparser = subparsers.add_parser('rpmbuild', help=_('Build a project locally using rpmbuild.'), epilog=_('No checkouts will be made,'
                                                                     'the current git repository state will be used'))
-    parser_rpmbuild.add_argument('-b', '--build', action='store', choices=['b', 's', 'a'], default='a', help=_('Build src.rpm (s), rpm (b) or both (a)'))
-    parser_rpmbuild.set_defaults(func=localbuild_rpmbuild)
+    subparser.add_argument('-b', '--build', action='store', choices=['b', 's', 'a'], default='a', help=_('Build src.rpm (s), rpm (b) or both (a)'))
+    subparser.set_defaults(func=localbuild_rpmbuild)
 
     # publish
-    parser_publish = subparsers.add_parser('publish', help=_('Publish the task that have already been built.'))
-    parser_publish.add_argument('task_ids', action='store', nargs="+", help=_('The IDs of tasks to publish.'))
-    parser_publish.set_defaults(func=publish)
+    subparser = subparsers.add_parser('publish', help=_('Publish the task that have already been built.'))
+    subparser.add_argument('task_ids', action='store', nargs="+", help=_('The IDs of tasks to publish.'))
+    subparser.set_defaults(func=publish)
 
     # copy
-    parser_copy = subparsers.add_parser('copy', help=_('Copy all the files from SRC_BRANCH to DST_BRANCH'))
-    parser_copy.add_argument('src_branch', action='store', help=_('source branch'))
-    parser_copy.add_argument('dst_branch', action='store', nargs='?', help=_('destination branch. If not specified, it\'s assumed to be the current branch'))
-    parser_copy.add_argument('-p', '--pack', action='store_true', help=_('Create a tar.gz from the src_branch and put this archive and spec file to dst_branch'))
-    parser_copy.set_defaults(func=copy)
+    subparser = subparsers.add_parser('copy', help=_('Copy all the files from SRC_BRANCH to DST_BRANCH'))
+    subparser.add_argument('src_branch', action='store', help=_('source branch'))
+    subparser.add_argument('dst_branch', action='store', nargs='?', help=_('destination branch. If not specified, it\'s assumed to be the current branch'))
+    subparser.add_argument('-p', '--pack', action='store_true', help=_('Create a tar.gz from the src_branch and put this archive and spec file to dst_branch'))
+    subparser.set_defaults(func=copy)
 
     # pull request
-    parser_pull = subparsers.add_parser('pullrequest', help=_('Send a pull request from SRC_BRANCH to DST_BRANCH'))
-    parser_pull.add_argument('from_ref', action='store', help=_('source ref or branch'))
-    parser_pull.add_argument('to_ref', action='store', help=_('destination ref or branch'))
-    parser_pull.add_argument('title', action='store', help=_('Request title'))
-    parser_pull.add_argument('body', action='store', help=_('Request body'))
-    parser_pull.add_argument('-p', '--project', action='store', help=_('Source project name (group/project).'))
-    parser_pull.add_argument('-d', '--dest', action='store', help=_('Destination project name (group/project). If not specified, the source project is used (this can be used to send requests from one project branch to another).'))
-    parser_pull.set_defaults(func=pull_request)
+    subparser = subparsers.add_parser('pullrequest', help=_('Send a pull request from SRC_BRANCH to DST_BRANCH'))
+    subparser.add_argument('from_ref', action='store', help=_('source ref or branch'))
+    subparser.add_argument('to_ref', action='store', help=_('destination ref or branch'))
+    subparser.add_argument('title', action='store', help=_('Request title'))
+    subparser.add_argument('body', action='store', help=_('Request body'))
+    subparser.add_argument('-p', '--project', action='store', help=_('Source project name (group/project).'))
+    subparser.add_argument('-d', '--dest', action='store', help=_('Destination project name (group/project). If not specified, the source project is used (this can be used to send requests from one project branch to another).'))
+    subparser.set_defaults(func=pull_request)
 
     # fork project
-    parser_pull = subparsers.add_parser('fork', help=_('Fork existing project'))
-    parser_pull.add_argument('source_project', action='store', help=_('project to fork (group/project)'))
-    parser_pull.add_argument('target_project', action='store', nargs='?', help=_('target project group and name (group/project)'))
-    parser_pull.set_defaults(func=fork_project)
+    subparser = subparsers.add_parser('fork', help=_('Fork existing project'))
+    subparser.add_argument('source_project', action='store', help=_('project to fork (group/project)'))
+    subparser.add_argument('target_project', action='store', nargs='?', help=_('target project group and name (group/project)'))
+    subparser.set_defaults(func=fork_project)
 
     # alias project
-    parser_pull = subparsers.add_parser('alias', help=_('Create alias of existing project'))
-    parser_pull.add_argument('source_project', action='store', help=_('project to fork (group/project)'))
-    parser_pull.add_argument('target_project', action='store', nargs='?', help=_('target project group and name (group/project)'))
-    parser_pull.set_defaults(func=alias_project)
+    subparser = subparsers.add_parser('proj_alias', help=_('Create alias of existing project'))
+    subparser.add_argument('source_project', action='store', help=_('project to fork (group/project)'))
+    subparser.add_argument('target_project', action='store', help=_('target project group and name (group/project)'))
+    subparser.set_defaults(func=alias_project)
+
+    # create empty project
+    subparser = subparsers.add_parser('create_empty', help=_('Create empty project'))
+    subparser.add_argument('name', action='store', help=_('project name'))
+    subparser.add_argument('owner', action='store', nargs='?', help=_('who will own the project; default_owner is used by default'))
+    subparser.add_argument('--description', action='store', help=_('project description'))
+    subparser.add_argument('--visibility', action='store', choices=['public', 'private'], default='public', help=_('project visibility'))
+    subparser.set_defaults(func=create_empty)
 
     # create project from SRPM
-    parser_pull = subparsers.add_parser('create', help=_('Create project from SRPM'))
-    parser_pull.add_argument('srpm', action='store', help=_('srpm file'))
-    parser_pull.add_argument('owner', action='store', nargs='?', help=_('who will own the project; default_owner is used by default'))
-    parser_pull.add_argument('-b', '--branch', action='append', help=_('create additional branch; can be set more than once.'))
-    parser_pull.add_argument('--no-def-branch', action='store_true', help=_('Do not automatically create branch set as default in user config (if it is set to smth different from "master").'))
-    parser_pull.set_defaults(func=create)
+    subparser = subparsers.add_parser('create', help=_('Create project from SRPM'))
+    subparser.add_argument('srpm', action='store', help=_('srpm file'))
+    subparser.add_argument('owner', action='store', nargs='?', help=_('who will own the project; default_owner is used by default'))
+    subparser.add_argument('-b', '--branch', action='append', help=_('create additional branch; can be set more than once.'))
+    subparser.add_argument('--no-def-branch', action='store_true', help=_('Do not automatically create branch set as default in user config (if it is set to smth different from "master").'))
+    subparser.set_defaults(func=create)
+
+    # destroy project
+    subparser = subparsers.add_parser('destroy', help=_('Destroy project'))
+    subparser.add_argument('project', action='store', help=_('project name. ([group/]project). If no group specified, '
+            'it\'s assumed to be your default group.'))
+    subparser.set_defaults(func=destroy)
 
     # add project to repository
-    parser_pull = subparsers.add_parser('add', help=_('Add project to specified repository'))
-    parser_pull.add_argument('repository', action='store', help=_('target repository ([platform/]repository)'))
-    parser_pull.add_argument('-p', '--project', action='store', help=_('project name (group/project).'))
-    parser_pull.set_defaults(func=add_project_to_repository)
+    subparser = subparsers.add_parser('add', help=_('Add project to specified repository'))
+    subparser.add_argument('repository', action='store', help=_('target repository ([platform/]repository)'))
+    subparser.add_argument('-p', '--project', action='store', help=_('project name (group/project).'))
+    subparser.set_defaults(func=add_project_to_repository)
 
     # remove project from repository
-    parser_pull = subparsers.add_parser('remove', help=_('Remove project from specified repository'))
-    parser_pull.add_argument('repository', action='store', help=_('target repository ([platform/]repository)'))
-    parser_pull.add_argument('-p', '--project', action='store', help=_('project name (group/project).'))
-    parser_pull.set_defaults(func=remove_project_from_repository)
+    subparser = subparsers.add_parser('remove', help=_('Remove project from specified repository'))
+    subparser.add_argument('repository', action='store', help=_('target repository ([platform/]repository)'))
+    subparser.add_argument('-p', '--project', action='store', help=_('project name (group/project).'))
+    subparser.set_defaults(func=remove_project_from_repository)
 
     # status
-    parser_status = subparsers.add_parser('status', help=_('get a build-task status'), epilog=_('If a project specified '
+    subparser = subparsers.add_parser('status', help=_('get a build-task status'), epilog=_('If a project specified '
     ' or you are in a git repository - try to get the IDs from the last build task sent for this project. If you are not'
     ' in a git repository directory and project is not specified - try to get build IDs from the last build you\'ve done '
     'with console client.'))
-    parser_status.add_argument('ID', action='store', nargs='*', help=_('build list ID'))
-    parser_status.add_argument('-p', '--project', action='store',  help=_('Project. If last IDs for this project can be found - use them'))
-    parser_status.add_argument('-s', '--short', action='store_true',  help=_('Show one-line information including id, project, '
+    subparser.add_argument('ID', action='store', nargs='*', help=_('build list ID'))
+    subparser.add_argument('-p', '--project', action='store',  help=_('Project. If last IDs for this project can be found - use them'))
+    subparser.add_argument('-s', '--short', action='store_true',  help=_('Show one-line information including id, project, '
                                                                                                         'arch and status'))
-    parser_status.set_defaults(func=status)
+    subparser.set_defaults(func=status)
 
     # clean
-    parser_clean = subparsers.add_parser('clean', help=_('Analyze spec file and show missing and unnecessary files from '
+    subparser = subparsers.add_parser('clean', help=_('Analyze spec file and show missing and unnecessary files from '
                                                                             'the current git repository directory.'))
-    parser_clean.add_argument('--auto-remove', action='store_true', help=_('automatically remove all the unnecessary files'))
-    parser_clean.set_defaults(func=clean)
+    subparser.add_argument('--auto-remove', action='store_true', help=_('automatically remove all the unnecessary files'))
+    subparser.set_defaults(func=clean)
 
     # search
-    parser_search = subparsers.add_parser('search', help=_('Search for something on ABF.'), epilog=_('NOTE: only first 100 results of any request will be shown'))
+    subparser = subparsers.add_parser('search', help=_('Search for something on ABF.'), epilog=_('NOTE: only first 100 results of any request will be shown'))
     search_choices = ['users', 'groups', 'platforms', 'projects']
-    parser_search.add_argument('type', action='store', choices=search_choices, help=_('what to search for'))
-    parser_search.add_argument('query', action='store', help=_('a string to search for'))
-    parser_search.set_defaults(func=search)
+    subparser.add_argument('type', action='store', choices=search_choices, help=_('what to search for'))
+    subparser.add_argument('query', action='store', help=_('a string to search for'))
+    subparser.set_defaults(func=search)
 
     #list
 
     # info
-    parser_info = subparsers.add_parser('info', help=_('get information about single instance'))
+    subparser = subparsers.add_parser('info', help=_('get information about single instance'))
     info_choices = ['platforms', 'repositories', 'projects']
-    parser_info.add_argument('type', action='store', choices=info_choices, help=_('type of the instance'))
-    parser_info.add_argument('-f', '--filter', action='store', help=_('The filter may be specified by defining multiple pairs <type>.<attribute>=<value> or <attribute>=<value>, where <type> is one of the following positional arguments: %s, <attribute> is the one of the instance fields or special attribute (page - using for pagination) and <value> - string, that can take asterisk (*) or anything else... Example: abf info projects -f platforms.name=rosa2012lts page=*') % info_choices, nargs='*')
-    parser_info.add_argument('-o', '--output', action='store', help=_('output format '), nargs='*')
-    parser_info.set_defaults(func=info_single)
+    subparser.add_argument('type', action='store', choices=info_choices, help=_('type of the instance'))
+    subparser.add_argument('-f', '--filter', action='store', help=_('The filter may be specified by defining multiple pairs <type>.<attribute>=<value> or <attribute>=<value>, where <type> is one of the following positional arguments: %s, <attribute> is the one of the instance fields or special attribute (page - using for pagination) and <value> - string, that can take asterisk (*) or anything else... Example: abf info projects -f platforms.name=rosa2012lts page=*') % info_choices, nargs='*')
+    subparser.add_argument('-o', '--output', action='store', help=_('output format '), nargs='*')
+    subparser.set_defaults(func=info_single)
 
     # test
-    parser_test = subparsers.add_parser('test', help=_('Execute a set of internal datamodel tests'))
-    parser_test.set_defaults(func=test)
+    subparser = subparsers.add_parser('test', help=_('Execute a set of internal datamodel tests'))
+    subparser.set_defaults(func=test)
 
     for s in subparsers._name_parser_map:
         subparsers._name_parser_map[s].add_argument('-v', '--verbose', action='store_true', help=_('be verbose, display even debug messages'))
@@ -581,10 +610,13 @@ def localbuild_rpmbuild():
     if os.path.exists(src_dir):
         shutil.rmtree(src_dir)
     src = get_root_git_dir()
-    cmd = ['abf', 'fetch']
-    if command_line.verbose:
-        cmd.append('-v')
-    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+
+    if os.path.isfile(".abf.yml"):
+        cmd = ['abf', 'fetch']
+        if command_line.verbose:
+            cmd.append('-v')
+        execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+
     shutil.copytree(src, src_dir, symlinks=True)
 
     spec_path = find_spec(src_dir)
@@ -747,6 +779,13 @@ def get():
     if 'projects_cfg' in globals():
         projects_cfg[proj]['location'] = os.path.join(os.getcwd(), project_name)
 
+def destroy():
+    log.debug(_('DESTROY started'))
+
+    proj = get_project(models, must_exist=True, name=command_line.project)
+
+    ProjectCreator.destroy_project(models, proj.id)
+
 def put():
     log.debug(_('PUT started'))
 
@@ -771,8 +810,16 @@ def put():
     if not command_line.message:
         return
 
-    cmd = ['git', 'add', '--all']
-    execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+    if not command_line.add_folders:
+        files = [f for f in os.listdir('.') if os.path.isfile(f)]
+        for f in files:
+            if not is_text_file(f) and not command_line.add_binaries:
+                continue
+            cmd = ['git', 'add', f]
+            execute_command(cmd, print_to_stdout=True, exit_on_error=True)
+    else:
+        cmd = ['git', 'add', '--all']
+        execute_command(cmd, print_to_stdout=True, exit_on_error=True)
 
     if os.path.isfile(yaml_path):
         cmd = ['git', 'add', '-f', yaml_path]
@@ -965,6 +1012,32 @@ def alias_project():
     ProjectCreator.alias_project(models, source_proj.id, owner_id, target_name)
 
 
+def create_empty():
+    log.debug(_('CREATE EMPTY PROJECT started'))
+
+    if not command_line.owner:
+        command_line.owner = default_group
+
+    owner_group = Group.search(models, command_line.owner)
+    owner_user = User.search(models, command_line.owner)
+
+    if owner_group:
+        owner_id = owner_group[0].id
+        owner_type = "Group"
+    elif owner_user:
+        owner_id = owner_user[0].id
+        owner_type = "User"
+    else:
+        print(_("Incorrect owner data"))
+        return 1
+
+    description = ""
+    if command_line.description:
+        description = command_line.description
+
+    ProjectCreator.new_project(models, command_line.name, description, owner_id, owner_type, command_line.visibility)
+
+
 def create():
     log.debug(_('CREATE PROJECT started'))
 
@@ -1009,6 +1082,11 @@ def create():
         elif (not command_line.no_def_branch) and default_branch > '' and default_branch != 'master':
             os.system("git checkout -b " + default_branch);
             os.system("git push origin " + default_branch);
+
+        # Supress output and errors for now, since only admins can set maintainers
+        set_maintainer = Popen(['abf', 'update', '--maintainer', login], stdout=PIPE, stderr=PIPE)
+        out, err = set_maintainer.communicate()
+#        os.system("abf update --maintainer " + login)
 
         # Go back to initial dir and delete temp folder
         os.chdir(curdir)
@@ -1168,7 +1246,7 @@ def build(return_ids=False):
             return (None, None, None)
 
         for repo in proj.repositories:
-            if repo.platform.name == as_branch or (as_branch == 'master' and repo.platform.name == 'cooker'):
+            if repo.platform.name == as_branch or (as_branch == 'master' and repo.platform.name == 'cooker') or (as_branch == 'rosa2014.1' and repo.platform.name == 'current'):
                 as_saveto = repo
         if not as_saveto:
             log.info(_('Could not resolve a platform to save to from the branch name "%s".') % as_branch)
@@ -1347,6 +1425,9 @@ def build(return_ids=False):
     else:
         use_extra_tests = False
 
+    if not command_line.auto_publish and not command_line.auto_publish_status:
+        command_line.auto_publish_status = default_publish_status
+
     if command_line.auto_publish and not command_line.auto_publish_status:
         command_line.auto_publish_status = 'default'
 
@@ -1371,7 +1452,9 @@ def build(return_ids=False):
         auto_create_container,
         command_line.testing,
         use_extra_tests,
-        extra_build_lists
+        extra_build_lists,
+        # TODO: Read external_nodes config value from user's profile
+        command_line.external_nodes or BuildList.external_nodes_vals[0]
     )
     ids = ','.join([str(i) for i in build_ids])
     if 'projects_cfg' in globals():

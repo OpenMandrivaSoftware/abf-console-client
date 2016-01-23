@@ -558,6 +558,7 @@ class BuildList(Model):
                 self.arch.name, self.status_string)
 
     update_types = ['security', 'bugfix', 'enhancement', 'recommended', 'newpackage']
+    external_nodes_vals = ['none', 'everything', 'owned']
     auto_publish_statuses = ['default', 'none', 'testing']
     @staticmethod
     def new_build_task(models,
@@ -574,25 +575,48 @@ class BuildList(Model):
 			auto_create_container,
 			include_testing_subrepo,
 			use_extra_tests,
-			extra_build_lists):
-        DATA = {
-            'project_id':               project.id,
-            'commit_hash':              commit_hash,
-            'update_type':              update_type,
-            'save_to_repository_id':    save_to_repository.id,
-            'build_for_platform_id':    None,
-            'auto_publish_status':      auto_publish_status,
-            'project_version':          project_version,
-            'auto_create_container':    auto_create_container,
-            'use_cached_chroot':	cached_chroot,
-            'save_buildroot':		save_chroot,
-            'arch_id':                  None,
-            'include_repos':            [],
-            'extra_repositories':       [],
-            'extra_build_lists':        extra_build_lists,
-            'include_testing_subrepository': include_testing_subrepo,
-            'use_extra_tests':		use_extra_tests
-        }
+			extra_build_lists,
+			external_nodes):
+        if external_nodes == 'none':
+            DATA = {
+                'project_id':               project.id,
+                'commit_hash':              commit_hash,
+                'update_type':              update_type,
+                'save_to_repository_id':    save_to_repository.id,
+                'build_for_platform_id':    None,
+                'auto_publish_status':      auto_publish_status,
+                'project_version':          project_version,
+                'auto_create_container':    auto_create_container,
+                'use_cached_chroot':        cached_chroot,
+                'save_buildroot':           save_chroot,
+                'arch_id':                  None,
+                'include_repos':            [],
+                'extra_repositories':       [],
+                'extra_build_lists':        extra_build_lists,
+                'include_testing_subrepository': include_testing_subrepo,
+                'use_extra_tests':          use_extra_tests
+            }
+        else:
+            DATA = {
+                'project_id':               project.id,
+                'commit_hash':              commit_hash,
+                'update_type':              update_type,
+                'save_to_repository_id':    save_to_repository.id,
+                'build_for_platform_id':    None,
+                'auto_publish_status':      auto_publish_status,
+                'project_version':          project_version,
+                'auto_create_container':    auto_create_container,
+                'use_cached_chroot':        cached_chroot,
+                'save_buildroot':           save_chroot,
+                'arch_id':                  None,
+                'include_repos':            [],
+                'extra_repositories':       [],
+                'extra_build_lists':        extra_build_lists,
+                'include_testing_subrepository': include_testing_subrepo,
+                'use_extra_tests':          use_extra_tests,
+                'external_nodes':           external_nodes
+            }
+
         build_platforms = {}
 
         if not skip_personal and string.find(save_to_repository.platform.name,"_personal") > 0:
@@ -681,12 +705,17 @@ class ProjectCreator(Model):
         return '%s (%s)' % (self.name, self.owner)
 
     @staticmethod
-    def new_project(models, name, description, owner_id, owner_type):
+    def new_project(models, name, description, owner_id, owner_type, visibility='public'):
+        # WebUI and API use different terms for visibility: Public/Private vs Open/Hidden
+        if visibility == "public":
+            vis = "open"
+        else:
+            vis = "hidden"
         DATA = {
             'name': name,
             'owner_id': owner_id,
             'owner_type': owner_type,
-            'visibility': 'open',
+            'visibility': vis,
             'description': description,
             'is_package': 'true',
             'default_branch': 'master',
@@ -772,12 +801,27 @@ class ProjectCreator(Model):
 
         log.debug(_('Creating alias for a project: ') + str(DATA))
         try:
-            result = models.jsn.fork_project(DATA, proj_id)
+            result = models.jsn.alias_project(DATA, proj_id)
         except BadRequestError, ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
         log.info(_("The project alias has been created."))
+
+    @staticmethod
+    def destroy_project(models, proj_id):
+        DATA = {
+            'id': proj_id,
+            }
+        log.debug(_('Destroying project: ') + str(proj_id))
+        try:
+            result = models.jsn.destroy_project(DATA, proj_id)
+        except BadRequestError, ex:
+            log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
+                'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
+            exit(1)
+        log.info(_("The project has been destroyed."))
+
 
 class Models(object):
     _instance = {}

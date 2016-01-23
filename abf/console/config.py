@@ -77,7 +77,7 @@ class Section(dict):
         try:
             res = self.config.get(self.section, key)
         except ConfigParser.NoOptionError, ex:
-            if key == 'default_branch':
+            if key in ['default_branch', 'default_publish_status']:
                 print(_('non-critical error in config "%(path)s": %(exception)s') % {'path': self.conf_path, 'exception': str(ex)})
                 return ''
             else:
@@ -197,6 +197,11 @@ class Config(dict):
         if 'file_store_url' not in self['main']:
             filestore_domain = self.ask_user_url('File-store URL [%s]: ' % Config.default_filestore_url, Config.default_filestore_url)
             self['main']['file_store_url'] = filestore_domain
+
+        if 'default_publish_status' not in self['main']:
+            def_status = 'default'
+            res = ask_user('Default publishing status for new builds [%s]: ' % def_status, can_be_empty=True)
+            self['main']['default_publish_status'] = res or def_status
 
         #configure logging
         self['formatters']['keys'] = 'verbose,simple'
