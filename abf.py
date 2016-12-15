@@ -306,6 +306,7 @@ def parse_command_line():
     subparser = subparsers.add_parser('rpmbuild', help=_('Build a project locally using rpmbuild.'), epilog=_('No checkouts will be made,'
                                                                     'the current git repository state will be used'))
     subparser.add_argument('-b', '--build', action='store', choices=['b', 's', 'a'], default='a', help=_('Build src.rpm (s), rpm (b) or both (a)'))
+    subparser.add_argument('-s', '--save-rpmbuild-folder', action='store_true', help=_('Copy the whole rpmbuild folder into the current folder after the build'))
     subparser.set_defaults(func=localbuild_rpmbuild)
 
     # publish
@@ -634,21 +635,24 @@ def localbuild_rpmbuild():
         log.error(_("Can not execute rpmbuild (%s). Maybe it is not installed?") % str(ex))
         exit(1)
     log.info(_('Moving files to current directory...'))
-    items = [x for x in os.walk(src_dir+'/SRPMS')] + [x for x in os.walk(src_dir+'/RPMS')]
-    for item in items:
-        path, dirs, files = item
-        for f in files:
-            if not f.endswith('.rpm'):
-                continue
-            ff = os.path.join(path, f)
-            new_ff = os.path.join(os.getcwd(), f)
-            if os.path.exists(new_ff):
-                os.remove(new_ff)
-            shutil.move(ff, os.getcwd())
-            if new_ff.endswith('.src.rpm'):
-                log.info(_('SRPM: ') + new_ff)
-            else:
-                log.info(_('RPM: ') + new_ff)
+    if command_line.save_rpmbuild_folder:
+        shutil.copytree(src_dir, src + "/rpmbuild", symlinks=True)
+    else:
+        items = [x for x in os.walk(src_dir+'/SRPMS')] + [x for x in os.walk(src_dir+'/RPMS')]
+        for item in items:
+            path, dirs, files = item
+            for f in files:
+                if not f.endswith('.rpm'):
+                    continue
+                ff = os.path.join(path, f)
+                new_ff = os.path.join(os.getcwd(), f)
+                if os.path.exists(new_ff):
+                    os.remove(new_ff)
+                shutil.move(ff, os.getcwd())
+                if new_ff.endswith('.src.rpm'):
+                    log.info(_('SRPM: ') + new_ff)
+                else:
+                    log.info(_('RPM: ') + new_ff)
 
     shutil.rmtree(src_dir)
 
