@@ -606,10 +606,7 @@ def alias():
 
 def localbuild_rpmbuild():
     log.debug(_('RPMBUILD started'))
-    src_dir = '/tmp/abf/rpmbuild'
-    mkdirs('/tmp/abf')
-    if os.path.exists(src_dir):
-        shutil.rmtree(src_dir)
+    src_dir = tempfile.mkdtemp()
     src = get_root_git_dir()
 
     if os.path.isfile(".abf.yml"):
@@ -618,6 +615,8 @@ def localbuild_rpmbuild():
             cmd.append('-v')
         execute_command(cmd, print_to_stdout=True, exit_on_error=True)
 
+    print " CP: " + src + " : " + src_dir
+    shutil.rmtree(src_dir)
     shutil.copytree(src, src_dir, symlinks=True)
 
     spec_path = find_spec(src_dir)
@@ -634,10 +633,30 @@ def localbuild_rpmbuild():
     except OSError, ex:
         log.error(_("Can not execute rpmbuild (%s). Maybe it is not installed?") % str(ex))
         exit(1)
-    log.info(_('Moving files to current directory...'))
+    except ReturnCodeNotZero:
+        log.info(_('Saving build folders to current directory...'))
+        if os.path.exists(src + "/BUILD"):
+            shutil.rmtree(src + "/BUILD")
+        if os.path.exists(src + "/BUILDROOT"):
+            shutil.rmtree(src + "/BUILDROOT")
+        if os.path.exists(src_dir + "/BUILD"):
+            shutil.copytree(src_dir + "/BUILD", src + "/BUILD", symlinks=True)
+        if os.path.exists(src_dir + "/BUILDROOT"):
+            shutil.copytree(src_dir + "/BUILDROOT", src + "/BUILDROOT", symlinks=True)
+
+    log.info(_('Moving files to the current directory...'))
+
     if command_line.save_rpmbuild_folder:
         shutil.copytree(src_dir, src + "/rpmbuild", symlinks=True)
     else:
+        for item in os.listdir(src_dir):
+            if os.path.isfile(item) and not item.endswith('.spec') and item != ".abf.yml":
+                log.info(_('SOURCE: ') + item)
+                new_ff = os.path.join(os.getcwd(), item)
+                if os.path.exists(new_ff):
+                    os.remove(new_ff)
+                shutil.move(src_dir + "/" + item, os.getcwd())
+
         items = [x for x in os.walk(src_dir+'/SRPMS')] + [x for x in os.walk(src_dir+'/RPMS')]
         for item in items:
             path, dirs, files = item
