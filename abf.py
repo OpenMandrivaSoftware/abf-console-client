@@ -606,7 +606,10 @@ def alias():
 
 def localbuild_rpmbuild():
     log.debug(_('RPMBUILD started'))
-    src_dir = tempfile.mkdtemp()
+    src_dir = '/tmp/abf/rpmbuild'
+    mkdirs('/tmp/abf')
+    if os.path.exists(src_dir):
+        shutil.rmtree(src_dir)
     src = get_root_git_dir()
 
     if os.path.isfile(".abf.yml"):
@@ -615,8 +618,6 @@ def localbuild_rpmbuild():
             cmd.append('-v')
         execute_command(cmd, print_to_stdout=True, exit_on_error=True)
 
-    print " CP: " + src + " : " + src_dir
-    shutil.rmtree(src_dir)
     shutil.copytree(src, src_dir, symlinks=True)
 
     spec_path = find_spec(src_dir)
