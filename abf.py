@@ -771,9 +771,15 @@ def get_repo_id(repo_name, pl_name):
         log.error(_("Platform %s doesn't exists!") % (pl_name))
         exit(1)
 
+    repo_found = False
     for repo in plat.repositories:
         if repo.name == repo_name:
+            repo_found = True
             break
+
+    if not repo_found:
+        log.error(_("Repository %s doesn't exists!") % (repo_name))
+        exit(1)
 
     return repo.id
 
