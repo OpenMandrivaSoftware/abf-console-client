@@ -761,9 +761,15 @@ def split_repo_name(fullname):
 def get_repo_id(repo_name, pl_name):
     # TODO: better to just get plaform by name...
     platforms = Platform.search(models, pl_name)
+    plat_found = False
     for plat in platforms:
         if plat.name == pl_name:
+            plat_found = True
             break
+
+    if not plat_found:
+        log.error(_("Platform %s doesn't exists!") % (pl_name))
+        exit(1)
 
     for repo in plat.repositories:
         if repo.name == repo_name:
