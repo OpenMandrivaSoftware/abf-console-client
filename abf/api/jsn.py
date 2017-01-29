@@ -73,6 +73,7 @@ class AbfJson(object):
         "Invalid email or password.": AuthError,
         "403 Forbidden | Rate Limit Exceeded": RateLimitError,
         "Page not found": PageNotFoundError,
+        "Project has not been forked. Name has already been taken": NameTakenError,
         "Error 404. Resource not found!": PageNotFoundError,
         "Something went wrong. We've been notified about this issue and we'll take a look at it shortly.": InternalServerError,
         "We update the site, it will take some time. We are really trying to do it fast. We apologize for any inconvenience..": ServerWorksError,
@@ -102,6 +103,9 @@ class AbfJson(object):
             # when this project is already assigned to some repo of the same platform
             if 'message' in res['repository'] and 'error' in res['repository']['message']:
                 m = res['repository']['message']
+        elif 'project' in res:
+            if 'message' in res['project'] and ('error' in res['project']['message'] or 'has not been' in res['project']['message']):
+                m = res['project']['message']
         if 'error' in res:
             m = res['error']
         if 'Error' in res:

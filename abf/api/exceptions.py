@@ -1,12 +1,9 @@
 
-
 class AbfApiException(Exception):
     pass
 
-
 class PageNotFoundError(AbfApiException):
     pass
-
 
 class AuthError(AbfApiException):
     pass
@@ -24,4 +21,7 @@ class ServerWorksError(AbfApiException):
     pass
 
 class BadRequestError(AbfApiException):
+    pass
+
+class NameTakenError(AbfApiException):
     pass
