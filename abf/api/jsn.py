@@ -85,16 +85,23 @@ class AbfJson(object):
     # in case of this error, get_url_contents will print the error message and exit
     fatal_errors = [AuthError, RateLimitError, InternalServerError, ServerWorksError]
 
-    def process_response(self, response_sting):
+    def process_response(self, response_string):
         try:
-            res = json.loads(response_sting)
+            res = json.loads(response_string)
         except ValueError, ex:
             self.log.error(_("Internal server error: it has returned non-json data. "))
-            print response_sting
+            print response_string
             exit(1)
         m = None
         if 'message' in res and res['message'] not in AbfJson.good_messages:
             m = res['message']
+        elif 'repository' in res:
+            # Unfortunately ABF doesn't recognize that the project is not in repo
+            # when trying to remove it, so on project remove we always return success.
+            # But we can still catch an error when trying to add a project to repo
+            # when this project is already assigned to some repo of the same platform
+            if 'message' in res['repository'] and 'error' in res['repository']['message']:
+                m = res['repository']['message']
         if 'error' in res:
             m = res['error']
         if 'Error' in res:
