@@ -111,11 +111,11 @@ def get_project_data(spec_path):
         sources = []
         patches = []
         for src in sources_all:
-            name, number, flag = src
+            fname, number, flag = src
             if flag & src_flag: # source file
-                sources.append((name, number))
+                sources.append((fname, number))
             elif flag & patch_fkag:
-                patches.append((name, number))
+                patches.append((fname, number))
         return {'name': name, 'version': version, 'sources': sources, 'patches': patches}
 
 
