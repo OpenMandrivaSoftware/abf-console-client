@@ -128,8 +128,8 @@ def parse_command_line():
             'Default is 0B.'))
     subparser.add_argument('-n', '--do-not-remove-files', action='store_true', help=_('By default files are being removed on uploading. Override this behavior.'))
     subparser.add_argument('-a', '--upload-all', action='store_true', help=_('By default, console client analyzes spec file and tries to detect which files located in the '
-										'current folder are really used by the project and uploads only these files to file store. '
-										'With this option, console client will upload all binary files located in the current folder.'))
+                                        'current folder are really used by the project and uploads only these files to file store. '
+                                        'With this option, console client will upload all binary files located in the current folder.'))
     subparser.set_defaults(func=put)
 
     # store

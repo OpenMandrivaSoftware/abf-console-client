@@ -466,7 +466,7 @@ class Project(Model):
 
     @staticmethod
     def update(models, project, name, description, visibility, is_package, default_branch,
-		has_issues, has_wiki, publish_i686_into_x86_64, maintainer_id):
+        has_issues, has_wiki, publish_i686_into_x86_64, maintainer_id):
         DATA = {
             'id': project.id,
             'name': name,
@@ -538,12 +538,12 @@ class BuildList(Model):
 
         self.params_dict['chroot_tree'] = ''
         if self.init_data['logs']:
-    	    self.params_dict['log_url'] = self.init_data['logs'][0]['url'] + '.log?show=True'
-    	    for log in self.init_data['logs']:
-    	        if log["file_name"] == "chroot-tree.log":
-    	            self.params_dict["chroot_tree"] = log["url"] + '.log?show=True'
+            self.params_dict['log_url'] = self.init_data['logs'][0]['url'] + '.log?show=True'
+            for log in self.init_data['logs']:
+                if log["file_name"] == "chroot-tree.log":
+                    self.params_dict["chroot_tree"] = log["url"] + '.log?show=True'
         else:
-    	    self.params_dict['log_url'] = ''
+            self.params_dict['log_url'] = ''
 
         self.params_dict['status_string'] = BuildList.status_by_id[self.params_dict['status']]
         if self.params_dict['status'] in BuildList.final_statuses:
@@ -561,21 +561,21 @@ class BuildList(Model):
     auto_publish_statuses = ['default', 'none', 'testing']
     @staticmethod
     def new_build_task(models,
-			project,
-			save_to_repository,
-			repositories,
-			commit_hash,
-			project_version,
-			update_type,
-			auto_publish_status,
-			arches, skip_personal,
-			cached_chroot,
-			save_chroot,
-			auto_create_container,
-			include_testing_subrepo,
-			use_extra_tests,
-			extra_build_lists,
-			external_nodes):
+            project,
+            save_to_repository,
+            repositories,
+            commit_hash,
+            project_version,
+            update_type,
+            auto_publish_status,
+            arches, skip_personal,
+            cached_chroot,
+            save_chroot,
+            auto_create_container,
+            include_testing_subrepo,
+            use_extra_tests,
+            extra_build_lists,
+            external_nodes):
         if external_nodes == 'none':
             DATA = {
                 'project_id':               project.id,
