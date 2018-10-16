@@ -69,7 +69,7 @@ __abf_rpmbuild()
 
 __abf_build()
 {
-  __abf_opts "--branch --build-list --tag --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --auto-publish --update-type --skip-spec-check --auto-create-container --no-extra-tests --cached-chroot --save-chroot --testing --external-nodes"
+  __abf_opts "--branch --build-list --tag --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --auto-publish --update-type --skip-spec-check --auto-create-container --no-extra-tests --no-cached-chroot --save-chroot --testing --external-nodes"
   update_types="security bugfix enhancement recommended newpackage"
   external_nodes_vals="owned everything"
   auto_publish_status="none default testing"
@@ -116,7 +116,7 @@ __abf_build()
 
 __abf_chain_build()
 {
-  __abf_opts "--branch --build-list --tag --infile --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --auto-publish --skip-spec-check --auto-create-container --no-extra-tests --cached-chroot --testing"
+  __abf_opts "--branch --build-list --tag --infile --commit --target-platform --arch --repository --save-to-repository --auto-publish-status --auto-publish --skip-spec-check --auto-create-container --no-extra-tests --no-cached-chroot --testing"
   auto_publish_status="none default testing"
 
   if [ ${prev} == --auto-publish-status ] ; then

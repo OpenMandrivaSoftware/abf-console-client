@@ -11,8 +11,8 @@ import re
 import yaml
 import tempfile
 import magic
-import sha
-import urllib2
+import hashlib
+import urllib.request, urllib.error, urllib.parse
 
 from abf.console.log import Log
 from abf.api.exceptions import *
@@ -227,9 +227,9 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
         with open(yaml_path, 'r') as fd:
             try:
                 yaml_data = yaml.load(fd)
-            except yaml.scanner.ScannerError, ex:
+            except yaml.scanner.ScannerError as ex:
                 log.error(_('Invalid yml file %(file)s!\nProblem in line %(line)d column %(col)d: %(exception)s') % {'file': yaml_path, 'line': ex.problem_mark.line, 'col': ex.problem_mark.column, 'exception': ex.problem})
-            except yaml.composer.ComposerError, ex:
+            except yaml.composer.ComposerError as ex:
                 log.error(_('Invalid yml file %(file)s!\n%(exception)s') % {'file': yaml_path, 'exception': ex})
 
         if not 'sources' in yaml_data:
@@ -327,7 +327,7 @@ def pack_project(root_path):
     cmd = ['tar', 'czf', full_tarball_path, '--exclude-vcs', os.path.basename(root_path)]
     try:
         execute_command(cmd, cwd=os.path.dirname(root_path), exit_on_error=False)
-    except ReturnCodeNotZero, ex:
+    except ReturnCodeNotZero as ex:
         if ex.code != 1:
             raise
 
@@ -362,16 +362,17 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
             stdin=open("/dev/null", "r"),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            encoding='utf-8',
             env=env,
             cwd=cwd
             )
         # use select() to poll for output so we dont block
         output = logOutput([child.stdout, child.stderr],
                 start, timeout, print_to_stdout=print_to_stdout)
-    except Exception, ex:
+    except Exception as ex:
         # kill children if they arent done
         if type(ex) == IOError and ex.errno==4:
-            print(_('Process execution has been terminated'))
+            print((_('Process execution has been terminated')))
             exit()
         try:
             if child is not None and child.returncode is None:
@@ -432,7 +433,7 @@ def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
                             sys.stdout.write(r)
                     else:
                         r = fds[1].read()
-                        #print r
+                        print(r)
                         output += r
                         if print_to_stdout:
                             sys.stdout.write(r)
@@ -480,8 +481,8 @@ def fetch_files(models, yaml_path, file_names=None):
                 log.info(_('The file %s already presents but its hash is not the same as in .abf.yml, so it will be rewritten.') % file_name)
         try:
             models.jsn.fetch_file(to_fetch[file_name], path)
-        except AbfApiException, ex:
-            print(_('error: ') + str(ex))
+        except AbfApiException as ex:
+            print((_('error: ') + str(ex)))
 
 def upload_files(models, min_size, path=None, remove_files=True, upload_all=False):
     log.debug('Uploading files for directory ' + str(path))
@@ -516,7 +517,7 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
     else:
         try:
             sources = get_project_data(spec_path)['sources']
-        except Exception, ex:
+        except Exception as ex:
             log.error(ex)
             return 1
     for src, num in sources:
@@ -614,7 +615,7 @@ def human2bytes(s):
     num = float(num)
     letter = s.strip().lower()
     ss = None
-    for name, sset in SYMBOLS.items():
+    for name, sset in list(SYMBOLS.items()):
         if letter in sset:
             ss = sset
             break

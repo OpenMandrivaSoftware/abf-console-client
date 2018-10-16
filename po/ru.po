@@ -604,8 +604,8 @@ msgid "enable automatic creation of container"
 msgstr "включить автоматическое создание контейнера"
 
 #: ../abf.py:245 ../abf.py:289
-msgid "use cached chroot for the build"
-msgstr "использовать для сборки кэшированное окружение"
+msgid "do NOT use cached chroot for the build"
+msgstr "не используйте кэшированную среду для сборки"
 
 #: ../abf.py:246 ../abf.py:290
 msgid "save build chroot in case of failure"

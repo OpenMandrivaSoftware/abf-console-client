@@ -1,4 +1,4 @@
-import urllib2, urllib
+import urllib.request, urllib.error, urllib.parse, urllib.request, urllib.parse, urllib.error
 import re
 import json
 import os
@@ -6,7 +6,7 @@ import base64
 import pdb
 import uuid
 import tempfile
-import httplib
+import http.client
 import mimetypes
 import base64
 import hashlib
@@ -66,7 +66,8 @@ class AbfJson(object):
         '''
 
         # but it works!
-        self.base64_auth_string = base64.standard_b64encode('%s:%s' % (login, password)).replace('\n', '')
+        lpw = '%s:%s' % (login, password)
+        self.base64_auth_string = base64.standard_b64encode(lpw.encode())
         self.log = log
 
     errors = {
@@ -89,9 +90,9 @@ class AbfJson(object):
     def process_response(self, response_string):
         try:
             res = json.loads(response_string)
-        except ValueError, ex:
+        except ValueError as ex:
             self.log.error(_("Internal server error: it has returned non-json data. "))
-            print response_string
+            print(response_string)
             exit(1)
         m = None
         if 'message' in res and res['message'] not in AbfJson.good_messages:
@@ -129,8 +130,10 @@ class AbfJson(object):
 
     def get_url_contents(self, path, GET=None, POST=None, file_store=False, PUT=None, DELETE=None):
         url = ((file_store and self.file_store_url) or self.abf_url) + path
+        print(url)
         if GET:
-            get_string = urllib.urlencode(GET)
+            get_string = urllib.parse.urlencode(GET)
+            print(get_string)
             if '?' in url:
                 url = url + '&' + get_string
             else:
@@ -140,31 +143,31 @@ class AbfJson(object):
         etag = None
         if POST:
             post_json = json.dumps(POST).encode('utf-8')
-            request = urllib2.Request(url, post_json, {'Content-Type': 'application/json'})
+            request = urllib.request.Request(url, post_json, {'Content-Type': 'application/json'})
         elif PUT:
             put_json = json.dumps(PUT).encode('utf-8')
-            request = urllib2.Request(url, put_json, {'Content-Type': 'application/json'})
+            request = urllib.request.Request(url, put_json, {'Content-Type': 'application/json'})
             request.get_method = lambda: 'PUT'
         elif DELETE:
             data_json = json.dumps(DELETE).encode('utf-8')
-            request = urllib2.Request(url, data_json, {'Content-Type': 'application/json'})
+            request = urllib.request.Request(url, data_json, {'Content-Type': 'application/json'})
             request.get_method = lambda: 'DELETE'
         else:
-            request = urllib2.Request(url)
+            request = urllib.request.Request(url)
 
-            if cache_etags.has_key(url):
+            if url in cache_etags:
                 etag = cache_etags.get(url)
-                if cache_data.has_key(etag):
+                if etag in cache_data:
                     self.log.debug(_("It was cached! ETag: ") + etag)
                     request.add_header("If-None-Match", etag)
 
         request.add_header("Authorization", "Basic %s" % self.base64_auth_string)
         etag_new = None
         try:
-            result = urllib2.urlopen(request)
+            result = urllib.request.urlopen(request)
             res = result.read()
             etag_new = result.headers.getheaders('ETag')[0]
-        except urllib2.HTTPError, ex:
+        except urllib.error.HTTPError as ex:
             if ex.code == 304: # data was not modified
                 res = cache_data.get(etag)
                 self.log.debug(_('Getting cached result (cache was validated)'))
@@ -273,7 +276,7 @@ class AbfJson(object):
         body.seek(0)
         if not silent:
             self.log.info(_('Uploading %(file)s (%(size)s)') % {'file': file_name, 'size': bytes2human(os.stat(file_name).st_size)})
-        conn = httplib.HTTPConnection(self.file_store_domain, 80)
+        conn = http.client.HTTPConnection(self.file_store_domain, 80)
         content_type = 'multipart/form-data; boundary=%s' % boundary
         headers = {'Content-Type' : content_type, 'Content-Length' : length, "Authorization": "Basic %s" % self.base64_auth_string}
         conn.request('POST', '/api/v1/upload', body, headers)
@@ -293,8 +296,8 @@ class AbfJson(object):
     def fetch_file(self, sha_hash, path):
         URL = self.file_store_url + '/api/v1/file_stores/' + sha_hash
         try:
-            response = urllib2.urlopen(URL)
-        except urllib2.HTTPError, ex:
+            response = urllib.request.urlopen(URL)
+        except urllib.error.HTTPError as ex:
             if ex.code == 404: # data was not modified
                 raise PageNotFoundError(_('File with hash %s can not be downloaded from File-Store.') % sha_hash)
             else:

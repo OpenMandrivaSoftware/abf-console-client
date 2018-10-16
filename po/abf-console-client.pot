@@ -513,7 +513,7 @@ msgid "enable automatic creation of container"
 msgstr ""
 
 #: ../abf.py:245 ../abf.py:289
-msgid "use cached chroot for the build"
+msgid "do NOT use cached chroot for the build"
 msgstr ""
 
 #: ../abf.py:246 ../abf.py:290

@@ -2,11 +2,10 @@
 # -*- coding: UTF-8 -*-
 
 import warnings
+import importlib
 warnings.filterwarnings('ignore','Module argparse was already imported')
 
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 import argparse
 from argparse import RawDescriptionHelpFormatter
 import os
@@ -37,7 +36,7 @@ if cfg['main']['default_publish_status'] != '':
         default_publish_status = cfg['main']['default_publish_status']
     else:
         default_publish_status = BuildList.auto_publish_statuses[0]
-        print(_("Incorrect value of 'default_publish_status' in config file, ignoring. Possible valus are: ") + "'" + str.join("', '", BuildList.auto_publish_statuses) + "'")
+        print((_("Incorrect value of 'default_publish_status' in config file, ignoring. Possible valus are: ") + "'" + str.join("', '", BuildList.auto_publish_statuses) + "'"))
 else:
     default_publish_status = BuildList.auto_publish_statuses[0]
     cfg['main']['default_publish_status'] = BuildList.auto_publish_statuses[0]
@@ -51,7 +50,7 @@ models_params = ((abf_url, file_store_url, login, password))
 
 models = Models(*models_params)
 
-configs_dir = '/etc/abf/mock-urpm/configs/'
+configs_dir = '/etc/abf/mock/configs/'
 
 def test():
     log.debug(_('TEST started'))
@@ -242,7 +241,7 @@ def parse_command_line():
     subparser.add_argument('--testing', action='store_true', help=_('Include "testing" subrepository.'))
     subparser.add_argument('--no-extra-tests', action='store_true', help=_('Do not launch comprehensive tests.'))
     subparser.add_argument('--auto-create-container', action='store_true', help=_('enable automatic creation of container'))
-    subparser.add_argument('--cached-chroot', action='store_true', help=_('use cached chroot for the build'))
+    subparser.add_argument('--no-cached-chroot', action='store_true', help=_('do NOT use cached chroot for the build'))
     subparser.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
     subparser.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
                     (BuildList.update_types[0]) )
@@ -286,7 +285,7 @@ def parse_command_line():
     subparser.add_argument('--testing', action='store_true', help=_('Include "testing" subrepository.'))
     subparser.add_argument('--no-extra-tests', action='store_true', help=_('Do not launch comprehensive tests.'))
     subparser.add_argument('--auto-create-container', action='store_true', help=_('enable automatic creation of container'))
-    subparser.add_argument('--cached-chroot', action='store_true', help=_('use cached chroot for the build'))
+    subparser.add_argument('--no-cached-chroot', action='store_true', help=_('do NOT use cached chroot for the build'))
     subparser.add_argument('--save-chroot', action='store_true', help=_('save build chroot in case of failure'))
     subparser.add_argument('--update-type', action='store', choices=BuildList.update_types, help=_('Update type. Default is "%s".') %
                     (BuildList.update_types[0]) )
@@ -295,8 +294,8 @@ def parse_command_line():
     subparser.add_argument('--skip-proj-cfg-update', action='store_true', help=_('Do not update cache with information about project builds.'))
     subparser.set_defaults(func=chain_build)
 
-    # mock-urpm
-    subparser = subparsers.add_parser('mock-urpm', help=_('Build a project locally using mock-urpm.'), epilog=_('No checkouts will be made,'
+    # mock
+    subparser = subparsers.add_parser('mock', help=_('Build a project locally using mock.'), epilog=_('No checkouts will be made,'
                                                                     'the current git repository state will be used'))
     subparser.add_argument('-c', '--config', action='store', help=_('A config template to use. Specify one of the config names '
         'from %s. Directory path should be omitted. If no config specified, "default.cfg" will be used') % configs_dir)
@@ -430,10 +429,10 @@ def info_single():
     else:
         for param in command_line.filter:
             try:
-                st, param = map(str, param.split('.'))
+                st, param = list(map(str, param.split('.')))
             except:
                 pass
-            attr, value = map(str, param.split('='))
+            attr, value = list(map(str, param.split('=')))
             cl[st].filter_dict[attr]=value
             log.debug(_('Filter setup for instance %s ') % st)
             st = command_line.type
@@ -448,19 +447,19 @@ def info_single():
     for inst in res:
         for param in so:
             try:
-                print param + ':\t' + str(inst.params_dict[param])
+                print(param + ':\t' + str(inst.params_dict[param]))
             except:
                 log.debug(_("Parameter %s not available:") % param)
 
 
 def fix_default_config():
-    if not os.path.exists('/etc/abf/mock-urpm/configs/default.cfg'):
+    if not os.path.exists('/etc/abf/mock/configs/default.cfg'):
         if os.getuid() != 0:
-            print(_("To set up a default configuration file, symbolic link in /etc/abf/mock-urpm/configs have to be created. I need sudo rights to do it."))
+            print((_("To set up a default configuration file, symbolic link in /etc/abf/mock/configs have to be created. I need sudo rights to do it.")))
             exit(1)
 
-        files = os.listdir('/etc/abf/mock-urpm/configs')
-        print(_('Avaliable configurations: '))
+        files = os.listdir('/etc/abf/mock/configs')
+        print((_('Avaliable configurations: ')))
         out = []
         for f in files:
             if not f.endswith('.cfg'):
@@ -469,13 +468,13 @@ def fix_default_config():
                 continue
             out.append(f[:-4])
 
-        print ', '.join(out)
+        print(', '.join(out))
         res = None
         while res not in out:
             if res is not None:
-                print(_('"%s" is not a valid configuration.') % res)
-            res = raw_input(_('Select one (it will be remembered): '))
-        os.symlink('/etc/abf/mock-urpm/configs/%s.cfg' % res, '/etc/abf/mock-urpm/configs/default.cfg')
+                print((_('"%s" is not a valid configuration.') % res))
+            res = input(_('Select one (it will be remembered): '))
+        os.symlink('/etc/abf/mock/configs/%s.cfg' % res, '/etc/abf/mock/configs/default.cfg')
 
 def run_mock_urpm(binary=True):
     fix_default_config()
@@ -487,17 +486,17 @@ def run_mock_urpm(binary=True):
     if not os.path.exists(config_path):
         log.error(_("Config file %s can not be found.") % config_path)
         if os.path.basename(config_path) == 'default.cfg':
-            log.error(_("You should create this file or a symbolic link to another config in order to execute 'abf mock-urpm' without --config"))
+            log.error(_("You should create this file or a symbolic link to another config in order to execute 'abf mock' without --config"))
         exit(1)
     config_opts = {'plugins': [], 'scm_opts': {}}
     config_opts['plugin_conf'] = {'ccache_opts': {}, 'root_cache_opts': {}, 'bind_mount_opts': {'dirs': []}, 'tmpfs_opts': {}, 'selinux_opts': {}}
     try:
-        execfile(config_path)
-    except Exception, ex:
+        exec(compile(open(config_path).read(), config_path, 'exec'))
+    except Exception as ex:
         log.error(_("Could not read the contents of '%(path)s': %(exception)s") % {'path': config_path, 'exception': str(ex)})
         exit(2)
 
-    basedir = ('basedir' in config_opts and config_opts['basedir']) or '/var/lib/abf/mock-urpm'
+    basedir = ('basedir' in config_opts and config_opts['basedir']) or '/var/lib/abf/mock'
     root = config_opts['root']
     resultsdir = ('resultdir' in config_opts and config_opts['resultdir']) or '%s/%s/result' % (basedir, root)
     src_dir = basedir + '/src'
@@ -517,14 +516,14 @@ def run_mock_urpm(binary=True):
         log.error(_('Can not locate a spec file in %s') % src_dir)
         exit(1)
     spec_path = os.path.join(src_dir, spec_path)
-    cmd = ['mock-urpm', '-r', command_line.config, '--buildsrpm', '--spec', spec_path, '--sources', src_dir, '--configdir', configs_dir ]
+    cmd = ['mock', '-r', command_line.config, '--buildsrpm', '--spec', spec_path, '--sources', src_dir, '--configdir', configs_dir ]
     if command_line.verbose:
         cmd.append('-v')
-    log.info(_('Executing mock-urpm...'))
+    log.info(_('Executing mock...'))
     try:
         res = execute_command(cmd, print_to_stdout=True, exit_on_error=False, shell=False)
-    except OSError, ex:
-        log.error(_("Can not execute mock-urpm (%s). Maybe it is not installed?") % str(ex))
+    except OSError as ex:
+        log.error(_("Can not execute mock (%s). Maybe it is not installed?") % str(ex))
         exit(1)
     finally:
         shutil.rmtree(src_dir)
@@ -541,20 +540,20 @@ def run_mock_urpm(binary=True):
 
     log.info(_('\nSRPM: %s\n') % srpm_path_new)
     if binary:
-        cmd = ['mock-urpm', '-r', command_line.config, '--configdir', configs_dir,  srpm_path_new]
+        cmd = ['mock', '-r', command_line.config, '--configdir', configs_dir,  srpm_path_new]
         if command_line.verbose:
             cmd.append('-v')
-        log.info(_('Executing mock-urpm...'))
+        log.info(_('Executing mock...'))
         res = execute_command(cmd, print_to_stdout=True, exit_on_error=False, shell=False)
         os.remove(srpm_path)
         rpms = glob(os.path.join(resultsdir, '*.rpm'))
-        print ''
+        print('')
         for rpm in rpms:
             new_path = os.path.join(os.getcwd(), os.path.basename(rpm))
             if os.path.exists(new_path):
                 os.remove(new_path)
             shutil.move(rpm, os.getcwd())
-            print(_('RPM: ' + os.path.join(os.getcwd(), os.path.basename(rpm))))
+            print((_('RPM: ' + os.path.join(os.getcwd(), os.path.basename(rpm)))))
 
 def localbuild_mock_urpm():
     # get project
@@ -563,7 +562,7 @@ def localbuild_mock_urpm():
 
     try:
         run_mock_urpm(binary=True)
-    except OSError, ex:
+    except OSError as ex:
         log.error(str(ex))
         exit(1)
 
@@ -574,7 +573,7 @@ def alias():
             log.info(_('No aliases found'))
             return
         for al_name in cfg['alias']:
-            print '%10s: %s' % (al_name, cfg['alias'][al_name])
+            print('%10s: %s' % (al_name, cfg['alias'][al_name]))
     elif command_line.command == 'add':
         if len(command_line.options) < 2:
             log.error(_('Not enough options. Use it like "abf alias add <alias_name> opt1 [opt2 ...]"'))
@@ -631,7 +630,7 @@ def localbuild_rpmbuild():
     log.info(_('Executing rpmbuild...'))
     try:
         res = execute_command(cmd, print_to_stdout=True, exit_on_error=False, shell=False)
-    except OSError, ex:
+    except OSError as ex:
         log.error(_("Can not execute rpmbuild (%s). Maybe it is not installed?") % str(ex))
         exit(1)
     except ReturnCodeNotZero:
@@ -690,7 +689,7 @@ def search():
     cl = {'groups': Group, 'users': User, 'platforms': Platform, 'projects': Project}
     items = cl[st].search(models, sq)
     for item in items:
-        print item
+        print(item)
 
 def get_project_name_only(must_exist=True, name=None):
     if name:
@@ -835,7 +834,7 @@ def put():
 
     try:
         min_size = human2bytes(command_line.minimal_file_size)
-    except ValueError, ex:
+    except ValueError as ex:
         log.error(_('Incorrect "--minimal-file-size" value: %s') % command_line.minimal_file_size)
         exit(1)
     error_count = upload_files(models, min_size, remove_files=not command_line.do_not_remove_files, path=path, upload_all=command_line.upload_all)
@@ -887,9 +886,9 @@ def fetch():
         exit(1)
     try:
         fetch_files(models, path, command_line.only)
-    except yaml.scanner.ScannerError, ex:
+    except yaml.scanner.ScannerError as ex:
         log.error(_('Invalid yml file %(filename)s!\nProblem in line %(line)d column %(column)d: %(problem)s') % {'filename': path, 'line': ex.problem_mark.line, 'column': ex.problem_mark.column, 'problem': ex.problem})
-    except yaml.composer.ComposerError, ex:
+    except yaml.composer.ComposerError as ex:
         log.error(_('Invalid yml file %(filename)s!\n%(exception)s') % {'filename': path, 'exception': ex})
 
 def remote():
@@ -925,7 +924,7 @@ def store():
         exit(1)
 
     res = models.jsn.upload_file(p, silent=True)
-    print res
+    print(res)
 
 def copy():
     log.debug(_('COPY started'))
@@ -965,7 +964,7 @@ def copy():
             pack_project(path)
             cmd = ['git', 'reset']
             execute_command(cmd, print_to_stdout=True, cwd=path)
-    except Exception, ex:
+    except Exception as ex:
         if type(ex) == ReturnCodeNotZero:
             log.error(str(ex))
         else:
@@ -1009,11 +1008,11 @@ def fork_project():
         owner_id = owner_group[0].id
     elif owner_user:
         # ABF doesn't seem to accept forks to platforms of other users
-        print(_("No group named '%s', will fork to your personal platform") % target_group)
+        print((_("No group named '%s', will fork to your personal platform") % target_group))
 #        owner_id = owner_user[0].id
         owner_id = 0
     else:
-        print(_("Incorrect target group"))
+        print((_("Incorrect target group")))
         return 1
 
     ProjectCreator.fork_project(models, source_proj.id, owner_id, target_name)
@@ -1038,11 +1037,11 @@ def alias_project():
         owner_id = owner_group[0].id
     elif owner_user:
         # ABF doesn't seem to accept forks to platforms of other users
-        print(_("No group named '%s', will create alias in your personal platform") % target_group)
+        print((_("No group named '%s', will create alias in your personal platform") % target_group))
 #        owner_id = owner_user[0].id
         owner_id = 0
     else:
-        print(_("Incorrect target group"))
+        print((_("Incorrect target group")))
         return 1
 
     ProjectCreator.alias_project(models, source_proj.id, owner_id, target_name)
@@ -1064,7 +1063,7 @@ def create_empty():
         owner_id = owner_user[0].id
         owner_type = "User"
     else:
-        print(_("Incorrect owner data"))
+        print((_("Incorrect owner data")))
         return 1
 
     description = ""
@@ -1090,7 +1089,7 @@ def create():
         owner_id = owner_user[0].id
         owner_type = "User"
     else:
-        print(_("Incorrect owner data"))
+        print((_("Incorrect owner data")))
         return 1
 
     name = Popen('rpm -qp --qf="%{NAME}" ' + command_line.srpm, stdout=PIPE, shell=True).stdout.read()
@@ -1128,7 +1127,7 @@ def create():
         os.chdir(curdir)
         shutil.rmtree(tempdir)
     else:
-        print(_("Failed to get information from SRPM"))
+        print((_("Failed to get information from SRPM")))
         return 1
 
 def add_project_to_repository():
@@ -1161,7 +1160,7 @@ def chain_build():
 
     if command_line.infile:
         if command_line.project:
-            print(_("You can't specify '-i' option and project names in command line at the same time."))
+            print((_("You can't specify '-i' option and project names in command line at the same time.")))
             exit(1)
         else:
             command_line.project = []
@@ -1202,7 +1201,7 @@ def chain_build():
                 command_line.ID = [str(build_id)]
                 stat = status(return_status=True)
                 if stat[0][0] in ["build error", "publishing error", "publishing rejected", "build is canceling", "tests failed", "[testing] Publishing error", "unpermitted architecture"]:
-                    print(_("One of the tasks failed, aborting chain build"))
+                    print((_("One of the tasks failed, aborting chain build")))
                     exit(1)
                 elif stat[0][0] in ["build pending", "rerun tests", "rerunning tests", "build started", "build is being published", "[testing] Build is being published'"]:
                     task_running = True
@@ -1210,10 +1209,10 @@ def chain_build():
                     if stat[0][1] == "container is being published":
                         task_running = True
                     elif stat[0][1] == "publishing error":
-                        print(_("Container creation failed for build %d, aborting chain build") % build_id)
+                        print((_("Container creation failed for build %d, aborting chain build") % build_id))
                         exit(1)
                     elif stat[0][1] == "waiting for request for publishing container":
-                        print(_("WARNING: Build %d was not published and container was not created") % build_id)
+                        print((_("WARNING: Build %d was not published and container was not created") % build_id))
                     else:
                         command_line.build_list.append(str(build_id))
                         success_builds.append(build_id)
@@ -1456,10 +1455,15 @@ def build(return_ids=False):
     if auto_create_container is None:
         auto_create_container = True
 
-    if command_line.no_extra_tests is None:
-        use_extra_tests = True
+    if command_line.no_cached_chroot:
+        cached_chroot = False
     else:
+        cached_chroot = True
+
+    if command_line.no_extra_tests:
         use_extra_tests = False
+    else:
+        use_extra_tests = True
 
     if not command_line.auto_publish and not command_line.auto_publish_status:
         command_line.auto_publish_status = default_publish_status
@@ -1483,7 +1487,7 @@ def build(return_ids=False):
         command_line.auto_publish_status or BuildList.auto_publish_statuses[0],
         arches,
         command_line.skip_personal,
-        command_line.cached_chroot,
+        cached_chroot,
         command_line.save_chroot,
         auto_create_container,
         command_line.testing,
@@ -1509,35 +1513,35 @@ def publish():
                 log.error(_("The status of build task %(id)s is \"%(status)s\", can not published!") % {'id': bl.id, 'status': bl.status_string})
                 continue
             res = bl.publish()
-        except AbfApiException, ex:
+        except AbfApiException as ex:
             log.error(_('Could not publish task %(id)s: %(exception)s') % {'id': task_id, 'exception': str(ex)})
 
 
 def _print_build_status(models, ID):
     try:
         bl = BuildList(models, ID)
-    except AbfApiException, ex:
+    except AbfApiException as ex:
         log.error(_("Can not read buildlist %(id)s: %(exception)s") % {'id': ID, 'exception': ex})
         exit(3)
     if command_line.short:
-        print repr(bl)
+        print(repr(bl))
     else:
-        print '%-20s%s' %(_('Buildlist ID:'), bl.id)
-        print '%-20s%s' %(_('Project:'), bl.project.fullname)
-        print '%-20s%s' %(_('Status:'), bl.status_string)
-        print '%-20s%s' %(_('Container path:'), bl.container_path)
-        print '%-20s%s' %(_('Container status:'), bl.container_status_string)
-        print '%-20s%s' %(_('Build for platform:'), bl.build_for_platform)
-        print '%-20s%s' %(_('Save to repository:'), bl.save_to_repository)
-        print '%-20s%s' %(_('Build repositories:'), bl.include_repos)
-        print '%-20s%s' %(_('Extra repositories:'), bl.extra_repositories)
-        print '%-20s%s' %(_('Architecture:'), bl.arch.name)
-        print '%-20s%s' %(_('Created at:'), bl.created_at)
-        print '%-20s%s' %(_('Updated at:'), bl.updated_at)
-        print '%-20s%s' %(_('LOG Url:'), bl.log_url)
+        print('%-20s%s' %(_('Buildlist ID:'), bl.id))
+        print('%-20s%s' %(_('Project:'), bl.project.fullname))
+        print('%-20s%s' %(_('Status:'), bl.status_string))
+        print('%-20s%s' %(_('Container path:'), bl.container_path))
+        print('%-20s%s' %(_('Container status:'), bl.container_status_string))
+        print('%-20s%s' %(_('Build for platform:'), bl.build_for_platform))
+        print('%-20s%s' %(_('Save to repository:'), bl.save_to_repository))
+        print('%-20s%s' %(_('Build repositories:'), bl.include_repos))
+        print('%-20s%s' %(_('Extra repositories:'), bl.extra_repositories))
+        print('%-20s%s' %(_('Architecture:'), bl.arch.name))
+        print('%-20s%s' %(_('Created at:'), bl.created_at))
+        print('%-20s%s' %(_('Updated at:'), bl.updated_at))
+        print('%-20s%s' %(_('LOG Url:'), bl.log_url))
         if bl.chroot_tree:
-            print '%-20s%s' %(_('Chroot Tree:'), bl.chroot_tree)
-        print ''
+            print('%-20s%s' %(_('Chroot Tree:'), bl.chroot_tree))
+        print('')
 
     return [bl.status_string, bl.container_status_string]
 
@@ -1607,7 +1611,7 @@ def locate():
 
     if not command_line.action: # show location
         if not command_line.project:
-            print(_("To show a project location, you have to specify a project name ('-p' option)"))
+            print((_("To show a project location, you have to specify a project name ('-p' option)")))
             return
 
         tmp = command_line.project.split('/')
@@ -1620,14 +1624,14 @@ def locate():
             proj = command_line.project
 
         if proj not in projects_cfg or 'location' not in projects_cfg[proj] or not projects_cfg[proj]['location']:
-            print(_('error: project %s can not be located') % proj)
+            print((_('error: project %s can not be located') % proj))
             exit(1)
         path = projects_cfg[proj]['location']
         if not os.path.isdir(path):
-            print(_('error: project is not located in "%s" anymore') % path)
+            print((_('error: project is not located in "%s" anymore') % path))
             projects_cfg[proj]['location'] = ''
             exit(1)
-        print path
+        print(path)
         return
     else:
         if command_line.action == 'update':
@@ -1642,7 +1646,7 @@ def get_true_false(value, key):
         return True
     if value.lower() == "false":
         return False
-    print(_("Please specify 'true' or 'false' for %s") % key)
+    print((_("Please specify 'true' or 'false' for %s") % key))
     exit(1)
 
 def update():
@@ -1707,13 +1711,13 @@ def show():
     if t is None:
         proj = get_project(models, must_exist=True, name=command_line.project)
         for i in proj.required_fields:
-             print (_("%s: %s") % (i, getattr(proj, i)))
+             print((_("%s: %s") % (i, getattr(proj, i))))
     elif t == 'buildlists':
         proj = get_project(models, must_exist=True, name=command_line.project)
         res = models.jsn.get_project_buildlists(proj.id, '' ,1)
         for bl in res['build_lists']:
             buildlist = BuildList(models, bl['id'])
-            print buildlist
+            print(buildlist)
 
     elif t in ['build-platforms', 'build-repos']:
         build_platforms = Platform.get_build_platforms(models)
@@ -1725,7 +1729,7 @@ def show():
             for repo in plat.repositories:
                 repo_names.append(str(repo))
         out = (t == 'build-platforms' and platform_names) or (t == 'build-repos' and repo_names)
-        print ' '.join(out)
+        print(' '.join(out))
 
     elif t in ['save-to-platforms', 'save-to-repos']:
         proj = get_project(models, must_exist=True, name=command_line.project)
@@ -1737,7 +1741,7 @@ def show():
             repo_names.append(str(repo))
         platform_names = list(set(platform_names))
         out = (t == 'save-to-platforms' and platform_names) or (t == 'save-to-repos' and repo_names)
-        print ' '.join(out)
+        print(' '.join(out))
 
 
 def clean():
@@ -1757,7 +1761,7 @@ if __name__ == '__main__':
 
     # These commands don't read or update projects file, so don't even read it
     # if one of these commands is launched
-    commands_wo_cache = ['help','alias','put','store','fetch','show','mock-urpm','rpmbuild','publish','copy','pullrequest','fork','create','add','remove','search','info']
+    commands_wo_cache = ['help','alias','put','store','fetch','show','mock','rpmbuild','publish','copy','pullrequest','fork','create','add','remove','search','info']
     if command_line.func.__name__ in commands_wo_cache:
         command_line.skip_proj_cfg_update = True
 

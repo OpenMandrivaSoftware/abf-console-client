@@ -1,4 +1,4 @@
-import ConfigParser
+import configparser
 import os
 import sys
 import getpass
@@ -58,7 +58,7 @@ class Section(dict):
             self.save()
 
     def save(self):
-        configfile = open(self.conf_path, 'wb')
+        configfile = open(self.conf_path, 'w')
         fcntl.flock(configfile, fcntl.LOCK_EX)
         self.config.write(configfile)
         fcntl.flock(configfile, fcntl.LOCK_UN)
@@ -76,12 +76,12 @@ class Section(dict):
             return super(Section, self).__getitem__(key)
         try:
             res = self.config.get(self.section, key)
-        except ConfigParser.NoOptionError, ex:
+        except configparser.NoOptionError as ex:
             if key in ['default_branch', 'default_publish_status']:
-                print(_('non-critical error in config "%(path)s": %(exception)s') % {'path': self.conf_path, 'exception': str(ex)})
+                print((_('non-critical error in config "%(path)s": %(exception)s') % {'path': self.conf_path, 'exception': str(ex)}))
                 return ''
             else:
-                print(_('error in config "%(path)s": %(exception)s') % {'path': self.conf_path, 'exception': str(ex)})
+                print((_('error in config "%(path)s": %(exception)s') % {'path': self.conf_path, 'exception': str(ex)}))
                 exit(1)
 
     def pop(self, key, init=None):
@@ -106,7 +106,7 @@ class Config(dict):
             init = True
 
 
-        self.config = ConfigParser.RawConfigParser()
+        self.config = configparser.RawConfigParser()
         self.config.read(self.conf_path)
 
         sections = self.config.sections()
@@ -117,7 +117,7 @@ class Config(dict):
 
 
         if main_conf and ('config_version' not in self['main'] or int(self['main']['config_version']) != VERSION):
-            print(_("Configuration schema have been changed or config file have been corrupted, rebuilding config..."))
+            print((_("Configuration schema have been changed or config file have been corrupted, rebuilding config...")))
             init = True
 
         if init and main_conf:
@@ -152,10 +152,10 @@ class Config(dict):
                 domain = domain[:-1] # remove trailing '/'
             parts = domain.split('//')
             if len(parts) == 1:
-                print(_('No protocol part specified (http://, https://, etc.)'))
+                print((_('No protocol part specified (http://, https://, etc.)')))
                 continue
             if len(parts) > 2:
-                print(_('Double slash must present only once (in a protocol part)'))
+                print((_('Double slash must present only once (in a protocol part)')))
                 continue
             done = True
         return domain
@@ -246,8 +246,8 @@ class Config(dict):
             self['alias']['sp'] = 'search projects'
 
         self['main']['config_version'] = VERSION
-        print(_('Configuration have been completed'))
-        print(_('Now you can execute "abf locate update-recursive -d PATH", where PATH is your directory with cloned ABF projects. It will let you use "abfcd <project>" command to simply cd to project directory.\n\n'))
+        print((_('Configuration have been completed')))
+        print((_('Now you can execute "abf locate update-recursive -d PATH", where PATH is your directory with cloned ABF projects. It will let you use "abfcd <project>" command to simply cd to project directory.\n\n')))
 
 
 

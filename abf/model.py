@@ -2,7 +2,7 @@
 from beaker.cache import Cache
 from beaker.util import parse_cache_config_options
 import logging
-import urllib2, urllib
+import urllib.request, urllib.error, urllib.parse, urllib.request, urllib.parse, urllib.error
 import string
 from datetime import datetime
 
@@ -18,8 +18,43 @@ st_cache = Cache('abf', expire = 3600,  type='file', data_dir='/tmp/abf_cache/da
 #lt_cache = None
 #st_cache = None
 
+status_by_id = {
+    0: 'build complete',
+    1: 'platform not found',
+    2: 'platform pending',
+    3: 'project not found',
+    4: 'project version not found',
+    6: 'project source error',
+    555: 'dependencies error',
+    666: 'build error',
+    777: 'packages fail',
+    2000: 'build pending',
+    2500: 'rerun tests',
+    2550: 'rerunning tests',
+    3000: 'build started',
+    4000: 'waiting for response',
+    5000: 'build canceled',
+    6000: 'build has been published',
+    7000: 'build is being published',
+    8000: 'publishing error',
+    9000: 'publishing rejected',
+    10000: 'build is canceling',
+    11000: 'tests failed',
+    12000: '[testing] Build has been published',
+    13000: '[testing] Build is being published',
+    14000: '[testing] Publishing error',
+    15000: 'unpermitted architecture'
+}
+    
+container_status_by_id = {
+    4000: 'waiting for request for publishing container',
+    6000: 'container has been published',
+    7000: 'container is being published',
+    8000: 'publishing error'
+}
+
 def get_cached(cache, cache_key, func, *args, **kwargs):
-    if cache and cache.has_key(cache_key):
+    if cache and cache_key in cache:
         val = cache.get(cache_key)
     else:
         val = func(*args, **kwargs)
@@ -47,7 +82,7 @@ class Model(object):
         if ID:
             cache_key = '%s-%s' % (self.__class__.__name__, ID)
 
-            if st_cache and st_cache.has_key(cache_key):
+            if st_cache and cache_key in st_cache:
                 #read cached value
                 log.debug( _('Loading %(name)s %(id)s from cache') % {'name': self.__class__.__name__, 'id': ID})
                 self.stub = False
@@ -352,7 +387,7 @@ class Project(Model):
     @staticmethod
     def get_by_name(models, key):
         ''' key is a pair (owner_name, project_name), or just  owner_name/project_name'''
-        if type(key) is unicode or type(key) is str:
+        if type(key) is str or type(key) is str:
             items = key.split('/')
             if len(items) != 2:
                 raise Exception(_('Invalid key: ') + key)
@@ -453,7 +488,7 @@ class Project(Model):
         log.debug(_('Updating project settings: ') + str(DATA))
         try:
             result = models.jsn.update_project({'project': DATA}, project.id)
-        except BadRequestError, ex:
+        except BadRequestError as ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
@@ -491,6 +526,7 @@ class BuildList(Model):
         14000: '[testing] Publishing error',
         15000: 'unpermitted architecture'
     }
+
     status_by_name = dict([(status_by_id[x], x) for x in status_by_id])
     final_statuses = [1, 2, 3, 4, 666, 5000, 6000, 8000, 9000, 12000, 14000]
 
@@ -638,7 +674,7 @@ class BuildList(Model):
                 log.debug(_('Sending the build task: ') + str(DATA))
                 try:
                     result = models.jsn.new_build_task({'build_list': DATA})
-                except BadRequestError, ex:
+                except BadRequestError as ex:
                     log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                         'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
                     exit(1)
@@ -657,7 +693,7 @@ class BuildList(Model):
                 log.error(result['message'])
 
             return result
-        except BadRequestError, ex:
+        except BadRequestError as ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
@@ -688,7 +724,7 @@ class PullRequest(Model):
         try:
             #continue
             result = models.jsn.new_pull_request({'pull_request': DATA}, dest_project.id)
-        except BadRequestError, ex:
+        except BadRequestError as ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
@@ -726,7 +762,7 @@ class ProjectCreator(Model):
         log.debug(_('Creating project: ') + str(DATA))
         try:
             result = models.jsn.new_project({'project': DATA})
-        except BadRequestError, ex:
+        except BadRequestError as ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
@@ -741,7 +777,7 @@ class ProjectCreator(Model):
         log.debug(_('Adding project to repository: ') + str(DATA))
         try:
             result = models.jsn.add_project_to_repo(DATA, repo_id)
-        except BadRequestError, ex:
+        except BadRequestError as ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
@@ -758,7 +794,7 @@ class ProjectCreator(Model):
         log.debug(_('Removing project from repository: ') + str(DATA))
         try:
             result = models.jsn.remove_project_from_repo(DATA, repo_id)
-        except BadRequestError, ex:
+        except BadRequestError as ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
@@ -781,7 +817,7 @@ class ProjectCreator(Model):
         log.debug(_('Forking project: ') + str(DATA))
         try:
             result = models.jsn.fork_project(DATA, proj_id)
-        except BadRequestError, ex:
+        except BadRequestError as ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
@@ -802,7 +838,7 @@ class ProjectCreator(Model):
         log.debug(_('Creating alias for a project: ') + str(DATA))
         try:
             result = models.jsn.alias_project(DATA, proj_id)
-        except BadRequestError, ex:
+        except BadRequestError as ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
@@ -816,7 +852,7 @@ class ProjectCreator(Model):
         log.debug(_('Destroying project: ') + str(proj_id))
         try:
             result = models.jsn.destroy_project(DATA, proj_id)
-        except BadRequestError, ex:
+        except BadRequestError as ex:
             log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                 'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
             exit(1)
@@ -825,10 +861,10 @@ class ProjectCreator(Model):
 
 class Models(object):
     _instance = {}
-    def __new__(cls, abf_url, file_store_url, login, password, *args, **kwargs):
+    def __cmds__(cls, abf_url, file_store_url, login, password, *args, **kwargs):
         tmp = '%s:%s:%s:%s' % (abf_url, file_store_url, login, password)
         if tmp not in cls._instance:
-            cls._instance[tmp] = super(Models, cls).__new__(
+            cls._instance[tmp] = super(Models, cls).__cmds__(
                                 cls, abf_url, file_store_url, login, password, *args, **kwargs)
         return cls._instance[tmp]
 
