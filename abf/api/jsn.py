@@ -67,7 +67,9 @@ class AbfJson(object):
 
         # but it works!
         lpw = '%s:%s' % (login, password)
-        self.base64_auth_string = base64.standard_b64encode(lpw.encode())
+        encoded_lpw = base64.standard_b64encode(lpw.encode())
+        self.base64_auth_string = encoded_lpw.decode("utf-8")
+        # print(self.base64_auth_string)
         self.log = log
 
     errors = {
@@ -92,7 +94,7 @@ class AbfJson(object):
             res = json.loads(response_string)
         except ValueError as ex:
             self.log.error(_("Internal server error: it has returned non-json data. "))
-            print(response_string)
+            # print(response_string)
             exit(1)
         m = None
         if 'message' in res and res['message'] not in AbfJson.good_messages:
@@ -130,10 +132,10 @@ class AbfJson(object):
 
     def get_url_contents(self, path, GET=None, POST=None, file_store=False, PUT=None, DELETE=None):
         url = ((file_store and self.file_store_url) or self.abf_url) + path
-        print(url)
+        # print(url)
         if GET:
             get_string = urllib.parse.urlencode(GET)
-            print(get_string)
+            # print(get_string)
             if '?' in url:
                 url = url + '&' + get_string
             else:
@@ -166,7 +168,7 @@ class AbfJson(object):
         try:
             result = urllib.request.urlopen(request)
             res = result.read()
-            etag_new = result.headers.getheaders('ETag')[0]
+            etag_new = result.headers.get_all('ETag')[0]
         except urllib.error.HTTPError as ex:
             if ex.code == 304: # data was not modified
                 res = cache_data.get(etag)

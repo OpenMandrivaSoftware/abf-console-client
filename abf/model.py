@@ -45,7 +45,7 @@ status_by_id = {
     14000: '[testing] Publishing error',
     15000: 'unpermitted architecture'
 }
-    
+
 container_status_by_id = {
     4000: 'waiting for request for publishing container',
     6000: 'container has been published',
@@ -499,43 +499,9 @@ class BuildList(Model):
     'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'extra_repositories',
     'commit_hash', 'duration', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build', 'log_url', 'chroot_tree']
 
-    status_by_id = {
-        0: 'build complete',
-        1: 'platform not found',
-        2: 'platform pending',
-        3: 'project not found',
-        4: 'project version not found',
-        6: 'project source error',
-        555: 'dependencies error',
-        666: 'build error',
-        777: 'packages fail',
-        2000: 'build pending',
-        2500: 'rerun tests',
-        2550: 'rerunning tests',
-        3000: 'build started',
-        4000: 'waiting for response',
-        5000: 'build canceled',
-        6000: 'build has been published',
-        7000: 'build is being published',
-        8000: 'publishing error',
-        9000: 'publishing rejected',
-        10000: 'build is canceling',
-        11000: 'tests failed',
-        12000: '[testing] Build has been published',
-        13000: '[testing] Build is being published',
-        14000: '[testing] Publishing error',
-        15000: 'unpermitted architecture'
-    }
-
     status_by_name = dict([(status_by_id[x], x) for x in status_by_id])
     final_statuses = [1, 2, 3, 4, 666, 5000, 6000, 8000, 9000, 12000, 14000]
 
-    container_status_by_id = {
-        4000: 'waiting for request for publishing container',
-        6000: 'container has been published',
-        7000: 'container is being published',
-        8000: 'publishing error'
-    }
     container_status_by_name = dict([(container_status_by_id[x], x) for x in container_status_by_id])
 
     def get_init_data(self, ID):

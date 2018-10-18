@@ -427,13 +427,12 @@ def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
                     #print (fileno, event)
                     if fileno == fds[0].fileno():
                         r =  fds[0].read()
-                        #print r
                         output += r
                         if print_to_stdout:
                             sys.stdout.write(r)
                     else:
                         r = fds[1].read()
-                        print(r)
+                        # print(r)
                         output += r
                         if print_to_stdout:
                             sys.stdout.write(r)
