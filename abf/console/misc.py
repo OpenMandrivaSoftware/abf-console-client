@@ -45,11 +45,11 @@ def get_project_name(path=None):
         e["LC_ALL"] = "C"
         output, ret_code = execute_command(['git', 'remote', 'show', 'origin', '-n'], cwd=path, env=e)
 
-        for line in output.split('\n'):
-            if line.startswith('  Fetch URL:') and 'abf' in line:
-                project_name = line.split('/')[-1][:-4]
-                owner_name = line.split('/')[-2]
-                return (owner_name, project_name)
+        m = re.compile("^.*Fetch URL:\s+.*github.com[/](.+)/([^/]+)[.]git$",re.MULTILINE).search(output)
+        if m:
+            # Cant tell abf owner from github loc, so let's hardocde it
+            owner_name, project_name = m.groups()
+            return ('openmandriva', project_name)
         return (None, None)
     except ReturnCodeNotZero:
         return (None, None)

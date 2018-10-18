@@ -132,7 +132,7 @@ class Model(object):
 
 
 class Platform(Model):
-    required_fields = ['id', 'name', 'description', 'parent_platform_id', 'created_at', 'updated_at', 'released',
+    required_fields = ['id', 'name', 'parent_platform_id', 'created_at', 'updated_at', 'released',
     'owner', 'visibility', 'platform_type', 'distrib_type', 'repositories']
     filter_dict = { 'id': '*', 'name': '*', 'visibility': '*', 'owner': '*', 'platform_type': '*', 'repositories': '*', 'page': '1' }
 
@@ -374,8 +374,8 @@ class Group(Model):
         return self.uname
 
 class Project(Model):
-    required_fields = ['id', 'name', 'fullname', 'git_url', 'created_at', 'updated_at', 'visibility', 'description', 'ancestry', 'has_issues',
-            'has_wiki', 'default_branch', 'is_package', 'owner', 'repositories', 'owner_type', 'maintainer', 'project_statistics',]
+    required_fields = ['id', 'name', 'fullname', 'git_url', 'created_at', 'updated_at', 'visibility', 'ancestry', 
+            'default_branch', 'is_package', 'owner', 'repositories', 'owner_type', 'maintainer', 'project_statistics',]
     filter_dict = { 'id': '*', 'name': '*', 'page': '1' }
 
 
@@ -496,8 +496,8 @@ class Project(Model):
 
 class BuildList(Model):
     required_fields = ['id', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
-    'build_for_platform', 'save_to_repository', 'arch', 'update_type', 'extra_repositories',
-    'commit_hash', 'duration', 'include_repos', 'priority', 'build_log_url', 'advisory', 'mass_build', 'log_url', 'chroot_tree']
+    'build_for_platform', 'save_to_repository', 'arch', 'extra_repositories',
+    'commit_hash', 'duration', 'include_repos', 'priority', 'build_log_url', 'mass_build', 'log_url', 'chroot_tree']
 
     status_by_name = dict([(status_by_id[x], x) for x in status_by_id])
     final_statuses = [1, 2, 3, 4, 666, 5000, 6000, 8000, 9000, 12000, 14000]

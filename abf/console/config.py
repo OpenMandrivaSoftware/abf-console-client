@@ -94,8 +94,8 @@ class Section(dict):
         return res
 
 class Config(dict):
-    default_url = 'https://abf.rosalinux.ru'
-    default_filestore_url = 'http://file-store.rosalinux.ru'
+    default_url = 'https://abf.openmandriva.org'
+    default_filestore_url = 'http://file-store.openmandriva.org'
     default_log_path = '/var/log/abf.log'
     def __init__(self, conf_path='~/.abfcfg', main_conf=True):
         self.conf_path = os.path.expanduser(conf_path)
@@ -175,8 +175,9 @@ class Config(dict):
             self['user']['password'] = password
 
         parts = self['main']['abf_url'].split('//')
-        git_uri = "%(protocol)s//%(user)s@%(domain)s" % \
-                dict(protocol=parts[0], user=self['user']['login'], domain=parts[1])
+        #git_uri = "%(protocol)s//%(user)s@%(domain)s" % \
+        #        dict(protocol=parts[0], user=self['user']['login'], domain=parts[1])
+        git_uri = "ssh://git@github.com/OpenMandrivaAssociation"
 
         self['user']['git_uri'] = git_uri
 
@@ -190,7 +191,7 @@ class Config(dict):
             self['user']['default_group'] = res or self['user']['login']
 
         if 'default_build_platform' not in self['user']:
-            def_bp = 'rosa2014.1'
+            def_bp = 'cooker'
             res = ask_user('Default platform [%s]: ' % def_bp, can_be_empty=True)
             self['user']['default_build_platform'] = res or def_bp
 

@@ -796,7 +796,7 @@ def get():
     elif len(tmp) == 2:
         project_name = tmp[1]
 
-    uri = "%s/%s.git" % (cfg['user']['git_uri'], proj)
+    uri = "%s/%s.git" % (cfg['user']['git_uri'], project_name)
     cmd = ['git', 'clone', uri]
     if command_line.branch:
         cmd += ['-b', command_line.branch]
@@ -1261,7 +1261,6 @@ def build(return_ids=False):
     auto_resolved = True
     def auto_resolve():
         as_branch = None
-        as_commit = None
         as_saveto = None
         if not command_line.project: # we are in a git repository and it is the project we are building
             as_branch = get_branch_name()
@@ -1270,54 +1269,30 @@ def build(return_ids=False):
         #log.debug('Auto resolved branch: ' + as_branch)
         if not as_branch:
             log.info(_('You\'ve specified a project without a branch.'))
-            return (None, None, None)
-
-        for ref in proj.get_refs_list(models):
-            if ref['ref'] == as_branch and ref['object']['type'] == 'commit':
-                as_commit = ref['object']['sha']
-                break
-        if not as_commit:
-            log.error(_("Could not resolve hash for branch '%s'") % (as_branch))
-            return (None, None, None)
+            return (None, None)
 
         for repo in proj.repositories:
             if repo.platform.name == as_branch or (as_branch == 'master' and repo.platform.name == 'cooker') or (as_branch == 'rosa2014.1' and repo.platform.name == 'current'):
                 as_saveto = repo
         if not as_saveto:
             log.info(_('Could not resolve a platform to save to from the branch name "%s".') % as_branch)
-            return (as_branch, as_commit, None)
+            return (as_branch, None)
 
-        return (as_branch, as_commit, as_saveto)
+        return (as_branch, as_saveto)
 
-    as_branch, as_commit, as_saveto  = auto_resolve()
-    opts = 'Branch: %s, commit: %s, save-to-repo: %s' % (as_branch, as_commit, as_saveto)
+    as_branch, as_saveto  = auto_resolve()
+    opts = 'Branch: %s, save-to-repo: %s' % (as_branch, as_saveto)
     log.debug(_('A list of options which could be resolved automatically: %s') % opts)
 
     # get git commit hash
 
     commit_hash = None
-    if tmp == 0:
-        if as_commit: # use autoresolved commit hash
-            commit_hash = as_commit
-        else:
-            log.error(_("Git branch, tag or commit can not be resolved automatically. Specify it by -b, -t or -c."))
-            exit(1)
+    if tmp == 0 and (not as_branch or not as_saveto):
+        log.error(_("Git branch, tag or commit can not be resolved automatically. Specify it by -b, -t or -c."))
+        exit(1)
     if tmp == 1:
         if commit_def:
             commit_hash = command_line.commit
-        else:
-            to_resolve = command_line.branch or command_line.tag
-            ref_type = (branch_def and 'commit') or (tag_def and 'tag')
-            refs = proj.get_refs_list(models)
-            for ref in refs:
-                if ref['ref'] == to_resolve and ref['object']['type'] == ref_type:
-                    commit_hash = ref['object']['sha']
-            if commit_hash == None:
-                log.error(_("Could not resolve hash for %(ref_type)s '%(to_resolve)s'") % {'ref_type': ref_type, 'to_resolve': to_resolve})
-                exit(1)
-    if commit_hash != as_commit:
-        as_saveto = None
-        log.debug(_('Autoresolved options were rejected.'))
     log.debug(_('Git commit hash: %s') % commit_hash)
 
 
