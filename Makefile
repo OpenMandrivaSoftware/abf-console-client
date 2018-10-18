@@ -6,8 +6,8 @@
 
 
 PYTHON=python
-PYVER := $(shell $(PYTHON) -c 'import sys; print "%.3s" %(sys.version)')
-PYSYSDIR := $(shell $(PYTHON) -c 'import sys; print sys.prefix')
+PYVER := $(shell $(PYTHON) -c 'import sys; print("%.3s" %(sys.version))')
+PYSYSDIR := $(shell $(PYTHON) -c 'import sys; print(sys.prefix)')
 PYLIBDIR = $(PYSYSDIR)/lib/python$(PYVER)
 PKGDIR = $(PYLIBDIR)/site-packages
 
@@ -36,11 +36,11 @@ install:
 	cp "bash_autocomplete" $(DESTDIR)$(USRSHAREDIR)/bash-completion/abf
 	cp "abfcd.sh" $(DESTDIR)$(ETCDIR)/profile.d/abfcd.sh
 	
-	mkdir -p $(DESTDIR)$(ETCDIR)/abf/mock-urpm/configs/
-	cp configs/* $(DESTDIR)$(ETCDIR)/abf/mock-urpm/configs/
-	mkdir -p $(DESTDIR)/var/cache/abf/mock-urpm
-	mkdir -p $(DESTDIR)/var/lib/abf/mock-urpm/src
-	chmod 0777 $(DESTDIR)/var/lib/abf/mock-urpm -R
+	mkdir -p $(DESTDIR)$(ETCDIR)/abf/mock/configs/
+	cp configs/* $(DESTDIR)$(ETCDIR)/abf/mock/configs/
+	mkdir -p $(DESTDIR)/var/cache/abf/mock
+	mkdir -p $(DESTDIR)/var/lib/abf/mock/src
+	chmod 0777 $(DESTDIR)/var/lib/abf/mock -R
 	
 	
 
