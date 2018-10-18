@@ -1415,8 +1415,11 @@ def build(return_ids=False):
             arches.append(a)
     else:
         try_arches = ['i586','i686','x86_64']
-        if str(build_repositories[0]).find("openmandriva") >= 0 or str(build_repositories[0]).find("cooker") >= 0:
-            try_arches = ['i586','i686','x86_64','armv7hl','aarch64']
+        if str(build_repositories[0]).find("openmandriva") >= 0 or str(build_repositories[0]).find("3.0") >= 0:
+            try_arches = ['i586','x86_64','armv7hnl','aarch64']
+
+        if str(build_repositories[0]).find("cooker") >= 0 or str(build_repositories[0]).find("4.0") >= 0:
+            try_arches = ['i686','x86_64','armv7hnl','aarch64','znver1']
 
         for arch in try_arches:
             a = Arch.get_arch_by_name(models, arch)

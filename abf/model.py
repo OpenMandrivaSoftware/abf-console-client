@@ -3,7 +3,6 @@ from beaker.cache import Cache
 from beaker.util import parse_cache_config_options
 import logging
 import urllib.request, urllib.error, urllib.parse, urllib.request, urllib.parse, urllib.error
-import string
 from datetime import datetime
 
 from abf.api.exceptions import *
@@ -620,8 +619,7 @@ class BuildList(Model):
             }
 
         build_platforms = {}
-
-        if not skip_personal and string.find(save_to_repository.platform.name,"_personal") > 0:
+        if not skip_personal and save_to_repository.platform.name.find("_personal") > 0:
             DATA['extra_repositories'].append(save_to_repository.id)
 
         for repo in repositories:
