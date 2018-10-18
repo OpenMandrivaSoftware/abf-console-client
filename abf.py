@@ -120,7 +120,8 @@ def parse_command_line():
     parser.add_argument('-v', '--verbose', action='store_true', help=_('be verbose, display even debug messages'))
     parser.add_argument('-c', '--clear-cache', action='store_true', help=_('clear cached information about repositories, platforms, projects, etc.'))
     parser.add_argument('-q', '--quiet', action='store_true', help=_('Do not display info messages'))
-    subparsers = parser.add_subparsers(title='command')
+    subparsers = parser.add_subparsers(title='command', dest='help')
+    subparsers.required = True
 
     # help
     subparser = subparsers.add_parser('help', help=_('show a help for command'))
