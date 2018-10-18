@@ -497,6 +497,8 @@ class BuildList(Model):
     required_fields = ['id', 'container_path', 'status', 'status_string', 'package_version', 'project', 'created_at', 'updated_at',
     'build_for_platform', 'save_to_repository', 'arch', 'extra_repositories',
     'commit_hash', 'duration', 'include_repos', 'priority', 'build_log_url', 'mass_build', 'log_url', 'chroot_tree']
+    status_by_id = status_by_id
+    container_status_by_id = container_status_by_id
 
     status_by_name = dict([(status_by_id[x], x) for x in status_by_id])
     final_statuses = [1, 2, 3, 4, 666, 5000, 6000, 8000, 9000, 12000, 14000]
