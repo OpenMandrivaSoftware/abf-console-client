@@ -45,11 +45,13 @@ def get_project_name(path=None):
         e["LC_ALL"] = "C"
         output, ret_code = execute_command(['git', 'remote', 'show', 'origin', '-n'], cwd=path, env=e)
 
-        m = re.compile("^.*Fetch URL:\s+.*github.com[/](.+)/([^/]+)[.]git$",re.MULTILINE).search(output)
+        m = re.compile("^.*Fetch URL:\s+.*[:/]([^/]+)/([^/]+)[.]git$",re.MULTILINE).search(output)
         if m:
-            # Cant tell abf owner from github loc, so let's hardocde it
             owner_name, project_name = m.groups()
-            return ('openmandriva', project_name)
+            # Cant tell abf owner from github loc, so let's hardocde it
+            if "OpenMandriva" in owner_name:
+                return ('openmandriva', project_name)
+            return (owner_name, project_name)
         return (None, None)
     except ReturnCodeNotZero:
         return (None, None)
@@ -406,7 +408,7 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
 def logOutput(fds, start=0, timeout=0, print_to_stdout=False):
     done = 0
     output = ''
-    #print 'NEW CALL epoll', fds[0].fileno(), fds[1].fileno()
+    #print('NEW CALL epoll', fds[0].fileno(), fds[1].fileno())
 
     # set all fds to nonblocking
     for fd in fds:
