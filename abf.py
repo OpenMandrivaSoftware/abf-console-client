@@ -694,7 +694,7 @@ def search():
 
 def get_project_name_only(must_exist=True, name=None):
     if name:
-        tmp = name.split('/')
+        tmp = name.rstrip('/').split('/')
         if len(tmp) > 2:
             log.error(_('The project format is "[owner_name/]project_name"'))
             exit(1)
@@ -743,7 +743,7 @@ def get_maintainer_id(models, name):
     return user_id
 
 def split_repo_name(fullname):
-    items = fullname.split('/')
+    items = fullname.rstrip('/').split('/')
     if len(items) == 2:
         repo_name = items[1]
         pl_name = items[0]
@@ -787,7 +787,7 @@ def get_repo_id(repo_name, pl_name):
 def get():
     log.debug(_('GET started'))
     proj = command_line.project
-    tmp = proj.split('/')
+    tmp = proj.rstrip('/').split('/')
     if len(tmp) > 2:
         log.error(_('Specify a project name as "group_name/project_name" or just "project_name"'))
         exit(1)
@@ -1304,7 +1304,7 @@ def build(return_ids=False):
     available_repos = proj.repositories
 
     if command_line.save_to_repository:
-        items = command_line.save_to_repository.split('/')
+        items = command_line.save_to_repository.rstrip('/').split('/')
     else:
         items = []
     if len(items) == 2:
@@ -1356,7 +1356,7 @@ def build(return_ids=False):
     build_repositories = []
     if command_line.repository:
         for repo in command_line.repository:
-            items = repo.split('/')
+            items = repo.rstrip('/').split('/')
             if len(items) == 2:
                 repo_name = items[1]
                 pl_name = items[0]
@@ -1593,7 +1593,7 @@ def locate():
             print((_("To show a project location, you have to specify a project name ('-p' option)")))
             return
 
-        tmp = command_line.project.split('/')
+        tmp = command_line.project.rstrip('/').split('/')
         if len(tmp) > 2:
             log.error(_('error: the project format is "[owner_name/]project_name"'))
             exit(1)
