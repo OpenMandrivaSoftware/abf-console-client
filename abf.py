@@ -22,33 +22,12 @@ gettext.install('abf-console-client')
 
 from abf.console.config import Config, mkdirs
 from abf.console.log import Log
-cfg = Config()
 log = Log('abf')
 
 from abf.console.misc import *
 from abf.api.exceptions import *
 from abf.model import *
 
-abf_url = cfg['main']['abf_url']
-file_store_url = cfg['main']['file_store_url']
-if cfg['main']['default_publish_status'] != '':
-    if cfg['main']['default_publish_status'] in BuildList.auto_publish_statuses:
-        default_publish_status = cfg['main']['default_publish_status']
-    else:
-        default_publish_status = BuildList.auto_publish_statuses[0]
-        print((_("Incorrect value of 'default_publish_status' in config file, ignoring. Possible valus are: ") + "'" + str.join("', '", BuildList.auto_publish_statuses) + "'"))
-else:
-    default_publish_status = BuildList.auto_publish_statuses[0]
-    cfg['main']['default_publish_status'] = BuildList.auto_publish_statuses[0]
-
-login = cfg['user']['login']
-password = cfg['user']['password']
-default_group = cfg['user']['default_group']
-default_build_platform = cfg['user']['default_build_platform']
-default_branch = cfg['user']['default_branch']
-models_params = ((abf_url, file_store_url, login, password))
-
-models = Models(*models_params)
 
 configs_dir = '/etc/abf/mock/configs/'
 
@@ -120,6 +99,7 @@ def parse_command_line():
     parser.add_argument('-v', '--verbose', action='store_true', help=_('be verbose, display even debug messages'))
     parser.add_argument('-c', '--clear-cache', action='store_true', help=_('clear cached information about repositories, platforms, projects, etc.'))
     parser.add_argument('-q', '--quiet', action='store_true', help=_('Do not display info messages'))
+    parser.add_argument('-C', '--config', action='store', help=_('config file to be used'))
     subparsers = parser.add_subparsers(title='command', dest='help')
     subparsers.required = True
 
@@ -1731,9 +1711,37 @@ def clean():
 
 if __name__ == '__main__':
     global projects_cfg
+    global cfg
+
+    parse_command_line()
+
+    if command_line.config:
+        cfg = Config(command_line.config)
+    else:
+        cfg = Config()
+
+    abf_url = cfg['main']['abf_url']
+    file_store_url = cfg['main']['file_store_url']
+    if cfg['main']['default_publish_status'] != '':
+        if cfg['main']['default_publish_status'] in BuildList.auto_publish_statuses:
+            default_publish_status = cfg['main']['default_publish_status']
+        else:
+            default_publish_status = BuildList.auto_publish_statuses[0]
+            print((_("Incorrect value of 'default_publish_status' in config file, ignoring. Possible valus are: ") + "'" + str.join("', '", BuildList.auto_publish_statuses) + "'"))
+    else:
+        default_publish_status = BuildList.auto_publish_statuses[0]
+        cfg['main']['default_publish_status'] = BuildList.auto_publish_statuses[0]
+
+    login = cfg['user']['login']
+    password = cfg['user']['password']
+    default_group = cfg['user']['default_group']
+    default_build_platform = cfg['user']['default_build_platform']
+    default_branch = cfg['user']['default_branch']
+    models_params = ((abf_url, file_store_url, login, password))
+
+    models = Models(*models_params)
 
     apply_aliases()
-    parse_command_line()
 
     if not hasattr(command_line, "skip_proj_cfg_update"):
         command_line.skip_proj_cfg_update = False
