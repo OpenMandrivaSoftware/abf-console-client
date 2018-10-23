@@ -79,7 +79,7 @@ class Model(object):
             raise Exception(_("Key 'id' have to present in initial data!"))
 
         if ID:
-            cache_key = '%s-%s' % (self.__class__.__name__, ID)
+            cache_key = '%s-%s-%s' % (self.models.abf_url, self.__class__.__name__, ID)
 
             if st_cache and cache_key in st_cache:
                 #read cached value
@@ -164,7 +164,7 @@ class Platform(Model):
 
     @staticmethod
     def _get_platforms_filtered(models, typ):
-        cache_key = '%s__%s' % (Platform.__name__, typ)
+        cache_key = '%s__%s__%s' % (models.abf_url, Platform.__name__, typ)
         platforms = get_cached(st_cache, cache_key, models.jsn.get_platforms, typ=typ)['platforms']
         output = []
         for pl in platforms:
@@ -182,7 +182,7 @@ class Platform(Model):
 
     @staticmethod
     def get_build_platforms(models):
-        cache_key = '%s__buil' % (Platform.__name__)
+        cache_key = '%s__%s__buil' % (models.abf_url, Platform.__name__)
         platforms = get_cached(st_cache, cache_key, models.jsn.get_build_platforms)['platforms']
         output = []
         for pl in platforms:
@@ -281,7 +281,7 @@ class Arch(Model):
 
     @staticmethod
     def get_arches(models):
-        cache_key = '%s__all' % (Arch.__name__)
+        cache_key = '%s__%s__all' % (models.abf_url, Arch.__name__)
         arches = get_cached(st_cache, cache_key, models.jsn.get_architectures)['architectures']
         output = []
         for arch in arches:
@@ -291,7 +291,7 @@ class Arch(Model):
 
     @staticmethod
     def get_arch_by_name(models, name):
-        cache_key = '%s__all' % (Arch.__name__)
+        cache_key = '%s__%s__all' % (models.abf_url, Arch.__name__)
         arches = get_cached(st_cache, cache_key, models.jsn.get_architectures)['architectures']
         for arch in arches:
             if arch['name'] == name:
