@@ -23,8 +23,8 @@ class Log:
         Log.set_verbose()
         logging.getLogger("").handlers[0].setLevel(logging.CRITICAL)
 
-    def __init__(self, name=''):
-        logging.config.fileConfig(os.path.expanduser('~/.abfcfg'))
+    def __init__(self, name='', conf_path='~/.abfcfg'):
+        logging.config.fileConfig(os.path.expanduser(conf_path))
         self.log = logging.getLogger(name)
 
     def __getattr__(self, attr):

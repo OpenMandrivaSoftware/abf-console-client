@@ -22,10 +22,6 @@ gettext.install('abf-console-client')
 
 from abf.console.config import Config, mkdirs
 from abf.console.log import Log
-log = Log('abf')
-
-from abf.console.misc import *
-from abf.api.exceptions import *
 from abf.model import *
 
 
@@ -1711,14 +1707,18 @@ def clean():
 
 if __name__ == '__main__':
     global projects_cfg
-    global cfg
 
     parse_command_line()
 
     if command_line.config:
-        cfg = Config(command_line.config)
+        cfg = Config(conf_path=command_line.config)
+        log = Log('abf', conf_path=command_line.config)
     else:
         cfg = Config()
+        log = Log('abf')
+
+    from abf.console.misc import *
+    from abf.api.exceptions import *
 
     abf_url = cfg['main']['abf_url']
     file_store_url = cfg['main']['file_store_url']

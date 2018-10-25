@@ -6,16 +6,12 @@ import urllib.request, urllib.error, urllib.parse, urllib.request, urllib.parse,
 from datetime import datetime
 
 from abf.api.exceptions import *
-#from abf.api.html import *
 from abf.api.jsn import *
-
 
 log = logging.getLogger('models')
 
 lt_cache = Cache('abf', expire = 86400, type='file', data_dir='/tmp/abf_cache/data', lock_dir='/tmp/abf_cache/data')
 st_cache = Cache('abf', expire = 3600,  type='file', data_dir='/tmp/abf_cache/data', lock_dir='/tmp/abf_cache/data')
-#lt_cache = None
-#st_cache = None
 
 status_by_id = {
     0: 'build complete',

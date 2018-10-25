@@ -16,6 +16,7 @@ import urllib.request, urllib.error, urllib.parse
 
 from abf.console.log import Log
 from abf.api.exceptions import *
+
 log = Log('models')
 
 def mkdirs(path):
@@ -346,7 +347,6 @@ def pack_project(root_path):
             os.remove(f)
         else:
             shutil.rmtree(f)
-
 
 
 def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, print_to_stdout=False, exit_on_error=False, env=[]):
