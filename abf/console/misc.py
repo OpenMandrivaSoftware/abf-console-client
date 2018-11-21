@@ -85,6 +85,14 @@ def get_project_name_version(spec_path):
     except:
         return None
 
+def get_rpm_source_dir():
+    try:
+        rpm = __import__('rpm') # it's initialization is too long to place it to the top of the file
+        ts = rpm.TransactionSet()
+        return rpm.expandMacro("%{_sourcedir}")
+    except:
+        return None
+
 def get_project_data(spec_path):
         rpm = __import__('rpm') #  it's initialization is too long to place it to the top of the file
         ts = rpm.TransactionSet()
@@ -235,7 +243,7 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
             except yaml.composer.ComposerError as ex:
                 log.error(_('Invalid yml file %(file)s!\n%(exception)s') % {'file': yaml_path, 'exception': ex})
 
-        if not 'sources' in yaml_data:
+        if not yaml_data or not 'sources' in yaml_data:
             log.error(_("Incorrect .abf.yml file: no 'sources' key"))
             exit(1)
         for fl in yaml_data['sources']:
@@ -459,7 +467,7 @@ def is_text_file(path):
 def fetch_files(models, yaml_path, file_names=None):
     with open(yaml_path, 'r') as fd:
         yaml_data = yaml.load(fd)
-    if not 'sources' in yaml_data:
+    if not yaml_data or not 'sources' in yaml_data:
         log.error(_("Incorrect .abf.yml file: no 'sources' key."))
         exit(1)
     yaml_files = yaml_data['sources']
@@ -490,6 +498,7 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
     spec_path = find_spec(path)
     dir_path = os.path.dirname(spec_path)
     errors_count = 0
+    rpm_src_dir = get_rpm_source_dir()
 
     yaml_path = os.path.join(dir_path, '.abf.yml')
     yaml_file_changed = False
@@ -503,7 +512,7 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
                 log.error(_('Could not parse .abf.yml file. It seems to be corrupted and will be rewritten.'))
                 yaml_file_changed = True
                 yaml_data['sources'] = {}
-        if not 'sources' in yaml_data:
+        if not yaml_data or not 'sources' in yaml_data:
             log.error(_("Incorrect .abf.yml file: no 'sources' key. The file will be rewritten."))
             yaml_file_changed = True
             yaml_data['sources'] = {}
@@ -529,6 +538,8 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
 
         do_not_upload = False
         source = os.path.join(dir_path, src)
+        if not os.path.exists(source) and os.path.exists(os.path.join(rpm_src_dir, src)):
+            source = os.path.join(rpm_src_dir, src)
 
         if not os.path.exists(source):
             if is_url:
