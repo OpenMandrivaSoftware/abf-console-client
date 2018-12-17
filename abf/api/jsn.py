@@ -288,7 +288,7 @@ class AbfJson(object):
         output = resp.read()
         conn.close()
         if resp.status < 200 or resp.status > 299:
-            self.log.error(_("Could not upload file. HTTP error %(status)s %(reason)s") %  (resp.status, resp.reason))
+            self.log.error(_("Could not upload file. HTTP error %(status)s %(reason)s") % {'status': resp.status, 'reason': resp.reason})
             exit(1)
 
         output = json.loads(output)
