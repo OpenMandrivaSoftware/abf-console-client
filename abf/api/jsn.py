@@ -220,10 +220,10 @@ class AbfJson(object):
         for key, value in files:
             content_type = mimetypes.guess_type(value)[0] or 'application/octet-stream'
 
-            body.write('--%s\r\n' % boundary)
+            body.write(b'--%s\r\n' % boundary.encode())
 
-            body.write('Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % (key, value))
-            body.write('Content-Type: %s\r\n\r\n' % content_type)
+            body.write(b'Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % (key.encode(), value.encode()))
+            body.write(b'Content-Type: %s\r\n\r\n' % content_type.encode())
 
             fobj = open(value, 'rb')
 
@@ -236,9 +236,9 @@ class AbfJson(object):
 
             fobj.close()
 
-            body.write('\r\n')
+            body.write(b'\r\n')
 
-        body.write('--%s--\r\n' % boundary)
+        body.write(b'--%s--\r\n' % boundary.encode())
 
     def compute_sha1(self, file_name):
         fd = open(file_name, 'rb')
