@@ -208,14 +208,14 @@ class AbfJson(object):
     @staticmethod
     def __encode_multipart_formdata(body, boundary, fields = [], files = []):
         for key, value in fields:
-            body.write('--%s\r\n' % boundary)
+            body.write(b'--%s\r\n' % boundary)
 
-            body.write('Content-Disposition: form-data; name="%s"\r\n' % key)
-            body.write('Content-Type: text/plain\r\n\r\n')
+            body.write(b'Content-Disposition: form-data; name="%s"\r\n' % key)
+            body.write(b'Content-Type: text/plain\r\n\r\n')
 
             body.write(value)
 
-            body.write('\r\n')
+            body.write(b'\r\n')
 
         for key, value in files:
             content_type = mimetypes.guess_type(value)[0] or 'application/octet-stream'
