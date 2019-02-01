@@ -208,9 +208,9 @@ class AbfJson(object):
     @staticmethod
     def __encode_multipart_formdata(body, boundary, fields = [], files = []):
         for key, value in fields:
-            body.write(b'--%s\r\n' % boundary)
+            body.write(b'--%s\r\n' % boundary.encode())
 
-            body.write(b'Content-Disposition: form-data; name="%s"\r\n' % key)
+            body.write(b'Content-Disposition: form-data; name="%s"\r\n' % key.encode())
             body.write(b'Content-Type: text/plain\r\n\r\n')
 
             body.write(value)

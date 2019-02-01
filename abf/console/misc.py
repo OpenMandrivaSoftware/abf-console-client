@@ -589,7 +589,7 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
                         yaml_data['removed_sources'] = {}
                     yaml_data['removed_sources'][item] = h
                     log.info(_('Removing %(item)s:%(hash)s from .abf.yml') % {'item': item, 'hash': h })
-            yaml_files[src] = sha_hash.encode()
+            yaml_files[src] = sha_hash
             yaml_file_changed = True
         else:
             log.debug(_('Hash for file %s is already correct') % src)
@@ -604,7 +604,7 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
         log.debug(_('Writing the new .abf.yml file...'))
         yaml_data['sources'] = yaml_files
         with open(yaml_path, 'w') as fd:
-            yaml.dump(yaml_data, fd, default_flow_style=False)
+            yaml.dump(yaml_data, fd, default_flow_style=False, allow_unicode=True)
 
     return errors_count
 
