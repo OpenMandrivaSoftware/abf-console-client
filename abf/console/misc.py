@@ -64,7 +64,7 @@ def parse_spec_silently(ts, spec_path):
     try:
         os.dup2(sys.stderr.fileno(), stderr)
         os.dup2(sys.stdout.fileno(), stdout)
-        se = file('/dev/null', 'w')
+        se = open('/dev/null', 'w')
         os.dup2(se.fileno(), sys.stderr.fileno())
         os.dup2(se.fileno(), sys.stdout.fileno())
         rpm_spec = ts.parseSpec(spec_path)
