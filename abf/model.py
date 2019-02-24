@@ -640,8 +640,12 @@ class BuildList(Model):
                     log.error(_('Sorry, but something went wrong and request I\'ve sent to ABF is bad. Please, '
                         'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
                     exit(1)
-                log.info(_("Task %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has been sent. Build task id is %(id)s") %
-                    {'proj': project, 'plat': bpl, 'save_repo': save_to_repository, 'arch': arch, 'id': result['build_list']['id']})
+                if result['build_list']['id'] is not None:
+                    log.info(_("Task %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has been sent. Build task id is %(id)s") %
+                        {'proj': project, 'plat': bpl, 'save_repo': save_to_repository, 'arch': arch, 'id': result['build_list']['id']})
+                else:
+                    log.info(_("Build request %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has failed.\nReason: %(reason)s") %
+                        {'proj': project, 'plat': bpl, 'save_repo': save_to_repository, 'arch': arch, 'reason': result['build_list']['message']})                   
                 build_ids.append(result['build_list']['id'])
         return build_ids
 
