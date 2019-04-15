@@ -5,17 +5,17 @@
 #############################################################################
 
 
-PYTHON=python
+PYTHON=python3
 PYVER := $(shell $(PYTHON) -c 'import sys; print("%.3s" %(sys.version))')
 PYSYSDIR := $(shell $(PYTHON) -c 'import sys; print(sys.prefix)')
 PYLIBDIR = $(PYSYSDIR)/lib/python$(PYVER)
 PKGDIR = $(PYLIBDIR)/site-packages
 
-BINDIR=/usr/bin
+PREFIX=/usr
+BINDIR=$(PREFIX)/bin
 ETCDIR=/etc
-MANDIR=/usr/share/man
-USRSHAREDIR=/usr/share
-
+MANDIR=$(PREFIX)/share/man
+DATADIR=$(PREFIX)/share
 
 FILES = abf/console/*.py abf/*.py abf/api/*.py
 
@@ -28,12 +28,12 @@ clean:
 install:
 	mkdir -p $(DESTDIR)$(PKGDIR) $(DESTDIR)$(BINDIR) $(DESTDIR)$(MANDIR)/man1
 	cp -p --parents $(FILES) $(DESTDIR)$(PKGDIR)
-	cp -p "abf.py" $(DESTDIR)$(BINDIR)/abf
+	install -m0755 abf.py $(DESTDIR)$(BINDIR)/abf
 	
-	mkdir -p $(DESTDIR)$(USRSHAREDIR)/bash-completion
+	mkdir -p $(DESTDIR)$(DATADIR)/bash-completion
 	mkdir -p $(DESTDIR)$(ETCDIR)/bash_completion.d
 	mkdir -p $(DESTDIR)$(ETCDIR)/profile.d
-	cp "bash_autocomplete" $(DESTDIR)$(USRSHAREDIR)/bash-completion/abf
+	cp "bash_autocomplete" $(DESTDIR)$(DATADIR)/bash-completion/abf
 	cp "abfcd.sh" $(DESTDIR)$(ETCDIR)/profile.d/abfcd.sh
 	
 	mkdir -p $(DESTDIR)$(ETCDIR)/abf/mock/configs/
@@ -41,6 +41,3 @@ install:
 	mkdir -p $(DESTDIR)/var/cache/abf/mock
 	mkdir -p $(DESTDIR)/var/lib/abf/mock/src
 	chmod 0777 $(DESTDIR)/var/lib/abf/mock -R
-	
-	
-
