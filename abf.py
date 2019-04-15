@@ -1392,6 +1392,11 @@ def build(return_ids=False):
             arches.append(a)
     else:
         try_arches = ['i586','i686','x86_64']
+
+        # rosa2014.1, rosa2016.1 etc. (Rosa Fresh), but not e.g. rosa-server75 (Rosa-RHEL)
+        if str(build_repositories[0]).find("rosa20") >= 0:
+            try_arches = ['i586','x86_64']
+
         if str(build_repositories[0]).find("openmandriva") >= 0 or str(build_repositories[0]).find("3.0") >= 0:
             try_arches = ['i586','x86_64','armv7hnl','aarch64']
 
