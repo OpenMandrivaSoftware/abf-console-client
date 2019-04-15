@@ -6,6 +6,7 @@
 
 
 PYTHON=python3
+PYTHON_BIN := $(shell which $(PYTHON))
 PYVER := $(shell $(PYTHON) -c 'import sys; print("%.3s" %(sys.version))')
 PYSYSDIR := $(shell $(PYTHON) -c 'import sys; print(sys.prefix)')
 PYLIBDIR = $(PYSYSDIR)/lib/python$(PYVER)
@@ -47,6 +48,9 @@ install:
 	sed -i -e "s,mock_urpm,m0ck_urpm,g" $(DESTDIR)$(BINDIR)/abf
 	sed -i -e "s,mock,$(MOCK),g" $(DESTDIR)$(BINDIR)/abf
 	sed -i -e "s,m0ck_urpm,mock_urpm,g" $(DESTDIR)$(BINDIR)/abf
+
+	if [ "$(PYTHON)" != python3 ] && [ -x $(PYTHON_BIN) ]; then \
+		sed -i -e "s,#!/usr/bin/env python3,#!$(PYTHON_BIN),g" $(DESTDIR)$(BINDIR)/abf ; fi
 
 	mkdir -p $(DESTDIR)$(DATADIR)/bash-completion
 	mkdir -p $(DESTDIR)$(ETCDIR)/bash_completion.d
