@@ -17,7 +17,12 @@ ETCDIR=/etc
 MANDIR=$(PREFIX)/share/man
 DATADIR=$(PREFIX)/share
 
-MOCK=mock
+######### default config #############
+MOCK = mock
+default_url = https://abf.openmandriva.org
+default_filestore_url = http://file-store.openmandriva.org
+def_bp = cooker
+######### /default config ############
 
 FILES = abf/console/*.py abf/*.py abf/api/*.py
 
@@ -32,6 +37,12 @@ install:
 	cp -p --parents $(FILES) $(DESTDIR)$(PKGDIR)
 	install -m0755 abf.py $(DESTDIR)$(BINDIR)/abf
 	
+	# set default config values
+	sed -i -e "s,https://abf.openmandriva.org,$(default_url),g" \
+		-e "s,http://file-store.openmandriva.org,$(default_filestore_url),g" \
+		-e "s,cooker,$(def_bp),g" \
+		$(DESTDIR)$(PKGDIR)/abf/console/config.py
+
 	# TODO: set mock as a varibale at runtime
 	sed -i -e "s,mock_urpm,m0ck_urpm,g" $(DESTDIR)$(BINDIR)/abf
 	sed -i -e "s,mock,$(MOCK),g" $(DESTDIR)$(BINDIR)/abf
