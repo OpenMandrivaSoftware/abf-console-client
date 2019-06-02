@@ -432,11 +432,11 @@ def info_single():
 def fix_default_config():
     if not os.path.exists('/etc/abf/mock/configs/default.cfg'):
         if os.getuid() != 0:
-            print((_("To set up a default configuration file, symbolic link in /etc/abf/mock/configs have to be created. I need sudo rights to do it.")))
+            print(_("To set up a default configuration file, symbolic link in /etc/abf/mock/configs have to be created. I need sudo rights to do it."))
             exit(1)
 
         files = os.listdir('/etc/abf/mock/configs')
-        print((_('Avaliable configurations: ')))
+        print(_('Avaliable configurations: '))
         out = []
         for f in files:
             if not f.endswith('.cfg'):
@@ -449,7 +449,7 @@ def fix_default_config():
         res = None
         while res not in out:
             if res is not None:
-                print((_('"%s" is not a valid configuration.') % res))
+                print(_('"%s" is not a valid configuration.') % res)
             res = input(_('Select one (it will be remembered): '))
         os.symlink('/etc/abf/mock/configs/%s.cfg' % res, '/etc/abf/mock/configs/default.cfg')
 
@@ -530,7 +530,7 @@ def run_mock_urpm(binary=True):
             if os.path.exists(new_path):
                 os.remove(new_path)
             shutil.move(rpm, os.getcwd())
-            print((_('RPM: ' + os.path.join(os.getcwd(), os.path.basename(rpm)))))
+            print(_('RPM: ' + os.path.join(os.getcwd(), os.path.basename(rpm))))
 
 def localbuild_mock_urpm():
     # get project
@@ -985,11 +985,11 @@ def fork_project():
         owner_id = owner_group[0].id
     elif owner_user:
         # ABF doesn't seem to accept forks to platforms of other users
-        print((_("No group named '%s', will fork to your personal platform") % target_group))
+        print(_("No group named '%s', will fork to your personal platform") % target_group)
 #        owner_id = owner_user[0].id
         owner_id = 0
     else:
-        print((_("Incorrect target group")))
+        print(_("Incorrect target group"))
         return 1
 
     ProjectCreator.fork_project(models, source_proj.id, owner_id, target_name)
@@ -1014,11 +1014,11 @@ def alias_project():
         owner_id = owner_group[0].id
     elif owner_user:
         # ABF doesn't seem to accept forks to platforms of other users
-        print((_("No group named '%s', will create alias in your personal platform") % target_group))
+        print(_("No group named '%s', will create alias in your personal platform") % target_group)
 #        owner_id = owner_user[0].id
         owner_id = 0
     else:
-        print((_("Incorrect target group")))
+        print(_("Incorrect target group"))
         return 1
 
     ProjectCreator.alias_project(models, source_proj.id, owner_id, target_name)
@@ -1040,7 +1040,7 @@ def create_empty():
         owner_id = owner_user[0].id
         owner_type = "User"
     else:
-        print((_("Incorrect owner data")))
+        print(_("Incorrect owner data"))
         return 1
 
     description = ""
@@ -1066,7 +1066,7 @@ def create():
         owner_id = owner_user[0].id
         owner_type = "User"
     else:
-        print((_("Incorrect owner data")))
+        print(_("Incorrect owner data"))
         return 1
 
     name = Popen('rpm -qp --qf="%{NAME}" ' + command_line.srpm, stdout=PIPE, shell=True).stdout.read()
@@ -1104,7 +1104,7 @@ def create():
         os.chdir(curdir)
         shutil.rmtree(tempdir)
     else:
-        print((_("Failed to get information from SRPM")))
+        print(_("Failed to get information from SRPM"))
         return 1
 
 def add_project_to_repository():
@@ -1137,7 +1137,7 @@ def chain_build():
 
     if command_line.infile:
         if command_line.project:
-            print((_("You can't specify '-i' option and project names in command line at the same time.")))
+            print(_("You can't specify '-i' option and project names in command line at the same time."))
             exit(1)
         else:
             command_line.project = []
@@ -1178,7 +1178,7 @@ def chain_build():
                 command_line.ID = [str(build_id)]
                 stat = status(return_status=True)
                 if stat[0][0] in ["build error", "publishing error", "publishing rejected", "build is canceling", "tests failed", "[testing] Publishing error", "unpermitted architecture"]:
-                    print((_("One of the tasks failed, aborting chain build")))
+                    print(_("One of the tasks failed, aborting chain build"))
                     exit(1)
                 elif stat[0][0] in ["build pending", "rerun tests", "rerunning tests", "build started", "build is being published", "[testing] Build is being published'"]:
                     task_running = True
@@ -1186,10 +1186,10 @@ def chain_build():
                     if stat[0][1] == "container is being published":
                         task_running = True
                     elif stat[0][1] == "publishing error":
-                        print((_("Container creation failed for build %d, aborting chain build") % build_id))
+                        print(_("Container creation failed for build %d, aborting chain build") % build_id)
                         exit(1)
                     elif stat[0][1] == "waiting for request for publishing container":
-                        print((_("WARNING: Build %d was not published and container was not created") % build_id))
+                        print(_("WARNING: Build %d was not published and container was not created") % build_id)
                     else:
                         command_line.build_list.append(str(build_id))
                         success_builds.append(build_id)
@@ -1571,7 +1571,7 @@ def locate():
 
     if not command_line.action: # show location
         if not command_line.project:
-            print((_("To show a project location, you have to specify a project name ('-p' option)")))
+            print(_("To show a project location, you have to specify a project name ('-p' option)"))
             return
 
         tmp = command_line.project.rstrip('/').split('/')
@@ -1584,11 +1584,11 @@ def locate():
             proj = command_line.project
 
         if proj not in projects_cfg or 'location' not in projects_cfg[proj] or not projects_cfg[proj]['location']:
-            print((_('error: project %s can not be located') % proj))
+            print(_('error: project %s can not be located') % proj)
             exit(1)
         path = projects_cfg[proj]['location']
         if not os.path.isdir(path):
-            print((_('error: project is not located in "%s" anymore') % path))
+            print(_('error: project is not located in "%s" anymore') % path)
             projects_cfg[proj]['location'] = ''
             exit(1)
         print(path)
@@ -1606,7 +1606,7 @@ def get_true_false(value, key):
         return True
     if value.lower() == "false":
         return False
-    print((_("Please specify 'true' or 'false' for %s") % key))
+    print(_("Please specify 'true' or 'false' for %s") % key)
     exit(1)
 
 def update():
@@ -1671,7 +1671,7 @@ def show():
     if t is None:
         proj = get_project(models, must_exist=True, name=command_line.project)
         for i in proj.required_fields:
-             print((_("%s: %s") % (i, getattr(proj, i))))
+             print(_("%s: %s") % (i, getattr(proj, i)))
     elif t == 'buildlists':
         proj = get_project(models, must_exist=True, name=command_line.project)
         res = models.jsn.get_project_buildlists(proj.id, '' ,1)
@@ -1732,7 +1732,7 @@ if __name__ == '__main__':
             default_publish_status = cfg['main']['default_publish_status']
         else:
             default_publish_status = BuildList.auto_publish_statuses[0]
-            print((_("Incorrect value of 'default_publish_status' in config file, ignoring. Possible valus are: ") + "'" + str.join("', '", BuildList.auto_publish_statuses) + "'"))
+            print(_("Incorrect value of 'default_publish_status' in config file, ignoring. Possible valus are: ") + "'" + str.join("', '", BuildList.auto_publish_statuses) + "'")
     else:
         default_publish_status = BuildList.auto_publish_statuses[0]
         cfg['main']['default_publish_status'] = BuildList.auto_publish_statuses[0]

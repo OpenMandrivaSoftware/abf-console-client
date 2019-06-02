@@ -382,7 +382,7 @@ def execute_command(command, shell=False, cwd=None, timeout=0, raiseExc=True, pr
     except Exception as ex:
         # kill children if they arent done
         if type(ex) == IOError and ex.errno==4:
-            print((_('Process execution has been terminated')))
+            print(_('Process execution has been terminated'))
             exit()
         try:
             if child is not None and child.returncode is None:
@@ -491,7 +491,7 @@ def fetch_files(models, yaml_path, file_names=None):
         try:
             models.jsn.fetch_file(to_fetch[file_name], path)
         except AbfApiException as ex:
-            print((_('error: ') + str(ex)))
+            print(_('error: ') + str(ex))
 
 def upload_files(models, min_size, path=None, remove_files=True, upload_all=False):
     log.debug('Uploading files for directory ' + str(path))
