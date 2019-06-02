@@ -585,9 +585,6 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
                             to_remove.append(item)
                 for item in to_remove:
                     h = yaml_files.pop(item)
-                    if 'removed_sources' not in yaml_data:
-                        yaml_data['removed_sources'] = {}
-                    yaml_data['removed_sources'][item] = h
                     log.info(_('Removing %(item)s:%(hash)s from .abf.yml') % {'item': item, 'hash': h })
             yaml_files[src] = sha_hash
             yaml_file_changed = True
