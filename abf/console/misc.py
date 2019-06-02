@@ -596,6 +596,10 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
             log.debug(_('Removing file %s') % source)
             os.remove(source)
 
+    # We used to have 'removed_sources' section which found no use in real life
+    if 'removed_sources' in yaml_data:
+        del yaml_data['removed_sources']
+        yaml_file_changed = True
 
     if yaml_file_changed:
         log.debug(_('Writing the new .abf.yml file...'))
