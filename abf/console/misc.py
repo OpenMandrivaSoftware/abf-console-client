@@ -46,7 +46,7 @@ def get_project_name(path=None):
         e["LC_ALL"] = "C"
         output, ret_code = execute_command(['git', 'remote', 'show', 'origin', '-n'], cwd=path, env=e)
 
-        m = re.compile("^.*Fetch URL:\s+.*[:/]([^/]+)/([^/]+)[.]git$",re.MULTILINE).search(output)
+        m = re.compile("^.*Fetch URL:\s+.*[:/]([^/:]+)/([^/]+)\.git$",re.MULTILINE).search(output)
         if m:
             owner_name, project_name = m.groups()
             # Cant tell abf owner from github loc, so let's hardocde it
