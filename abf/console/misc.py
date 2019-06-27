@@ -237,7 +237,7 @@ def find_spec_problems(exit_on_error=True, strict=False, auto_remove=False):
     if os.path.isfile(yaml_path):
         with open(yaml_path, 'r') as fd:
             try:
-                yaml_data = yaml.load(fd)
+                yaml_data = yaml.safe_load(fd)
             except yaml.scanner.ScannerError as ex:
                 log.error(_('Invalid yml file %(file)s!\nProblem in line %(line)d column %(col)d: %(exception)s') % {'file': yaml_path, 'line': ex.problem_mark.line, 'col': ex.problem_mark.column, 'exception': ex.problem})
             except yaml.composer.ComposerError as ex:
@@ -466,7 +466,7 @@ def is_text_file(path):
 
 def fetch_files(models, yaml_path, file_names=None):
     with open(yaml_path, 'r') as fd:
-        yaml_data = yaml.load(fd)
+        yaml_data = yaml.safe_load(fd)
     if not yaml_data or not 'sources' in yaml_data:
         log.error(_("Incorrect .abf.yml file: no 'sources' key."))
         exit(1)
@@ -507,7 +507,7 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
     if os.path.isfile(yaml_path):
         with open(yaml_path, 'r') as fd:
             try:
-                yaml_data = yaml.load(fd)
+                yaml_data = yaml.safe_load(fd)
             except (yaml.composer.ComposerError, yaml.scanner.ScannerError) :
                 log.error(_('Could not parse .abf.yml file. It seems to be corrupted and will be rewritten.'))
                 yaml_file_changed = True
