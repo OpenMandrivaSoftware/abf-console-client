@@ -568,6 +568,8 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
                 yaml_file_changed = True
             continue
         sha_hash = models.jsn.upload_file(source)
+        if not yaml_files:
+            yaml_files = {}
 
         if src not in yaml_files or sha_hash != yaml_files[src]:
             log.debug(_('Hash for file %s has been updated') % src)
