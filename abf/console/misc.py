@@ -541,20 +541,18 @@ def upload_files(models, min_size, path=None, remove_files=True, upload_all=Fals
         if not os.path.exists(source) and os.path.exists(os.path.join(rpm_src_dir, src)):
             source = os.path.join(rpm_src_dir, src)
 
-        if not os.path.exists(source):
+        filesize = os.stat(source).st_size
+        if not os.path.exists(source) or filesize == 0:
             if is_url:
-                log.info(_('File %s not found, URL will be used instead. Skipping.') % src)
+                log.info(_('File %s not found or empty, URL will be used instead. Skipping.') % src)
                 continue
             if src not in yaml_files:
                 log.error(_("error: Source%(num)d file %(source)s does not exist, skipping!") % {'num': num, 'source': source})
                 errors_count += 1;
             else:
-                log.info(_('File %s not found, but it\'s listed in .abf.yml. Skipping.') % src)
+                log.info(_('File %s not found or empty, but it\'s listed in .abf.yml. Skipping.') % src)
             continue
-        filesize = os.stat(source).st_size
-        if filesize == 0:
-            log.debug(_('Size of %s is 0, skipping') % src)
-            do_not_upload = True
+
         if filesize < min_size:
             log.debug(_('Size of %s less then minimal, skipping') % src)
             do_not_upload = True
