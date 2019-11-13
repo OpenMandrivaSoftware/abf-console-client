@@ -13,6 +13,7 @@ import hashlib
 import shutil
 
 from abf.api.exceptions import *
+from abf.console.download import Download
 
 
 from beaker.cache import Cache
@@ -180,7 +181,7 @@ class AbfJson(object):
                     self.log.error(_("Authorization failed. Incorrect username or password"))
                     exit()
 
-                #remove cached data if exists
+                # remove cached data if exists
                 if etag:
                     try:
                         cache_etags.remove(url)
@@ -226,7 +227,6 @@ class AbfJson(object):
             body.write(b'Content-Type: %s\r\n\r\n' % content_type.encode())
 
             fobj = open(value, 'rb')
-
 
             datablock = 1
             while datablock:
@@ -294,19 +294,9 @@ class AbfJson(object):
         output = json.loads(output)
         return output['sha1_hash'] or None
 
-
     def fetch_file(self, sha_hash, path):
         URL = self.file_store_url + '/api/v1/file_stores/' + sha_hash
-        try:
-            response = urllib.request.urlopen(URL)
-        except urllib.error.HTTPError as ex:
-            if ex.code == 404: # data was not modified
-                raise PageNotFoundError(_('File with hash %s can not be downloaded from File-Store.') % sha_hash)
-            else:
-                raise AbfApiException(_('Error while downloading file by hash %(hash)s: %(exception)s') % {'hash': sha_hash, 'exception': str(ex)})
-        fd = open(path, 'wb')
-        shutil.copyfileobj(response, fd)
-        fd.close()
+        Download(URL, path).download()
 
     def get_file_info_by_hash(self, sha_hash):
         URL = "/api/v1/file_stores.json"
@@ -369,7 +359,7 @@ class AbfJson(object):
     def get_project_id_by_name(self, key):
         proj_owner, proj_name = key
         URL = "/api/v1/projects/get_id.json"
-        GET = {'name': proj_name, 'owner':proj_owner}
+        GET = {'name': proj_name, 'owner': proj_owner}
         return self.get_url_contents(URL, GET)
 
     def new_build_task(self, data):
@@ -415,7 +405,7 @@ class AbfJson(object):
 
     def get_git_refs_list(self, proj_id):
         proj_id = int(proj_id)
-        URL = "/api/v1/projects/%d/refs_list.json"  % proj_id
+        URL = "/api/v1/projects/%d/refs_list.json" % proj_id
         return self.get_url_contents(URL)
 
     def get_user_by_id(self, user_id):
@@ -434,12 +424,12 @@ class AbfJson(object):
         return self.get_url_contents(URL, GET=GET)
 
     def get_list(self, list_type, page):
-        URL = "/api/v1/" + list_type +".json"
-        GET = {'page': page, 'per_page': 100 }
+        URL = "/api/v1/" + list_type + ".json"
+        GET = {'page': page, 'per_page': 100}
         return self.get_url_contents(URL, GET=GET)
 
     def get_projects_single(self, repo_id, page):
         URL = "/api/v1/repositories/%d/projects.json" % repo_id
-        GET = {'page': page, 'per_page': 100 }
+        GET = {'page': page, 'per_page': 100}
         return self.get_url_contents(URL, GET=GET)
 
