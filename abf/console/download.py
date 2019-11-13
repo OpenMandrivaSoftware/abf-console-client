@@ -81,12 +81,12 @@ class Download:
 
     def _get_terminal_length(self):
         """Return the length of the terminal."""
-        rows, cols = popen('stty size', 'r').read().split()
-        if cols:
-            return int(cols)
-        else:
-            cols = 100
-            return int(cols)
+        try:
+            rows, cols = popen('stty size', 'r').read().split()
+        except Exception:
+            # just use default terminal size
+            return 100
+        return int(cols)
 
     def _parse_destination(self):
         # Check if the des is passed
