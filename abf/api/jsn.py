@@ -44,6 +44,7 @@ def bytes2human(n, format='%(value).1f%(symbol)s', symbols='basic'):
             return format % locals()
     return format % dict(symbol=(title and symbols[0].title()) or symbols[0], value=n)
 
+
 class AbfJson(object):
     def __init__(self, abf_url, file_store_url, login, password, log):
         self.login = login
