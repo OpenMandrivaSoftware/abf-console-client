@@ -3,7 +3,7 @@
 
 import warnings
 import importlib
-warnings.filterwarnings('ignore','Module argparse was already imported')
+warnings.filterwarnings('ignore', 'Module argparse was already imported')
 
 import sys
 import argparse
@@ -56,7 +56,7 @@ def test():
     pr_abfcc = Project.get_by_name(models, 'akirilenko/abf-console-client')
     assert pr_abfcc in prs_abfcc
 
-    #bl = BuildList(models, ID=750988)
+    # bl = BuildList(models, ID=750988)
     Platform.get_user_platforms_main(models)
     Platform.get_user_platforms_personal(models)
     Platform.get_build_platforms(models)
@@ -769,11 +769,14 @@ def get():
         exit(1)
     elif len(tmp) == 1:
         project_name = proj
-        proj = '%s/%s' % (cfg['user']['default_group'], proj)
+        if 'openmandriva' in cfg['user']['default_group']:
+            proj = project_name
+        else:
+            proj = '%s/%s' % (cfg['user']['default_group'], proj)
     elif len(tmp) == 2:
         project_name = tmp[1]
 
-    uri = "%s/%s.git" % (cfg['user']['git_uri'], project_name)
+    uri = "%s/%s.git" % (cfg['user']['git_uri'], proj)
     cmd = ['git', 'clone', uri]
     if command_line.branch:
         cmd += ['-b', command_line.branch]
