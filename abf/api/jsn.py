@@ -52,7 +52,7 @@ class AbfJson(object):
         self.file_store_url = re.compile('/+$').sub('', file_store_url)
 
         if not self.file_store_url.startswith('http://'):
-            log.error(_('File-store url have to start with "http://"'))
+            log.error(_('File-store URL has to start with "http://"'))
             exit(1)
 
         self.file_store_domain = self.file_store_url[7:]

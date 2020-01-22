@@ -1763,7 +1763,7 @@ msgid "can't interpret %r"
 msgstr ""
 
 #: ../abf/api/jsn.py:55
-msgid "File-store url have to start with \"http://\""
+msgid "File-store URL has to start with \"http://\""
 msgstr ""
 
 #: ../abf/api/jsn.py:92
