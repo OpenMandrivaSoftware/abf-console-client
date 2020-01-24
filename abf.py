@@ -1072,9 +1072,9 @@ def create():
         print(_("Incorrect owner data"))
         return 1
 
-    name = Popen('rpm -qp --qf="%{NAME}" ' + command_line.srpm, stdout=PIPE, shell=True).stdout.read()
-    if name > '':
-        description = Popen('rpm -qp --qf="%{SUMMARY}" ' + command_line.srpm, stdout=PIPE, shell=True).stdout.read()
+    name = Popen('rpm -qp --qf="%{NAME}" ' + command_line.srpm, stdout=PIPE, shell=True).stdout.read().decode()
+    if len(name) > 0:
+        description = Popen('rpm -qp --qf="%{SUMMARY}" ' + command_line.srpm, stdout=PIPE, shell=True).stdout.read().decode()
         ProjectCreator.new_project(models, name, description, owner_id, owner_type)
 
         # Save cwd, create temp folder and go to it
