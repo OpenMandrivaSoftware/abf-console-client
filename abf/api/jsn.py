@@ -45,6 +45,7 @@ def bytes2human(n, format='%(value).1f%(symbol)s', symbols='basic'):
             return format % locals()
     return format % dict(symbol=(title and symbols[0].title()) or symbols[0], value=n)
 
+
 class AbfJson(object):
     def __init__(self, abf_url, file_store_url, login, password, log):
         self.login = login
@@ -52,8 +53,8 @@ class AbfJson(object):
         self.abf_url = re.compile('/+$').sub('', abf_url)
         self.file_store_url = re.compile('/+$').sub('', file_store_url)
 
-        if not self.file_store_url.startswith('http://'):
-            log.error(_('File-store url have to start with "http://"'))
+        if not (self.file_store_url.startswith('http://') or self.file_store_url.startswith('https://')):
+            log.error(_('File-store URL has to start with "http(s)://"'))
             exit(1)
 
         self.file_store_domain = self.file_store_url[7:]
