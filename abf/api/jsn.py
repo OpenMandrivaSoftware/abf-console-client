@@ -57,7 +57,7 @@ class AbfJson(object):
             log.error(_('File-store URL has to start with "http(s)://"'))
             exit(1)
 
-        self.file_store_domain = self.file_store_url[7:]
+        self.file_store_domain = self.file_store_url.split('/')[-2:][-1]
 
         #does not work sometimes
         '''self.password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -279,7 +279,11 @@ class AbfJson(object):
         body.seek(0)
         if not silent:
             self.log.info(_('Uploading %(file)s (%(size)s)') % {'file': file_name, 'size': bytes2human(os.stat(file_name).st_size)})
-        conn = http.client.HTTPConnection(self.file_store_domain, 80)
+        if self.file_store_url.startswith('http://'):
+            conn = http.client.HTTPConnection(self.file_store_domain, 80)
+            self.log.warning(_('You are using unencrypted connection, please use https'))
+        if self.file_store_url.startswith('https://'):
+            conn = http.client.HTTPSConnection(self.file_store_domain, 443)
         content_type = 'multipart/form-data; boundary=%s' % boundary
         headers = {'Content-Type' : content_type, 'Content-Length' : length, "Authorization": "Basic %s" % self.base64_auth_string}
         conn.request('POST', '/api/v1/upload', body, headers)
