@@ -680,9 +680,9 @@ msgstr ""
 "число секунд, которые необходимо выждать перед очередной проверкой статуса "
 "сборок."
 
-#: ../abf.py:299
-msgid "Build a project locally using mock-urpm."
-msgstr "Собрать проект локально с использованием mock-urpm."
+#: ../abf.py:275
+msgid "Build a project locally using mock."
+msgstr "Собрать проект локально с использованием mock."
 
 #: ../abf.py:299 ../abf.py:306
 msgid "No checkouts will be made,the current git repository state will be used"
