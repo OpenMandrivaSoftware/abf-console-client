@@ -686,7 +686,7 @@ msgstr "Собрать проект локально с использовани
 
 #: ../abf.py:299 ../abf.py:306
 msgid "No checkouts will be made,the current git repository state will be used"
-msgstr "Для сборки используется текузее состояние Git-репозитория"
+msgstr "Для сборки используется текущее состояние Git-репозитория"
 
 #: ../abf.py:301
 #, python-format
