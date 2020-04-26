@@ -890,7 +890,7 @@ msgid ""
 "Analyze spec file and show missing and unnecessary files from the current "
 "git repository directory."
 msgstr ""
-"Проанализировать spec-файл и сообщить об отсутсвующих и неиспользуемых "
+"Проанализировать spec-файл и сообщить об отсутствующих и неиспользуемых "
 "файлах в Git-репозитории"
 
 #: ../abf.py:394
