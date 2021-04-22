@@ -220,7 +220,7 @@ class Download:
             self.orig_dw_unit = dw_unit
 
             file_size_dl = 0
-            block_sz = 8192
+            block_sz = 1024 * 1024
 
             beg_time = time.time()
             while True:
