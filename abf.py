@@ -1406,7 +1406,7 @@ def build(return_ids=False):
         if str(build_repositories[0]).find("openmandriva") >= 0 or str(build_repositories[0]).find("4.2") >= 0:
             try_arches = ['x86_64','znver1','aarch64']
 
-        if str(build_repositories[0]).find("cooker") >= 0 or str(build_repositories[0]).find("rolling"):
+        if str(build_repositories[0]).find("cooker") >= 0 or str(build_repositories[0]).find("rolling") >= 0:
             try_arches = ['x86_64','znver1','aarch64']
 
         for arch in try_arches:
