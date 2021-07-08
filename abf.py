@@ -901,7 +901,7 @@ def store():
         exit(1)
 
     res = models.jsn.upload_file(p, silent=True)
-    print(res)
+    print(p + ":", res)
 
 def copy():
     log.debug(_('COPY started'))
