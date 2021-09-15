@@ -199,9 +199,10 @@ def parse_command_line():
     subparser.add_argument('-p', '--project', action='store', help=_('project name ([group/]project). If no group '
         'specified, it is assumed to be your default group. If the option is not specified and you are in a git '
         'repository directory - resolve a project name from it.'))
-    subparser.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
-    subparser.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
-    subparser.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
+    group = subparser.add_mutually_exclusive_group()
+    group.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
+    group.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
+    group.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
     subparser.add_argument('-s', '--save-to-repository', action='store', help=_('repository to save results to '
         '([platform/]repository). If no platform part specified, it is assumed to be "<default_group>_personal". '
         'If this option is not specified at all, "<default_group>_personal/main" will be used.'))
@@ -242,9 +243,10 @@ def parse_command_line():
         'and provide a file with project names instead. The file will be read line by line. All projects specified at the same line '
         'will be built in parallel; the next line will be processed only after all the build from the previous line are completed successfully. '
         'Project name in a line can be separated by colon (":") or by space symbols.'))
-    subparser.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
-    subparser.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
-    subparser.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
+    group = subparser.add_mutually_exclusive_group()
+    group.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
+    group.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
+    group.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
     subparser.add_argument('-u', '--timeout', action='store', help=_('number of seconds to sleep between successive checks of build status.'))
     subparser.add_argument('-s', '--save-to-repository', action='store', help=_('repository to save results to '
         '([platform/]repository). If no platform part specified, it is assumed to be "<default_group>_personal". '
