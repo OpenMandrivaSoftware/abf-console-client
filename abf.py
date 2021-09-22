@@ -764,13 +764,13 @@ def get_repo_id(repo_name, pl_name):
 
 def get():
     log.debug(_('GET started'))
-    proj = command_line.project
-    tmp = proj.rstrip('/').split('/')
+    proj = command_line.project.strip('/')
+    tmp = proj.split('/')
     if len(tmp) > 2:
         log.error(_('Specify a project name as "group_name/project_name" or just "project_name"'))
         exit(1)
     elif len(tmp) == 1:
-        project_name = proj
+        project_name = tmp[0]
         if 'openmandriva' in cfg['user']['default_group']:
             proj = project_name
         else:
@@ -778,7 +778,10 @@ def get():
     elif len(tmp) == 2:
         project_name = tmp[1]
 
-    uri = "%s/%s.git" % (cfg['user']['git_uri'], proj)
+    if cfg['user']['git_uri'].startswith('git@'):
+        uri = "%s:%s.git" % (cfg['user']['git_uri'].rstrip(':'), proj)
+    else:
+        uri = "%s/%s.git" % (cfg['user']['git_uri'].rstrip('/'), proj)
     cmd = ['git', 'clone', uri]
     if command_line.branch:
         cmd += ['-b', command_line.branch]
@@ -889,7 +892,10 @@ def remote():
     if command_line.remote_name:
         project_name = command_line.remote_name
 
-    uri = "%s/%s.git" % (cfg['user']['git_uri'], remote_group + "/" + project_name)
+    if cfg['user']['git_uri'].startswith('git@'):
+        uri = "%s:%s.git" % (cfg['user']['git_uri'].rstrip(':'), remote_group + "/" + project_name)
+    else:
+        uri = "%s/%s.git" % (cfg['user']['git_uri'].rstrip('/'), remote_group + "/" + project_name)
     cmd = ['git', 'remote', 'add', remote_group, uri]
     execute_command(cmd, print_to_stdout=True, exit_on_error=True)
     cmd = ['git', 'fetch', remote_group]
