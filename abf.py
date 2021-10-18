@@ -810,10 +810,10 @@ def put():
     log.debug(_('PUT started'))
 
     path = get_root_git_dir()
-    yaml_path = os.path.join(path, '.abf.yml')
     if not path:
         log.error(_("You have to be in a git repository directory"))
         exit(1)
+    yaml_path = os.path.join(path, '.abf.yml')
     _update_location()
 
 
