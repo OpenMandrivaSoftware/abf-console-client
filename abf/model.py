@@ -369,7 +369,7 @@ class Group(Model):
         return self.uname
 
 class Project(Model):
-    required_fields = ['id', 'name', 'fullname', 'git_url', 'created_at', 'updated_at', 'visibility', 'ancestry', 
+    required_fields = ['id', 'name', 'fullname', 'git_url', 'created_at', 'updated_at', 'visibility', 'ancestry',
             'default_branch', 'is_package', 'owner', 'repositories', 'owner_type', 'maintainer', 'project_statistics',]
     filter_dict = { 'id': '*', 'name': '*', 'page': '1' }
 
@@ -382,7 +382,7 @@ class Project(Model):
     @staticmethod
     def get_by_name(models, key):
         ''' key is a pair (owner_name, project_name), or just  owner_name/project_name'''
-        if type(key) is str or type(key) is str:
+        if type(key) is str:
             items = key.split('/')
             if len(items) != 2:
                 raise Exception(_('Invalid key: ') + key)
@@ -645,7 +645,7 @@ class BuildList(Model):
                         {'proj': project, 'plat': bpl, 'save_repo': save_to_repository, 'arch': arch, 'id': result['build_list']['id']})
                 else:
                     log.info(_("Build request %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has failed.\nReason: %(reason)s") %
-                        {'proj': project, 'plat': bpl, 'save_repo': save_to_repository, 'arch': arch, 'reason': result['build_list']['message']})                   
+                        {'proj': project, 'plat': bpl, 'save_repo': save_to_repository, 'arch': arch, 'reason': result['build_list']['message']})
                 build_ids.append(result['build_list']['id'])
         return build_ids
 
