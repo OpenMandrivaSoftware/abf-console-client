@@ -460,7 +460,7 @@ def is_text_file(path):
     m.load()
     r = m.file(path)
     log.debug(_("Magic type of file %(path)s is %(type)s") % {'path': path, 'type': r})
-    if r.startswith('text'):
+    if r.startswith('text') or r.startswith('application/json'):
         return True
     return False
 
