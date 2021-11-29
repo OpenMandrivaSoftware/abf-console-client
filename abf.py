@@ -283,7 +283,7 @@ def parse_command_line():
     # rpmbuild
     subparser = subparsers.add_parser('rpmbuild', help=_('Build a project locally using rpmbuild.'), epilog=_('No checkouts will be made,'
                                                                     'the current git repository state will be used'))
-    subparser.add_argument('-b', '--build', action='store', choices=['b', 's', 'a'], default='a', help=_('Build src.rpm (s), rpm (b) or both (a)'))
+    subparser.add_argument('-b', '--build', action='store', choices=['b', 's', 'a', 'p'], default='a', help=_('Build src.rpm (s), rpm (b), both (a) or only %prep(p)'))
     subparser.add_argument('-s', '--save-rpmbuild-folder', action='store_true', help=_('Copy the whole rpmbuild folder into the current folder after the build'))
     subparser.set_defaults(func=localbuild_rpmbuild)
 
