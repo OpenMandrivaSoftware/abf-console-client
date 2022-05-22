@@ -1409,7 +1409,7 @@ def build(return_ids=False):
             try_arches = ['i586','x86_64']
 
         if str(build_repositories[0]).find("rosa2021.1") >= 0:
-            try_arches = ['i686','x86_64','aarch64']
+            try_arches = ['i686','x86_64','aarch64', 'riscv64', 'e2kv4']
 
         if str(build_repositories[0]).find("openmandriva") >= 0 or str(build_repositories[0]).find("4.2") >= 0:
             try_arches = ['x86_64','znver1','aarch64']

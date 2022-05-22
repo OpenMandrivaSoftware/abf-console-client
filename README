@@ -6,7 +6,7 @@ BUILD
 
 --arch (-a), can be set more than once.
 
-Architecture to build with. If not set, 
+Architecture to build with. If not set,
 
 --save-to-repository (-s)
 Repository to save built packages to. Packages will be published here.
