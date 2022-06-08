@@ -653,10 +653,10 @@ class BuildList(Model):
         try:
             log.info(_("Publishing the project %s...") % self.id)
             result = self.models.jsn.publish(self.id)
-            if result['is_published']:
-                log.info(result['message'])
+            if result['build_list']['message'] == 'Build is queued for publishing':
+                log.info(result['build_list']['message'])
             else:
-                log.error(result['message'])
+                log.error(result['build_list']['message'])
 
             return result
         except BadRequestError as ex:

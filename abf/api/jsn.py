@@ -374,7 +374,7 @@ class AbfJson(object):
     def publish(self, task_id):
         task_id = int(task_id)
         URL = "/api/v1/build_lists/%d/publish.json" % task_id
-        return self.get_url_contents(URL, GET=None)
+        return self.get_url_contents(URL, GET=None, PUT={'nothing': 1})
 
     def new_pull_request(self, data, p_id):
         URL = "/api/v1/projects/%d/pull_requests.json" % p_id
