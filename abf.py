@@ -1483,7 +1483,7 @@ def publish():
     for task_id in command_line.task_ids:
         try:
             bl = BuildList(models, task_id)
-            if bl.status != 0:
+            if bl.status not in [0, 6000, 8000, 11000, 12000]:
                 log.error(_("The status of build task %(id)s is \"%(status)s\", can not published!") % {'id': bl.id, 'status': bl.status_string})
                 continue
             res = bl.publish()
