@@ -335,6 +335,7 @@ def parse_command_line():
     subparser.add_argument('owner', action='store', nargs='?', help=_('who will own the project; default_owner is used by default'))
     subparser.add_argument('-b', '--branch', action='append', help=_('create additional branch; can be set more than once.'))
     subparser.add_argument('--no-def-branch', action='store_true', help=_('Do not automatically create branch set as default in user config (if it is set to smth different from "master").'))
+    subparser.add_argument('--visibility', action='store', choices=['public', 'private'], default='public', help=_('project visibility'))
     subparser.set_defaults(func=create)
 
     # destroy project
@@ -1083,7 +1084,7 @@ def create():
     name = Popen('rpm -qp --qf="%{NAME}" ' + command_line.srpm, stdout=PIPE, shell=True).stdout.read().decode()
     if len(name) > 0:
         description = Popen('rpm -qp --qf="%{SUMMARY}" ' + command_line.srpm, stdout=PIPE, shell=True).stdout.read().decode()
-        ProjectCreator.new_project(models, name, description, owner_id, owner_type)
+        ProjectCreator.new_project(models, name, description, owner_id, owner_type, command_line.visibility)
 
         # Save cwd, create temp folder and go to it
         curdir = os.getcwd()
