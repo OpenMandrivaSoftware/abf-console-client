@@ -605,12 +605,13 @@ def localbuild_rpmbuild():
         exit(1)
     spec_path = os.path.join(src_dir, spec_path)
     spec_lines = open(spec_path, 'r').readlines()
-    if '%changelog' not in [line.strip() for line in spec_lines]:
-        log_lines = subprocess.run(f'cd "{src_dir}" && LC_ALL=C.UTF-8 git log --decorate=short', shell=True, capture_output=True).stdout.decode().split('\n')
-        branch = subprocess.run(f'cd "{src_dir}" && LC_ALL=C.UTF-8 git branch --show-current', shell=True, capture_output=True).stdout.decode().strip()
-        changelog_lines = create_changelog_from_log(log_lines, branch)
-        with open(spec_path, 'a') as out:
-            print(*changelog_lines, sep='\n', file=out)
+    if default_changelog == 'enabled':
+        if '%changelog' not in [line.strip() for line in spec_lines]:
+            log_lines = subprocess.run(f'cd "{src_dir}" && LC_ALL=C.UTF-8 git log --decorate=short', shell=True, capture_output=True).stdout.decode().split('\n')
+            branch = subprocess.run(f'cd "{src_dir}" && LC_ALL=C.UTF-8 git branch --show-current', shell=True, capture_output=True).stdout.decode().strip()
+            changelog_lines = create_changelog_from_log(log_lines, branch)
+            with open(spec_path, 'a') as out:
+                print(*changelog_lines, sep='\n', file=out)
 
     cmd = ['rpmbuild', '-b'+command_line.build, '--define', '_topdir '+src_dir, '--define', '_sourcedir '+src_dir, spec_path]
     if command_line.verbose:
@@ -1738,20 +1739,6 @@ def clean():
     _update_location()
     find_spec_problems(auto_remove=command_line.auto_remove)
 
-def remove_macros(line):
-    line = list(line)
-    for i in range(len(line)):
-        if line[i] == '%':
-            if i == 0:
-                if len(line) > 1 and line[i + 1] != '%':
-                    line[0] = '🤶🏿'
-            elif i == len(line) - 1:
-                if len(line) > 1 and line[-2] != '%':
-                    line[-1] = '🤶🏿'
-            else:
-                if line[i - 1] != '%' and line[i + 1] != '%':
-                    line[i] = '🤶🏿'
-    return ''.join(line).replace('🤶🏿', '%%')
 
 def create_changelog_from_log(log, branch):
     res = []
@@ -1765,18 +1752,20 @@ def create_changelog_from_log(log, branch):
                 return ['', '%changelog'] + res[1:]
             if f'tag: {branch}-' in line:
                 tag = ' ' + line.replace(')', ',').split(f'tag: {branch}-')[1].split(',')[0]
-            else: tag = ''
+            else:
+                tag = ''
             res.append('')
         elif line.startswith('Author: '):
-            author = line.lstrip('Author: ').strip()
+            author = line.split(': ')[1].strip()
+            print(author)
         elif line.startswith('Date: '):
             date_words = line.split()
             if len(date_words) < 6:
                 continue
             date = ' '.join([date_words[1], date_words[2], date_words[3], date_words[5]])
-            res.append(remove_macros('* ' + date + ' ' + author + tag))
+            res.append('* ' + date + ' ' + author + tag)
         elif line.strip() != '':
-            res.append(remove_macros(line.strip()))
+            res.append(line.strip().replace('%', '%%'))
     return ['', '%changelog'] + res[1:]
 
 
@@ -1810,6 +1799,7 @@ if __name__ == '__main__':
     login = cfg['user']['login']
     password = cfg['user']['password']
     default_group = cfg['user']['default_group']
+    default_changelog = cfg['user']['changelog']
     default_build_platform = cfg['user']['default_build_platform']
     default_branch = cfg['user']['default_branch']
     models_params = ((abf_url, file_store_url, login, password))

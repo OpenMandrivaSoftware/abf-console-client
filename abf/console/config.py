@@ -180,6 +180,7 @@ class Config(dict):
         git_uri = "ssh://git@github.com/OpenMandrivaAssociation"
 
         self['user']['git_uri'] = git_uri
+        self['user']['changelog'] = 'disabled'
 
         if 'default_branch' not in self['user']:
             def_br = 'master'
