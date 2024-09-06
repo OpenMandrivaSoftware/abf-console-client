@@ -1416,22 +1416,22 @@ def build(return_ids=False):
 
         # rosa2014.1, rosa2016.1 etc. (Rosa Fresh), but not e.g. rosa-server75 (Rosa-RHEL)
         if str(build_repositories[0]).find("rosa2019.0") >= 0 or str(build_repositories[0]).find("rosa2016.1") >= 0:
-            try_arches = ['i586','x86_64']
+            try_arches = ['i586', 'x86_64']
 
         if str(build_repositories[0]).find("rosa2019.05") >= 0:
             try_arches = ['i686', 'x86_64']
 
         if str(build_repositories[0]).find("rosa2021.1") >= 0 or str(build_repositories[0]).find("rosa2023.1") >=0:
-            try_arches = ['i686','x86_64','aarch64', 'riscv64', 'e2kv4']
+            try_arches = ['i686', 'x86_64', 'aarch64', 'riscv64', 'loongarch64']
 
         if str(build_repositories[0]).find("rosa2021.15") >= 0:
-            try_arches = ['i686', 'x86_64', 'aarch64', 'e2kv4']
+            try_arches = ['i686', 'x86_64', 'aarch64']
 
         if str(build_repositories[0]).find("openmandriva") >= 0 or str(build_repositories[0]).find("4.2") >= 0:
-            try_arches = ['x86_64','znver1','aarch64']
+            try_arches = ['x86_64', 'znver1', 'aarch64']
 
         if str(build_repositories[0]).find("cooker") >= 0 or str(build_repositories[0]).find("rolling") >= 0:
-            try_arches = ['x86_64','znver1','aarch64']
+            try_arches = ['x86_64', 'znver1', 'aarch64']
 
         for arch in try_arches:
             a = Arch.get_arch_by_name(models, arch)
