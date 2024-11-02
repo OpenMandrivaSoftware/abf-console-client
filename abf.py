@@ -1270,7 +1270,7 @@ def build(return_ids=False):
             return (None, None)
 
         for repo in proj.repositories:
-            if repo.platform.name == as_branch or (as_branch == 'master' and repo.platform.name == 'cooker') or (as_branch == 'rosa2014.1' and repo.platform.name == 'current'):
+            if repo.platform.name == as_branch or (as_branch == 'master' and repo.platform.name == 'cooker') or (as_branch == 'rosa2023.1' and repo.platform.name == 'rosa13'):
                 as_saveto = repo
         if not as_saveto:
             log.info(_('Could not resolve a platform to save to from the branch name "%s".') % as_branch)
@@ -1421,7 +1421,7 @@ def build(return_ids=False):
         if str(build_repositories[0]).find("rosa2019.05") >= 0:
             try_arches = ['i686', 'x86_64']
 
-        if str(build_repositories[0]).find("rosa2021.1") >= 0 or str(build_repositories[0]).find("rosa2023.1") >=0:
+        if str(build_repositories[0]).find("rosa2021.1") >= 0 or str(build_repositories[0]).find("rosa13") >= 0:
             try_arches = ['i686', 'x86_64', 'aarch64', 'riscv64', 'loongarch64']
 
         if str(build_repositories[0]).find("rosa2021.15") >= 0:
