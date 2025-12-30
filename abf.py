@@ -203,6 +203,12 @@ def parse_command_line():
     g.add_argument('-b', '--branch', action='store', help=_('branch to build.'))
     g.add_argument('-t', '--tag', action='store', help=_('tag to build.'))
     g.add_argument('-c', '--commit', action='store', help=_('commit sha hash to build.'))
+    cb = subparser.add_mutually_exclusive_group()
+    cb.add_argument('--create-chain', action='store_true', help=_('start new chain build'))
+    cb.add_argument('--add-to-chain', action='store', help=_('add build to chain build(argument last adds to your last chain build)'))
+    level = subparser.add_mutually_exclusive_group()
+    level.add_argument('--current-level', action='store_true', help=_('adds build to the same level'))
+    level.add_argument('--next-level', action='store_true', help=_('adds build to the next level'))
     subparser.add_argument('-s', '--save-to-repository', action='store', help=_('repository to save results to '
         '([platform/]repository). If no platform part specified, it is assumed to be "<default_group>_personal". '
         'If this option is not specified at all, "<default_group>_personal/main" will be used.'))
@@ -1411,7 +1417,7 @@ def build(return_ids=False):
                 log.error(_("Invalid architecture: %s") % arch)
                 exit(1)
             arches.append(a)
-    else:
+    elif command_line.add_to_chain is None:
         try_arches = ['x86_64', 'aarch64']
 
         # rosa2014.1, rosa2016.1 etc. (Rosa Fresh), but not e.g. rosa-server75 (Rosa-RHEL)
@@ -1469,6 +1475,32 @@ def build(return_ids=False):
         for b in command_line.build_list:
             extra_build_lists.append(int(b))
 
+    chain_config = {}
+    if command_line.create_chain:
+        chain_config = {'create_chain': True}
+        command_line.auto_publish_status = 'none'
+        auto_create_container = True
+        extra_build_lists = []
+    elif command_line.add_to_chain is not None:
+        chain_config = {'add_to_chain': command_line.add_to_chain}
+        if command_line.add_to_chain == 'last':
+            arch_names = ChainBuild.last(models).arches
+        else:
+            arch_names = ChainBuild(models, command_line.add_to_chain).arches
+        arches = []
+        for arch in arch_names:
+            arches.append(Arch.get_arch_by_name(models, arch))
+        log.info(_("Arches are assumed to be ") + str(arches))
+        if command_line.current_level:
+            chain_config['current_level'] = True
+        elif command_line.next_level:
+            chain_config['next_level'] = True
+        else:
+            chain_config['next_level'] = True
+        command_line.auto_publish_status = 'none'
+        auto_create_container = True
+        extra_build_lists = []
+
     build_ids = BuildList.new_build_task(
         models,
         proj,
@@ -1487,7 +1519,8 @@ def build(return_ids=False):
         use_extra_tests,
         extra_build_lists,
         # TODO: Read external_nodes config value from user's profile
-        command_line.external_nodes or BuildList.external_nodes_vals[0]
+        command_line.external_nodes or BuildList.external_nodes_vals[0],
+        chain_config
     )
     ids = ','.join([str(i) for i in build_ids])
     if 'projects_cfg' in globals():

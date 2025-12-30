@@ -298,6 +298,22 @@ class Arch(Model):
     def __repr__(self):
         return self.name
 
+class ChainBuild(Model):
+    required_fields = ['id', 'arches']
+
+    def load(self):
+        self.params_dict = self.init_data
+        self.cacher = lt_cache
+
+    def get_init_data(self, ID):
+        ID = str(ID)
+        self.init_data = self.models.jsn.get_chain_build_by_id(ID)['chain_build']
+
+    @staticmethod
+    def last(models):
+        chain_build = models.jsn.get_last_chain_build()['chain_build']
+        return ChainBuild(models, init_data=chain_build)
+
 class User(Model):
     required_fields = ['id', 'name', 'email', 'language', 'professional_experience', 'site', 'company', 'location',
     'uname', 'own_projects_count', 'build_priority', 'created_at', 'updated_at', 'avatar_url', 'html_url']
@@ -575,7 +591,8 @@ class BuildList(Model):
             include_testing_subrepo,
             use_extra_tests,
             extra_build_lists,
-            external_nodes):
+            external_nodes,
+            chain_config):
         if external_nodes == 'none':
             DATA = {
                 'project_id':               project.id,
@@ -593,7 +610,8 @@ class BuildList(Model):
                 'extra_repositories':       [],
                 'extra_build_lists':        extra_build_lists,
                 'include_testing_subrepository': include_testing_subrepo,
-                'use_extra_tests':          use_extra_tests
+                'use_extra_tests':          use_extra_tests,
+                'chain_config':             chain_config
             }
         else:
             DATA = {
@@ -613,7 +631,8 @@ class BuildList(Model):
                 'extra_build_lists':        extra_build_lists,
                 'include_testing_subrepository': include_testing_subrepo,
                 'use_extra_tests':          use_extra_tests,
-                'external_nodes':           external_nodes
+                'external_nodes':           external_nodes,
+                'chain_config':             chain_config
             }
 
         build_platforms = {}
@@ -641,8 +660,21 @@ class BuildList(Model):
                         'notify the console-client developers. Send them a set of command-line arguments and the request data:\n%s') % DATA )
                     exit(1)
                 if result['build_list']['id'] is not None:
-                    log.info(_("Task %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has been sent. Build task id is %(id)s") %
-                        {'proj': project, 'plat': bpl, 'save_repo': save_to_repository, 'arch': arch, 'id': result['build_list']['id']})
+                    if 'chain_build_id' in result['build_list']:
+                        if 'create_chain' in DATA['chain_config']:
+                            DATA['chain_config'] = {'add_first': result['build_list']['chain_build_id']}
+                        log.info(_("Task %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has been sent. Build task id is %(id)s. Chain build id is %(chain_build_id)s") %
+                            {
+                                'proj': project,
+                                'plat': bpl,
+                                'save_repo': save_to_repository,
+                                'arch': arch, 'id': result['build_list']['id'],
+                                'chain_build_id': result['build_list']['chain_build_id']
+                            }
+                        )
+                    else:
+                        log.info(_("Task %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has been sent. Build task id is %(id)s") %
+                            {'proj': project, 'plat': bpl, 'save_repo': save_to_repository, 'arch': arch, 'id': result['build_list']['id']})
                 else:
                     log.info(_("Build request %(proj)s|%(plat)s|%(save_repo)s|%(arch)s has failed.\nReason: %(reason)s") %
                         {'proj': project, 'plat': bpl, 'save_repo': save_to_repository, 'arch': arch, 'reason': result['build_list']['message']})

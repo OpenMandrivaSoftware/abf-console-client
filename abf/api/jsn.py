@@ -96,7 +96,6 @@ class AbfJson(object):
             res = json.loads(response_string)
         except ValueError as ex:
             self.log.error(_("Internal server error: it has returned non-json data. "))
-            # print(response_string)
             exit(1)
         m = None
         if 'message' in res and res['message'] not in AbfJson.good_messages:
@@ -310,6 +309,15 @@ class AbfJson(object):
 
     def get_architectures(self):
         URL = "/api/v1/arches.json"
+        return self.get_url_contents(URL)
+
+    def get_last_chain_build(self):
+        URL = "/api/v1/chain_builds/last.json"
+        return self.get_url_contents(URL)
+
+    def get_chain_build_by_id(self, id):
+        chain_build_id = int(id)
+        URL = "/api/v1/chain_builds/%d.json" % chain_build_id
         return self.get_url_contents(URL)
 
     def get_platforms(self, typ=None):
